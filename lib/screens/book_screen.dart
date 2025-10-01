@@ -12,11 +12,12 @@ class BookScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(book.name)),
       body: GridView.builder(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5,
-          crossAxisSpacing: 8.0,
-          mainAxisSpacing: 8.0,
+          crossAxisCount: 4,
+          crossAxisSpacing: 16.0,
+          mainAxisSpacing: 16.0,
+          childAspectRatio: 1.0,
         ),
         itemCount: book.chapters.length,
         itemBuilder: (context, index) {
@@ -32,10 +33,14 @@ class BookScreen extends StatelessWidget {
               );
             },
             child: Card(
+              elevation: 4.0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
               child: Center(
                 child: Text(
                   chapter.number.toString(),
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
             ),

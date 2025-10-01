@@ -42,39 +42,57 @@ class _BibleScreenState extends State<BibleScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: TextField(
-          controller: searchController,
-          decoration: InputDecoration(
-            hintText: 'Search...',
-            border: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.white70),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: 'Search Books...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+            ),
           ),
-          style: TextStyle(color: Colors.white, fontSize: 18.0),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.clear),
-            onPressed: () {
-              searchController.clear();
-            },
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 2.5,
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
+              ),
+              itemCount: filteredBooks.length,
+              itemBuilder: (context, index) {
+                final book = filteredBooks[index];
+                return Card(
+                  elevation: 2.0,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookScreen(book: book),
+                        ),
+                      );
+                    },
+                    child: Center(
+                      child: Text(
+                        book.name,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
-      ),
-      body: ListView.builder(
-        itemCount: filteredBooks.length,
-        itemBuilder: (context, index) {
-          final book = filteredBooks[index];
-          return ListTile(
-            title: Text(book.name),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => BookScreen(book: book)),
-              );
-            },
-          );
-        },
       ),
     );
   }

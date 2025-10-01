@@ -25,34 +25,29 @@ class LessonsScreen extends StatelessWidget {
           final String ageGroup = groupedLessons.keys.elementAt(index);
           final List<Lesson> groupLessons = groupedLessons[ageGroup]!;
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  ageGroup,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: ExpansionTile(
+              title: Text(
+                ageGroup,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              ...groupLessons.map((lesson) {
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                  child: ListTile(
-                    title: Text(lesson.title),
-                    subtitle: Text(lesson.date),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LessonDetailScreen(lesson: lesson),
-                        ),
-                      );
-                    },
-                  ),
+              children: groupLessons.map((lesson) {
+                return ListTile(
+                  title: Text(lesson.title),
+                  subtitle: Text(lesson.date),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            LessonDetailScreen(lesson: lesson),
+                      ),
+                    );
+                  },
                 );
               }).toList(),
-            ],
+            ),
           );
         },
       ),

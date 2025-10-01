@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../theme_provider.dart';
 import '../screens/bible_screen.dart';
 import '../screens/lessons_screen.dart';
 
@@ -24,9 +26,79 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('AFC StudyMate'),
+        actions: [
+          IconButton(
+            icon: Icon(themeProvider.themeMode == ThemeMode.dark
+                ? Icons.light_mode
+                : Icons.dark_mode),
+            onPressed: () => themeProvider.toggleTheme(),
+            tooltip: 'Toggle Theme',
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color(0xFF3F51B5),
+              ),
+              child: Text(
+                'Bible Translations',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.book_online),
+              title: const Text('King James Version'),
+              onTap: () {
+                // Handle KJV selection
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.book_online),
+              title: const Text('Amplified Version'),
+              onTap: () {
+                // Handle AMP selection
+                Navigator.pop(context);
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.book_online),
+              title: const Text('Ndebele Version'),
+              onTap: () {
+                // Handle Ndebele selection
+                Navigator.pop(context);
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.book_online),
+              title: const Text('Shona Version'),
+              onTap: () {
+                // Handle Shona selection
+                Navigator.pop(context);
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.book_online),
+              title: const Text('Portuguese Version'),
+              onTap: () {
+                // Handle Portuguese selection
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
       body: _screens[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(

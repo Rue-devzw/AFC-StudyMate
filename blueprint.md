@@ -26,22 +26,27 @@ AFC StudyMate is a mobile application designed to provide a comprehensive and in
 
 ## Current Implementation
 
-*   **App Structure:** Basic app structure with a `main.dart` file and a bottom navigation bar for "Bible" and "Lessons" tabs.
-*   **Theming:** Implemented a theme using `ColorScheme.fromSeed` with the specified primary color, and the 'PT Sans' and 'Playfair' fonts. A `ThemeProvider` manages the theme state, and a theme toggle is available in the `AppBar`.
+*   **App Structure:** The app has a well-defined structure with a `main.dart` entry point, a bottom navigation bar for "Bible" and "Lessons", and a drawer for future Bible translation options.
+*   **Theming:** A comprehensive theme has been implemented using `ColorScheme.fromSeed` with the specified primary and accent colors. The app supports both light and dark modes, managed by a `ThemeProvider`, with a toggle in the `AppBar`.
 *   **Screens:**
-    *   `BibleScreen`: Displays a list of Bible books.
-    *   `LessonsScreen`: Displays a list of available lessons.
-    *   `BookScreen`: Displays chapters of a selected book in a grid.
-    *   `ChapterScreen`: Displays verses of a selected chapter.
-    *   `LessonDetailScreen`: Displays the details of a selected lesson.
+    *   `HomeScreen`: The main screen with a bottom navigation bar and a drawer.
+    *   `BibleScreen`: Displays a searchable grid of Bible books for easy navigation.
+    *   `LessonsScreen`: Displays lessons grouped by age in expandable tiles for a clean and organized view.
+    *   `BookScreen`: Shows the chapters of a selected book in a visually appealing grid.
+    *   `ChapterScreen`: Presents the verses of a selected chapter in a readable and engaging format.
+    *   `LessonDetailScreen`: Provides a detailed view of a lesson with styled introduction and section cards for better readability.
 *   **Data Models:**
-    *   `Bible`: Represents the Bible with a translation and a list of books.
-    *   `Book`: Represents a book of the Bible with a name and a list of chapters.
-    *   `Chapter`: Represents a chapter with a number and a list of verses.
-    *   `Verse`: Represents a verse with a number and text.
-    *   `Lesson`: Represents a lesson with a title, date, introduction, and sections.
-    *   `Section`: Represents a section of a lesson with a title and content.
+    *   `Bible`, `Book`, `Chapter`, `Verse`: Models for the Bible structure.
+    *   `Lesson`, `Section`: Models for the lesson content.
 *   **Services:**
-    *   `BibleService`: Provides sample data for the Bible (KJV with Genesis, Exodus, Leviticus).
-    *   `DataService`: Provides sample data for two lessons.
-*   **Navigation:** Basic navigation between screens using `Navigator.push`.
+    *   `BibleService`: Provides sample data for the KJV Bible.
+    *   `DataService`: Provides a variety of sample lessons for different age groups.
+*   **Navigation:** Implemented navigation between screens using `Navigator.push`, ensuring a smooth user flow.
+
+## Next Steps
+
+*   Implement multiple Bible translations and a way for the user to switch between them.
+*   Add functionality to download and store lessons locally for offline access.
+*   Integrate external links for further study.
+*   Add animations and transitions to enhance the user experience.
+*   Ensure the app is fully responsive and works well on various screen sizes.

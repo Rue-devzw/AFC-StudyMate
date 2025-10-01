@@ -8,35 +8,89 @@ class LessonDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(title: Text(lesson.title)),
+      backgroundColor: theme.colorScheme.surface, // Use the light blue background
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(lesson.date, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 16),
-            Text(
-              lesson.introduction,
-              style: Theme.of(context).textTheme.bodyMedium,
+            // Introduction Card
+            Card(
+              elevation: 2.0,
+              margin: const EdgeInsets.only(bottom: 20.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      lesson.date,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      lesson.introduction,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 16,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 24),
+
+            // Sections title
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0, bottom: 12.0),
+              child: Text(
+                'Lesson Sections',
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+
+            // Sections list
             ...lesson.sections.map(
-              (section) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    section.title,
-                    style: Theme.of(context).textTheme.titleLarge,
+              (section) => Card(
+                elevation: 1.0,
+                color: theme.cardColor.withOpacity(0.95),
+                margin: const EdgeInsets.only(bottom: 12.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 16.0, horizontal: 20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(section.title,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontSize: 18,
+                            color: const Color(0xFFFFAB40), // Accent color
+                            fontWeight: FontWeight.w600,
+                          )),
+                      const SizedBox(height: 10),
+                      Text(
+                        section.content,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontSize: 15,
+                          height: 1.5, // improved line spacing for readability
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    section.content,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                ),
               ),
             ),
           ],
