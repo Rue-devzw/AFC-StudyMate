@@ -1,0 +1,107 @@
+[
+  {
+    "title": "Beginners (2-5)",
+    "lessons": [
+      {
+        "title": "Creation",
+        "introduction": "In the beginning, God created the heavens and the earth.",
+        "sections": [
+          {
+            "title": "Day 1: Light",
+            "content": "God said, \"Let there be light,\" and there was light.",
+            "url": "https://www.biblegateway.com/passage/?search=Genesis+1&version=NIV"
+          },
+          {
+            "title": "Day 2: Sky",
+            "content": "God made the sky to separate the waters.",
+            "url": "https://www.biblegateway.com/passage/?search=Genesis+1&version=NIV"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Primary Pals (1st-3rd Grade)",
+    "lessons": [
+      {
+        "title": "Noah's Ark",
+        "introduction": "God told Noah to build an ark to save his family and the animals from a great flood.",
+        "sections": [
+          {
+            "title": "Building the Ark",
+            "content": "Noah and his sons built the ark according to God's instructions.",
+            "url": "https://www.biblegateway.com/passage/?search=Genesis+6-9&version=NIV"
+          },
+          {
+            "title": "The Flood",
+            "content": "The floodwaters covered the earth for 40 days and 40 nights.",
+            "url": "https://www.biblegateway.com/passage/?search=Genesis+6-9&version=NIV"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Answer (4th-8th Grade)",
+    "lessons": [
+      {
+        "title": "The Ten Commandments",
+        "introduction": "God gave Moses the Ten Commandments on Mount Sinai.",
+        "sections": [
+          {
+            "title": "The First Four Commandments",
+            "content": "These commandments are about our relationship with God.",
+            "url": "https://www.biblegateway.com/passage/?search=Exodus+20&version=NIV"
+          },
+          {
+            "title": "The Last Six Commandments",
+            "content": "These commandments are about our relationship with others.",
+            "url": "https://www.biblegateway.com/passage/?search=Exodus+20&version=NIV"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Search (High School-Adults)",
+    "lessons": [
+      {
+        "title": "The Book of Romans",
+        "introduction": "The book of Romans is a letter written by the apostle Paul to the church in Rome.",
+        "sections": [
+          {
+            "title": "Justification by Faith",
+            "content": "Paul teaches that we are saved by faith in Jesus Christ, not by our own works.",
+            "url": "https://www.biblegateway.com/passage/?search=Romans+3&version=NIV"
+          },
+          {
+            "title": "Living in the Spirit",
+            "content": "Paul encourages us to live a life that is pleasing to God.",
+            "url": "https://www.biblegateway.com/passage/?search=Romans+8&version=NIV"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Discovery (High School-Adults)",
+    "lessons": [
+      {
+        "title": "The Person of Jesus Christ",
+        "introduction": "Who is Jesus Christ?",
+        "sections": [
+          {
+            "title": "His Humanity",
+            "content": "Jesus was fully human, and he experienced all the things that we do.",
+            "url": "https://www.biblegateway.com/passage/?search=John+1&version=NIV"
+          },
+          {
+            "title": "His Deity",
+            "content": "Jesus is also fully God, and he has all the power and authority of God.",
+            "url": "https://www.biblegateway.com/passage/?search=John+1&version=NIV"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,10 +1,10 @@
 import 'package:bible_study_app/bible_provider.dart';
-import 'package:bible_study_app/services/bible_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme_provider.dart';
 import '../screens/bible_screen.dart';
 import '../screens/lessons_screen.dart';
+import '../screens/about_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -34,70 +34,45 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('AFC StudyMate'),
-        actions: [
-          IconButton(
-            icon: Icon(themeProvider.themeMode == ThemeMode.dark
-                ? Icons.light_mode
-                : Icons.dark_mode),
-            onPressed: () => themeProvider.toggleTheme(),
-            tooltip: 'Toggle Theme',
-          ),
-        ],
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color(0xFF3F51B5),
-              ),
-              child: Text(
-                'Bible Translations',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
+            const UserAccountsDrawerHeader(
+              accountName: Text('AFC User'),
+              accountEmail: Text(''),
+              currentAccountPicture: CircleAvatar(
+                child: Text('A'),
               ),
             ),
+            ...bibleProvider.bibles.map((bible) => ListTile(
+                  leading: const Icon(Icons.book_online),
+                  title: Text(bible.translation),
+                  onTap: () {
+                    bibleProvider.setBibleId(bible.id);
+                    Navigator.pop(context);
+                  },
+                )),
+            const Divider(),
             ListTile(
-              leading: const Icon(Icons.book_online),
-              title: const Text('King James Version'),
+              leading: Icon(themeProvider.themeMode == ThemeMode.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode),
+              title: const Text('Toggle Theme'),
               onTap: () {
-                bibleProvider.setBible(BibleService.getBible());
+                themeProvider.toggleTheme();
                 Navigator.pop(context);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.book_online),
-              title: const Text('Amplified Version'),
+              leading: const Icon(Icons.info),
+              title: const Text('About'),
               onTap: () {
-                bibleProvider.setBible(BibleService.getAmplifiedBible());
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book_online),
-              title: const Text('Ndebele Version'),
-              onTap: () {
-                bibleProvider.setBible(BibleService.getNdebeleBible());
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book_online),
-              title: const Text('Shona Version'),
-              onTap: () {
-                // Handle Shona selection
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book_online),
-              title: const Text('Portuguese Version'),
-              onTap: () {
-                // Handle Portuguese selection
-                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutScreen()),
+                );
               },
             ),
           ],

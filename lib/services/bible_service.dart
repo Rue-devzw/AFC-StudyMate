@@ -1,117 +1,133 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../models/bible.dart';
+import 'cache_service.dart';
 
 class BibleService {
-  static Bible getBible() {
-    return Bible(
-      translation: 'King James Version',
-      books: [
-        Book(
-          name: 'Genesis',
-          chapters: [
-            Chapter(
-              number: 1,
-              verses: [
-                Verse(number: 1, text: 'In the beginning God created the heaven and the earth.'),
-                Verse(number: 2, text: 'And the earth was without form, and void; and darkness was upon the face of the deep. And the Spirit of God moved upon the face of the waters.'),
-              ],
-            ),
-            Chapter(
-              number: 2,
-              verses: [
-                Verse(number: 1, text: 'Thus the heavens and the earth were finished, and all the host of them.'),
-                Verse(number: 2, text: 'And on the seventh day God ended his work which he had made; and he rested on the seventh day from all his work which he had made.'),
-              ],
-            ),
-          ],
-        ),
-        Book(
-          name: 'Exodus',
-          chapters: [
-            Chapter(
-              number: 1,
-              verses: [
-                Verse(number: 1, text: 'Now these are the names of the children of Israel, which came into Egypt; every man and his household came with Jacob.'),
-              ],
-            ),
-          ],
-        ),
-      ],
+  static const String _apiKey = '575753847d77ffdbb70153876b4d0434';
+  static const String _baseUrl = 'https://api.scripture.api.bible/v1';
+
+  static Future<List<Bible>> getBibles() async {
+    final cachedBibles = await CacheService.getBibles();
+    if (cachedBibles != null) {
+      return cachedBibles;
+    }
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/bibles'),
+      headers: {'api-key': _apiKey},
     );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body)['data'] as List;
+      final bibles = data.map((json) => Bible.fromJson(json)).toList();
+      await CacheService.saveBibles(bibles);
+      return bibles;
+    } else {
+      throw Exception('Failed to load Bibles');
+    }
   }
 
-  static Bible getAmplifiedBible() {
-    return Bible(
-      translation: 'Amplified Version',
-      books: [
-        Book(
-          name: 'Genesis',
-          chapters: [
-            Chapter(
-              number: 1,
-              verses: [
-                Verse(number: 1, text: 'In the beginning God (prepared, formed, fashioned, and) created the heavens and the earth.'),
-                Verse(number: 2, text: 'The earth was without form and an empty waste, and darkness was upon the face of the very great deep. The Spirit of God was moving (hovering, brooding) over the face of the waters.'),
-              ],
-            ),
-            Chapter(
-              number: 2,
-              verses: [
-                Verse(number: 1, text: 'So the heavens and the earth were finished, and all the host of them.'),
-                Verse(number: 2, text: 'And on the seventh day God ended His work which He had done, and He rested on the seventh day from all His work which He had done.'),
-              ],
-            ),
-          ],
-        ),
-        Book(
-          name: 'Exodus',
-          chapters: [
-            Chapter(
-              number: 1,
-              verses: [
-                Verse(number: 1, text: 'These are the names of the sons of Israel who came into Egypt with Jacob, each with his household:'),
-              ],
-            ),
-          ],
-        ),
-      ],
+  static Future<Bible> getBible(String bibleId) async {
+    // This method is not cached as it is not used in the app
+    final response = await http.get(
+      Uri.parse('$_baseUrl/bibles/$bibleId'),
+      headers: {'api-key': _apiKey},
     );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body)['data'];
+      return Bible.fromJson(data);
+    } else {
+      throw Exception('Failed to load Bible');
+    }
   }
 
-  static Bible getNdebeleBible() {
-    return Bible(
-      translation: 'Ndebele Version',
-      books: [
-        Book(
-          name: 'Genesisi',
-          chapters: [
-            Chapter(
-              number: 1,
-              verses: [
-                Verse(number: 1, text: 'Ekuqaleni uNkulunkulu wadala izulu lomhlaba.'),
-                Verse(number: 2, text: 'Umhlaba wawusenyanyeni, uluyize; ubumnyama babuphezu kobusobethelweni lwamanzi. UMoya kaNkulunkulu wanyakaza phezu kwamanzi.'),
-              ],
-            ),
-            Chapter(
-              number: 2,
-              verses: [
-                Verse(number: 1, text: 'Lazaliswa-ke izulu lomhlaba, lempi yalo yonke.'),
-                Verse(number: 2, text: 'UNkulunkulu waseqeda ngosuku lwesikhombisa umsebenzi wakhe awenzileyo; waphumula ngosuku lwesikhombisa kuwo wonke umsebenzi wakhe awenzileyo.'),
-              ],
-            ),
-          ],
-        ),
-        Book(
-          name: 'Eksodasi',
-          chapters: [
-            Chapter(
-              number: 1,
-              verses: [
-                Verse(number: 1, text: 'Lawa-ke ngamabizo amadodana kaIsrayeli angena eGibithe; onke angena loJakobe, yileyo lalowo lendlu yakhe.'),
-              ],
-            ),
-          ],
-        ),
-      ],
+  static Future<List<Book>> getBooks(String bibleId) async {
+    final cachedBooks = await CacheService.getBooks(bibleId);
+    if (cachedBooks != null) {
+      return cachedBooks;
+    }
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/bibles/$bibleId/books'),
+      headers: {'api-key': _apiKey},
     );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body)['data'] as List;
+      final books = data.map((json) => Book.fromJson(json)).toList();
+      await CacheService.saveBooks(bibleId, books);
+      return books;
+    } else {
+      throw Exception('Failed to load books');
+    }
+  }
+
+  static Future<List<Chapter>> getChapters(String bibleId, String bookId) async {
+    final cachedChapters = await CacheService.getChapters(bibleId, bookId);
+    if (cachedChapters != null) {
+      return cachedChapters;
+    }
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/bibles/$bibleId/books/$bookId/chapters'),
+      headers: {'api-key': _apiKey},
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body)['data'] as List;
+      final chapters = data.map((json) => Chapter.fromJson(json)).toList();
+      await CacheService.saveChapters(bibleId, bookId, chapters);
+      return chapters;
+    } else {
+      throw Exception('Failed to load chapters');
+    }
+  }
+
+  static Future<Chapter> getChapter(String bibleId, String chapterId) async {
+    final cachedChapter = await CacheService.getChapter(bibleId, chapterId);
+    if (cachedChapter != null) {
+      return cachedChapter;
+    }
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/bibles/$bibleId/chapters/$chapterId?content-type=json'),
+      headers: {'api-key': _apiKey},
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body)['data'];
+      final chapter = Chapter.fromJson(data);
+      await CacheService.saveChapter(bibleId, chapterId, chapter);
+      return chapter;
+    } else {
+      throw Exception('Failed to load chapter');
+    }
+  }
+
+  // This is not an efficient way to search, but the api.bible API does not provide a search endpoint.
+  // This method will fetch the entire bible and then search for the query.
+  static Future<List<Verse>> searchBible(String bibleId, String query) async {
+    final books = await getBooks(bibleId);
+    final List<Verse> results = [];
+
+    for (final book in books) {
+      final chapters = await getChapters(bibleId, book.id);
+      for (final chapter in chapters) {
+        try {
+          final chapterContent = await getChapter(bibleId, chapter.id);
+          for (final verse in chapterContent.verses) {
+            if (verse.text.toLowerCase().contains(query.toLowerCase())) {
+              results.add(verse);
+            }
+          }
+        } catch (e) {
+          // Ignore errors for chapters that fail to load
+        }
+      }
+    }
+
+    return results;
   }
 }

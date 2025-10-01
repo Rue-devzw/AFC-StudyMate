@@ -1,9 +1,11 @@
-import 'package:bible_study_app/bible_provider.dart';
+'''import 'package:bible_study_app/bible_provider.dart';
+import 'package:bible_study_app/models/bible.dart';
+import 'package:bible_study_app/screens/book_screen.dart';
+import 'package:bible_study_app/screens/search_screen.dart';
+import 'package:bible_study_app/services/bible_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
-import '../models/bible.dart';
-import 'book_screen.dart';
 
 class BibleScreen extends StatefulWidget {
   const BibleScreen({super.key});
@@ -13,60 +15,58 @@ class BibleScreen extends StatefulWidget {
 }
 
 class _BibleScreenState extends State<BibleScreen> {
-  List<Book> filteredBooks = [];
-  final TextEditingController searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
 
-  @override
-  void initState() {
-    super.initState();
-    final bible = Provider.of<BibleProvider>(context, listen: false).bible;
-    filteredBooks = bible.books;
-    searchController.addListener(() {
-      filterBooks();
-    });
-  }
-
-  void filterBooks() {
-    final bible = Provider.of<BibleProvider>(context, listen: false).bible;
-    String query = searchController.text.toLowerCase();
+  void _toggleSearch() {
     setState(() {
-      filteredBooks = bible.books
-          .where((book) => book.name.toLowerCase().contains(query))
-          .toList();
+      _isSearching = !_isSearching;
     });
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bible = Provider.of<BibleProvider>(context).bible;
-    if (searchController.text.isEmpty) {
-      filteredBooks = bible.books;
-    }
+    final bibleProvider = Provider.of<BibleProvider>(context);
 
     return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: searchController,
-              decoration: InputDecoration(
-                hintText: 'Search Books...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
+      appBar: AppBar(
+        title: _isSearching
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search Bible...',
+                  border: InputBorder.none,
                 ),
-              ),
-            ),
+                onSubmitted: (query) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SearchScreen(query: query),
+                    ),
+                  );
+                },
+              )
+            : const Text('Bible'),
+        actions: [
+          IconButton(
+            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            onPressed: _toggleSearch,
           ),
-          Expanded(
-            child: AnimationLimiter(
+        ],
+      ),
+      body: FutureBuilder<List<Book>>(
+        future: BibleService.getBooks(bibleProvider.selectedBibleId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No books found.'));
+          } else {
+            final books = snapshot.data!;
+            return AnimationLimiter(
               child: GridView.builder(
                 padding: const EdgeInsets.all(8.0),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -75,9 +75,9 @@ class _BibleScreenState extends State<BibleScreen> {
                   crossAxisSpacing: 8.0,
                   mainAxisSpacing: 8.0,
                 ),
-                itemCount: filteredBooks.length,
+                itemCount: books.length,
                 itemBuilder: (context, index) {
-                  final book = filteredBooks[index];
+                  final book = books[index];
                   return AnimationConfiguration.staggeredGrid(
                     position: index,
                     duration: const Duration(milliseconds: 375),
@@ -96,10 +96,13 @@ class _BibleScreenState extends State<BibleScreen> {
                               );
                             },
                             child: Center(
-                              child: Text(
-                                book.name,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.titleMedium,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  book.name,
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context).textTheme.titleMedium,
+                                ),
                               ),
                             ),
                           ),
@@ -109,10 +112,11 @@ class _BibleScreenState extends State<BibleScreen> {
                   );
                 },
               ),
-            ),
-          ),
-        ],
+            );
+          }
+        },
       ),
     );
   }
 }
+''
