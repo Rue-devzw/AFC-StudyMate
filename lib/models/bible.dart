@@ -1,141 +1,64 @@
-import 'dart:convert';
-
 class Bible {
   final String id;
-  final String translation;
-  final List<Book> books;
+  final String name;
 
-  Bible({required this.id, required this.translation, required this.books});
+  Bible({required this.id, required this.name});
 
-  factory Bible.fromJson(Map<String, dynamic> json) {
+  factory Bible.fromMap(Map<String, dynamic> map) {
     return Bible(
-      id: json['id'],
-      translation: json['name'] ?? json['abbreviation'] ?? '',
-      books: json.containsKey('books') && json['books'] != null
-          ? (json['books'] as List).map((b) => Book.fromJson(b)).toList()
-          : [],
+      id: map['id'].toString(),
+      name: map['translation'] as String,
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': translation,
-        'books': books.map((b) => b.toJson()).toList(),
-      };
 }
 
 class Book {
-  final String id;
+  final int id;
   final String name;
-  final List<Chapter> chapters;
+  final int chapterCount;
 
-  Book({required this.id, required this.name, required this.chapters});
+  Book({required this.id, required this.name, required this.chapterCount});
 
-  factory Book.fromJson(Map<String, dynamic> json) {
+  factory Book.fromMap(Map<String, dynamic> map) {
     return Book(
-      id: json['id'],
-      name: json['name'],
-      chapters: json.containsKey('chapters') && json['chapters'] != null
-          ? (json['chapters'] as List).map((c) => Chapter.fromJson(c)).toList()
-          : [],
+      id: map['book'] as int,
+      name: map['book_name_text'] as String,
+      chapterCount: map['chapterCount'] as int,
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'chapters': chapters.map((c) => c.toJson()).toList(),
-      };
-}
-
-class Chapter {
-  final String id;
-  final String number;
-  final List<Verse> verses;
-
-  Chapter({required this.id, required this.number, required this.verses});
-
-  factory Chapter.fromJson(Map<String, dynamic> json) {
-    var verses = <Verse>[];
-    if (json.containsKey('content')) {
-      dynamic content = json['content'];
-      if (content is String) {
-        try {
-          content = jsonDecode(content);
-        } catch (e) {
-          content = [];
-        }
-      }
-
-      if (content is List) {
-        for (var item in content) {
-          if (item['type'] == 'para') {
-            for (var innerItem in item['items']) {
-              if (innerItem['type'] == 'verse') {
-                verses.add(Verse.fromJson(innerItem));
-              }
-            }
-          }
-        }
-      }
-    } else if (json.containsKey('verses')) {
-      verses = (json['verses'] as List).map((v) => Verse.fromJson(v)).toList();
-    }
-
-    return Chapter(
-      id: json['id'],
-      number: json['number'] ?? (json['reference'] ?? '').split(' ').last,
-      verses: verses,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'number': number,
-        'verses': verses.map((v) => v.toJson()).toList(),
-      };
 }
 
 class Verse {
-  final String id;
-  final String number;
+  final int id;
+  final int book;
+  final String bookName;
+  final int chapter;
+  final int verse;
   final String text;
+  final int translationId;
+  final int languageId;
 
-  Verse({required this.id, required this.number, required this.text});
+  Verse({
+    required this.id,
+    required this.book,
+    required this.bookName,
+    required this.chapter,
+    required this.verse,
+    required this.text,
+    required this.translationId,
+    required this.languageId,
+  });
 
-  factory Verse.fromJson(Map<String, dynamic> json) {
-    String textContent = '';
-    String verseNumber = '';
-
-    if (json.containsKey('items')) {
-      final items = json['items'] as List;
-      if (items.isNotEmpty) {
-        final firstItem = items.first;
-        if (firstItem['type'] == 'text') {
-          verseNumber = firstItem['text'].trim();
-        }
-
-        for (var i = 1; i < items.length; i++) {
-          final item = items[i];
-          if (item['type'] == 'text') {
-            textContent += item['text'];
-          }
-        }
-      }
-    } else if (json.containsKey('text')) {
-      textContent = json['text'];
-    }
-
+  factory Verse.fromMap(Map<String, dynamic> map) {
     return Verse(
-      id: json['id'],
-      number: verseNumber,
-      text: textContent.trim(),
+      id: map['id'] as int,
+      book: map['book'] as int,
+      bookName: map['book_name_text'] as String,
+      chapter: map['chapter'] as int,
+      verse: map['verse'] as int,
+      text: map['text'] as String,
+      translationId: map['translation_id'] as int,
+      languageId: map['language_id'] as int,
     );
   }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'number': number,
-        'text': text,
-      };
 }

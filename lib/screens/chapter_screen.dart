@@ -1,85 +1,87 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:provider/provider.dart';
-import '../bible_provider.dart';
 import '../models/bible.dart';
-import '../services/bible_service.dart';
+import '../services/reading_progress_service.dart';
 
-class ChapterScreen extends StatelessWidget {
-  final String chapterId;
-  final String chapterNumber;
+class ChapterScreen extends StatefulWidget {
+  final int bookId;
+  final int chapterNumber;
   final String bookName;
+  final List<Verse> verses;
 
   const ChapterScreen({
     super.key,
-    required this.chapterId,
+    required this.bookId,
     required this.chapterNumber,
     required this.bookName,
+    required this.verses,
   });
 
   @override
+  State<ChapterScreen> createState() => _ChapterScreenState();
+}
+
+class _ChapterScreenState extends State<ChapterScreen> {
+  final ReadingProgressService _readingProgressService = ReadingProgressService();
+
+  @override
+  void initState() {
+    super.initState();
+    _saveReadingProgress();
+  }
+
+  Future<void> _saveReadingProgress() async {
+    await _readingProgressService.saveReadingProgress(
+      widget.bookId,
+      widget.chapterNumber,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bibleProvider = Provider.of<BibleProvider>(context);
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text('$bookName $chapterNumber')),
-      body: FutureBuilder<Chapter>(
-        future: BibleService.getChapter(bibleProvider.selectedBibleId, chapterId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData) {
-            return const Center(child: Text('No content found for this chapter.'));
-          } else {
-            final chapter = snapshot.data!;
-            return AnimationLimiter(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
-                itemCount: chapter.verses.length,
-                itemBuilder: (context, index) {
-                  final verse = chapter.verses[index];
-                  return AnimationConfiguration.staggeredList(
-                    position: index,
-                    duration: const Duration(milliseconds: 375),
-                    child: SlideAnimation(
-                      verticalOffset: 50.0,
-                      child: FadeInAnimation(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                verse.number,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.colorScheme.primary,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  verse.text,
-                                  style: theme.textTheme.bodyLarge?.copyWith(
-                                    height: 1.6,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+      appBar: AppBar(title: Text('${widget.bookName} ${widget.chapterNumber}')),
+      body: AnimationLimiter(
+        child: ListView.builder(
+          padding: const EdgeInsets.all(16.0),
+          itemCount: widget.verses.length,
+          itemBuilder: (context, index) {
+            final verse = widget.verses[index];
+            return AnimationConfiguration.staggeredList(
+              position: index,
+              duration: const Duration(milliseconds: 400),
+              child: SlideAnimation(
+                verticalOffset: 50.0,
+                child: FadeInAnimation(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: RichText(
+                      text: TextSpan(
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontSize: 18,
+                          height: 1.7,
                         ),
+                        children: [
+                          TextSpan(
+                            text: '${verse.verse} ',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.primary,
+                              fontSize: 16,
+                            ),
+                          ),
+                          TextSpan(text: verse.text),
+                        ],
                       ),
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
             );
-          }
-        },
+          },
+        ),
       ),
     );
   }

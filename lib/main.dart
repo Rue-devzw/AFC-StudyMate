@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'bible_provider.dart';
 import 'screens/home_screen.dart';
 import 'theme_provider.dart';
 
 void main() {
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => ThemeProvider()),
-        ChangeNotifierProvider(create: (context) => BibleProvider()),
-      ],
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
       child: const MyApp(),
     ),
   );
