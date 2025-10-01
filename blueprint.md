@@ -23,3 +23,25 @@ AFC StudyMate is a mobile application designed to provide a comprehensive and in
 *   **Iconography:** Clear, age-appropriate icons for navigation and lesson topics.
 *   **Layout:** Age-appropriate, readable layout for textual lesson content.
 *   **Transitions:** Subtle transitions between Bible verses and lesson sections.
+
+## Current Implementation
+
+*   **App Structure:** Basic app structure with a `main.dart` file and a bottom navigation bar for "Bible" and "Lessons" tabs.
+*   **Theming:** Implemented a theme using `ColorScheme.fromSeed` with the specified primary color, and the 'PT Sans' and 'Playfair' fonts. A `ThemeProvider` manages the theme state, and a theme toggle is available in the `AppBar`.
+*   **Screens:**
+    *   `BibleScreen`: Displays a list of Bible books.
+    *   `LessonsScreen`: Displays a list of available lessons.
+    *   `BookScreen`: Displays chapters of a selected book in a grid.
+    *   `ChapterScreen`: Displays verses of a selected chapter.
+    *   `LessonDetailScreen`: Displays the details of a selected lesson.
+*   **Data Models:**
+    *   `Bible`: Represents the Bible with a translation and a list of books.
+    *   `Book`: Represents a book of the Bible with a name and a list of chapters.
+    *   `Chapter`: Represents a chapter with a number and a list of verses.
+    *   `Verse`: Represents a verse with a number and text.
+    *   `Lesson`: Represents a lesson with a title, date, introduction, and sections.
+    *   `Section`: Represents a section of a lesson with a title and content.
+*   **Services:**
+    *   `BibleService`: Provides sample data for the Bible (KJV with Genesis, Exodus, Leviticus).
+    *   `DataService`: Provides sample data for two lessons.
+*   **Navigation:** Basic navigation between screens using `Navigator.push`.

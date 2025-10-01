@@ -3,60 +3,49 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import 'screens/bible_screen.dart';
+import 'screens/lessons_screen.dart';
+import 'theme_provider.dart';
+
 void main() {
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
-      child: const AFCStudyMateApp(),
+      child: const MyApp(),
     ),
   );
 }
 
-class ThemeProvider with ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.system;
-
-  ThemeMode get themeMode => _themeMode;
-
-  void toggleTheme() {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    notifyListeners();
-  }
-}
-
-class AFCStudyMateApp extends StatelessWidget {
-  const AFCStudyMateApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF3F51B5);
-    const Color backgroundColor = Color(0xFFE8EAF6);
-    const Color accentColor = Color(0xFFFFAB40);
+    const Color primarySeedColor = Color(0xFF3F51B5);
 
     final TextTheme appTextTheme = TextTheme(
-      displayLarge: GoogleFonts.playfair(fontSize: 57, fontWeight: FontWeight.bold),
-      titleLarge: GoogleFonts.playfair(fontSize: 22, fontWeight: FontWeight.w500),
+      displayLarge: GoogleFonts.playfairDisplay(fontSize: 57, fontWeight: FontWeight.bold),
+      titleLarge: GoogleFonts.playfairDisplay(fontSize: 22, fontWeight: FontWeight.w500),
       bodyMedium: GoogleFonts.ptSans(fontSize: 14),
     );
 
-    final ThemeData theme = ThemeData(
+    final ThemeData lightTheme = ThemeData(
       useMaterial3: true,
-      primaryColor: primaryColor,
-      scaffoldBackgroundColor: backgroundColor,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
+        seedColor: primarySeedColor,
         brightness: Brightness.light,
-        secondary: accentColor,
+        surface: const Color(0xFFE8EAF6),
       ),
       textTheme: appTextTheme,
       appBarTheme: AppBarTheme(
-        backgroundColor: primaryColor,
+        backgroundColor: primarySeedColor,
         foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.playfair(fontSize: 24, fontWeight: FontWeight.bold),
+        titleTextStyle: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.bold),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: primaryColor,
+          backgroundColor: const Color(0xFFFFAB40),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           textStyle: GoogleFonts.ptSans(fontSize: 16, fontWeight: FontWeight.w500),
@@ -64,32 +53,95 @@ class AFCStudyMateApp extends StatelessWidget {
       ),
     );
 
-    return MaterialApp(
-      title: 'AFC StudyMate',
-      theme: theme,
-      home: const MyHomePage(),
+    final ThemeData darkTheme = ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: primarySeedColor,
+        brightness: Brightness.dark,
+      ),
+      textTheme: appTextTheme,
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.grey[900],
+        foregroundColor: Colors.white,
+        titleTextStyle: GoogleFonts.playfairDisplay(fontSize: 24, fontWeight: FontWeight.bold),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.black,
+          backgroundColor: const Color(0xFFFFAB40),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          textStyle: GoogleFonts.ptSans(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+      ),
+    );
+
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'AFC StudyMate',
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: themeProvider.themeMode,
+          home: const MyHomePage(),
+        );
+      },
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
   @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _selectedIndex = 0;
+
+  static const List<Widget> _widgetOptions = <Widget>[
+    BibleScreen(),
+    LessonsScreen(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
+      body: Center(
+        child: _widgetOptions.elementAt(_selectedIndex),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Bible',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school),
+            label: 'Lessons',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
       appBar: AppBar(
         title: const Text('AFC StudyMate'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text('Welcome to AFC StudyMate!', style: Theme.of(context).textTheme.displayLarge),
-            const SizedBox(height: 20),
-            Text('Your companion for spiritual growth.', style: Theme.of(context).textTheme.bodyMedium),
-          ],
-        ),
+        actions: [
+          IconButton(
+            icon: Icon(themeProvider.themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: () => themeProvider.toggleTheme(),
+            tooltip: 'Toggle Theme',
+          ),
+        ],
       ),
     );
   }
