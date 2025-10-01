@@ -1,6 +1,6 @@
-import 'package:bible_study_app/bible_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../bible_provider.dart';
 import '../theme_provider.dart';
 import '../screens/bible_screen.dart';
 import '../screens/lessons_screen.dart';

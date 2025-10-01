@@ -1,8 +1,8 @@
-'''import 'package:bible_study_app/bible_provider.dart';
-import 'package:bible_study_app/models/bible.dart';
-import 'package:bible_study_app/screens/book_screen.dart';
-import 'package:bible_study_app/screens/search_screen.dart';
-import 'package:bible_study_app/services/bible_service.dart';
+import '../bible_provider.dart';
+import '/models/bible.dart';
+import 'book_screen.dart';
+import 'search_screen.dart';
+import '/services/bible_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:provider/provider.dart';
@@ -119,4 +119,3 @@ class _BibleScreenState extends State<BibleScreen> {
     );
   }
 }
-''

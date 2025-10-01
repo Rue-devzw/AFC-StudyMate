@@ -1,8 +1,8 @@
-import 'package:bible_study_app/models/bible.dart';
-import 'package:bible_study_app/services/bible_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../bible_provider.dart';
+import '../models/bible.dart';
+import '../services/bible_service.dart';
 
 class SearchScreen extends StatelessWidget {
   final String query;
