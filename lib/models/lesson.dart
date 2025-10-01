@@ -3,12 +3,14 @@ class Lesson {
   final String date;
   final String introduction;
   final List<Section> sections;
+  final String ageGroup;
 
   Lesson({
     required this.title,
     required this.date,
     required this.introduction,
     required this.sections,
+    required this.ageGroup,
   });
 }
 
