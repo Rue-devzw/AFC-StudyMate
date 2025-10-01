@@ -1,3 +1,5 @@
+import 'package:bible_study_app/bible_provider.dart';
+import 'package:bible_study_app/services/bible_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../theme_provider.dart';
@@ -27,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final bibleProvider = Provider.of<BibleProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -61,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: const Icon(Icons.book_online),
               title: const Text('King James Version'),
               onTap: () {
-                // Handle KJV selection
+                bibleProvider.setBible(BibleService.getBible());
                 Navigator.pop(context);
               },
             ),
@@ -69,19 +72,19 @@ class _HomeScreenState extends State<HomeScreen> {
               leading: const Icon(Icons.book_online),
               title: const Text('Amplified Version'),
               onTap: () {
-                // Handle AMP selection
+                bibleProvider.setBible(BibleService.getAmplifiedBible());
                 Navigator.pop(context);
               },
             ),
-             ListTile(
+            ListTile(
               leading: const Icon(Icons.book_online),
               title: const Text('Ndebele Version'),
               onTap: () {
-                // Handle Ndebele selection
+                bibleProvider.setBible(BibleService.getNdebeleBible());
                 Navigator.pop(context);
               },
             ),
-             ListTile(
+            ListTile(
               leading: const Icon(Icons.book_online),
               title: const Text('Shona Version'),
               onTap: () {
@@ -89,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pop(context);
               },
             ),
-             ListTile(
+            ListTile(
               leading: const Icon(Icons.book_online),
               title: const Text('Portuguese Version'),
               onTap: () {
