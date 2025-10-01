@@ -10,9 +10,9 @@ class Bible {
   factory Bible.fromJson(Map<String, dynamic> json) {
     return Bible(
       id: json['id'],
-      translation: json['name'] ?? json['translation'],
-      books: json.containsKey('books') 
-          ? (json['books'] as List).map((b) => Book.fromJson(b)).toList() 
+      translation: json['name'] ?? json['abbreviation'] ?? '',
+      books: json.containsKey('books') && json['books'] != null
+          ? (json['books'] as List).map((b) => Book.fromJson(b)).toList()
           : [],
     );
   }
@@ -35,7 +35,7 @@ class Book {
     return Book(
       id: json['id'],
       name: json['name'],
-      chapters: json.containsKey('chapters')
+      chapters: json.containsKey('chapters') && json['chapters'] != null
           ? (json['chapters'] as List).map((c) => Chapter.fromJson(c)).toList()
           : [],
     );
@@ -57,15 +57,19 @@ class Chapter {
 
   factory Chapter.fromJson(Map<String, dynamic> json) {
     var verses = <Verse>[];
-    if (json.containsKey('verses')) {
-      verses = (json['verses'] as List).map((v) => Verse.fromJson(v)).toList();
-    } else if (json.containsKey('content')) {
-      final content = json['content'];
+    if (json.containsKey('content')) {
+      dynamic content = json['content'];
+      if (content is String) {
+        try {
+          content = jsonDecode(content);
+        } catch (e) {
+          content = [];
+        }
+      }
+
       if (content is List) {
         for (var item in content) {
-          if (item['type'] == 'verse') {
-            verses.add(Verse.fromJson(item));
-          } else if (item['type'] == 'paragraph') {
+          if (item['type'] == 'para') {
             for (var innerItem in item['items']) {
               if (innerItem['type'] == 'verse') {
                 verses.add(Verse.fromJson(innerItem));
@@ -74,11 +78,13 @@ class Chapter {
           }
         }
       }
+    } else if (json.containsKey('verses')) {
+      verses = (json['verses'] as List).map((v) => Verse.fromJson(v)).toList();
     }
 
     return Chapter(
       id: json['id'],
-      number: json['number'],
+      number: json['number'] ?? (json['reference'] ?? '').split(' ').last,
       verses: verses,
     );
   }
@@ -99,21 +105,29 @@ class Verse {
 
   factory Verse.fromJson(Map<String, dynamic> json) {
     String textContent = '';
+    String verseNumber = '';
+
     if (json.containsKey('items')) {
-      for (var item in json['items']) {
-        if (item['type'] == 'text') {
-          textContent += item['text'];
+      final items = json['items'] as List;
+      if (items.isNotEmpty) {
+        final firstItem = items.first;
+        if (firstItem['type'] == 'text') {
+          verseNumber = firstItem['text'].trim();
+        }
+
+        for (var i = 1; i < items.length; i++) {
+          final item = items[i];
+          if (item['type'] == 'text') {
+            textContent += item['text'];
+          }
         }
       }
     } else if (json.containsKey('text')) {
       textContent = json['text'];
     }
 
-    String verseId = json.containsKey('name') ? json['name'] : json['id'];
-    String verseNumber = json.containsKey('name') ? verseId.split('.').last : json['number'];
-
     return Verse(
-      id: verseId,
+      id: json['id'],
       number: verseNumber,
       text: textContent.trim(),
     );
