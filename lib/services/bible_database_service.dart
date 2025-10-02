@@ -66,7 +66,6 @@ class DatabaseService {
     return List.generate(maps.length, (i) => Verse.fromMap(maps[i]));
   }
 
-master
   Future<List<Verse>> searchVerses(
     String bibleId,
     String query, {

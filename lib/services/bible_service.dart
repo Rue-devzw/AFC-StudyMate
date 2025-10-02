@@ -47,5 +47,4 @@ class BibleService {
   Future<List<Verse>> searchVerses(String query, {int? limit}) {
     return _databaseService.searchVerses(_defaultBibleId, query, limit: limit);
   }
-master
 }
