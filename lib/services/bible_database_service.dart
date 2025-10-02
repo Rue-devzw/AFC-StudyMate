@@ -14,6 +14,13 @@ class DatabaseService {
 
   final Map<String, Database> _databases = {};
 
+  String _escapeLikePattern(String input) {
+    return input.replaceAllMapped(
+      RegExp(r'([%_\\])'),
+      (match) => '\\${match[1]}',
+    );
+  }
+
   Future<Database> _getDatabase(String bibleId) async {
     if (_databases.containsKey(bibleId)) {
       return _databases[bibleId]!;
@@ -56,6 +63,28 @@ class DatabaseService {
       where: 'book = ? AND chapter = ?',
       whereArgs: [bookId, chapter],
     );
+    return List.generate(maps.length, (i) => Verse.fromMap(maps[i]));
+  }
+
+  Future<List<Verse>> searchVerses(
+    String bibleId,
+    String query, {
+    int? limit,
+  }) async {
+    if (query.trim().isEmpty) {
+      return [];
+    }
+
+    final db = await _getDatabase(bibleId);
+    final safeQuery = _escapeLikePattern(query.toLowerCase());
+    final List<Map<String, dynamic>> maps = await db.query(
+      'bible_verses',
+      where: "LOWER(text) LIKE ? ESCAPE '\\\\'",
+      whereArgs: ['%$safeQuery%'],
+      orderBy: 'book, chapter, verse',
+      limit: limit,
+    );
+
     return List.generate(maps.length, (i) => Verse.fromMap(maps[i]));
   }
 
