@@ -47,36 +47,5 @@ class BibleService {
   Future<List<Verse>> searchVerses(String query, {int? limit}) {
     return _databaseService.searchVerses(_defaultBibleId, query, limit: limit);
   }
-
-  Future<List<Verse>> getPassage({
-    required String translationId,
-    required String bookName,
-    required int chapter,
-    List<int> verses = const [],
-  }) async {
-    final resolvedId = await _resolveBibleId(translationId);
-    final sanitizedVerses = verses.where((verse) => verse > 0).toList();
-
-    try {
-      final passage = await _databaseService.getPassage(
-        resolvedId,
-        bookName: bookName,
-        chapter: chapter,
-        verses: sanitizedVerses,
-      );
-
-      if (passage.isNotEmpty || resolvedId == _defaultBibleId) {
-        return passage;
-      }
-    } catch (_) {
-      if (resolvedId == _defaultBibleId) rethrow;
-    }
-
-    return _databaseService.getPassage(
-      _defaultBibleId,
-      bookName: bookName,
-      chapter: chapter,
-      verses: sanitizedVerses,
-    );
-  }
+master
 }
