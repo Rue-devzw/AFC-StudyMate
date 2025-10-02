@@ -32,19 +32,30 @@ class BibleService {
     return _defaultBibleId;
   }
 
-  Future<List<Book>> loadBooks() async {
-    return _databaseService.getBooks(_defaultBibleId);
+  Future<List<Book>> loadBooks([String? translationId]) async {
+    final bibleId = await _resolveBibleId(translationId ?? _defaultBibleId);
+    return _databaseService.getBooks(bibleId);
   }
 
-  Future<List<Verse>> getVerses(int bookId, int chapter) async {
-    return _databaseService.getVerses(_defaultBibleId, bookId, chapter);
+  Future<List<Verse>> getVerses(
+    int bookId,
+    int chapter, [
+    String? translationId,
+  ]) async {
+    final bibleId = await _resolveBibleId(translationId ?? _defaultBibleId);
+    return _databaseService.getVerses(bibleId, bookId, chapter);
   }
 
   Future<List<Bible>> getBibleVersions() async {
     return _databaseService.getBibleVersions();
   }
 
-  Future<List<Verse>> searchVerses(String query, {int? limit}) {
-    return _databaseService.searchVerses(_defaultBibleId, query, limit: limit);
+  Future<List<Verse>> searchVerses(
+    String query, {
+    int? limit,
+    String? translationId,
+  }) async {
+    final bibleId = await _resolveBibleId(translationId ?? _defaultBibleId);
+    return _databaseService.searchVerses(bibleId, query, limit: limit);
   }
 }
