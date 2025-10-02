@@ -14,6 +14,13 @@ class DatabaseService {
 
   final Map<String, Database> _databases = {};
 
+  String _escapeLikePattern(String input) {
+    return input.replaceAllMapped(
+      RegExp(r'([%_\\])'),
+      (match) => '\\${match[1]}',
+    );
+  }
+
   Future<Database> _getDatabase(String bibleId) async {
     if (_databases.containsKey(bibleId)) {
       return _databases[bibleId]!;
@@ -56,6 +63,59 @@ class DatabaseService {
       where: 'book = ? AND chapter = ?',
       whereArgs: [bookId, chapter],
     );
+    return List.generate(maps.length, (i) => Verse.fromMap(maps[i]));
+  }
+
+  Future<List<Verse>> getPassage(
+    String bibleId, {
+    required String bookName,
+    required int chapter,
+    List<int> verses = const [],
+  }) async {
+    final db = await _getDatabase(bibleId);
+    final normalizedBookName = bookName.trim().toLowerCase();
+
+    String whereClause = 'LOWER(book_name_text) = ? AND chapter = ?';
+    final whereArgs = <Object?>[normalizedBookName, chapter];
+
+    final filteredVerses = verses.where((verse) => verse > 0).toSet().toList()
+      ..sort();
+
+    if (filteredVerses.isNotEmpty) {
+      final placeholders = List.filled(filteredVerses.length, '?').join(', ');
+      whereClause = '$whereClause AND verse IN ($placeholders)';
+      whereArgs.addAll(filteredVerses);
+    }
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      'bible_verses',
+      where: whereClause,
+      whereArgs: whereArgs,
+      orderBy: 'verse',
+    );
+
+    return List.generate(maps.length, (i) => Verse.fromMap(maps[i]));
+  }
+
+  Future<List<Verse>> searchVerses(
+    String bibleId,
+    String query, {
+    int? limit,
+  }) async {
+    if (query.trim().isEmpty) {
+      return [];
+    }
+
+    final db = await _getDatabase(bibleId);
+    final safeQuery = _escapeLikePattern(query.toLowerCase());
+    final List<Map<String, dynamic>> maps = await db.query(
+      'bible_verses',
+      where: "LOWER(text) LIKE ? ESCAPE '\\\\'",
+      whereArgs: ['%$safeQuery%'],
+      orderBy: 'book, chapter, verse',
+      limit: limit,
+    );
+
     return List.generate(maps.length, (i) => Verse.fromMap(maps[i]));
   }
 
