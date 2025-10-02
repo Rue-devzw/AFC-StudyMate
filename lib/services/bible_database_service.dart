@@ -66,27 +66,6 @@ class DatabaseService {
     return List.generate(maps.length, (i) => Verse.fromMap(maps[i]));
   }
 
-  Future<Verse?> getVerse(
-    String bibleId,
-    int bookId,
-    int chapter,
-    int verseNumber,
-  ) async {
-    final db = await _getDatabase(bibleId);
-    final maps = await db.query(
-      'bible_verses',
-      where: 'book = ? AND chapter = ? AND verse = ?',
-      whereArgs: [bookId, chapter, verseNumber],
-      limit: 1,
-    );
-
-    if (maps.isEmpty) {
-      return null;
-    }
-
-    return Verse.fromMap(maps.first);
-  }
-
   Future<List<Verse>> searchVerses(
     String bibleId,
     String query, {
