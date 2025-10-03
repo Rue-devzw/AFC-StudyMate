@@ -157,3 +157,130 @@ class LessonQuery {
   final LessonCompletionFilter completion;
   final String userId;
 }
+
+enum LessonDraftStatus { draft, submitted, approved, rejected }
+
+class LessonDraft {
+  const LessonDraft({
+    required this.id,
+    this.lessonId,
+    required this.authorId,
+    required this.title,
+    required this.deltaJson,
+    required this.status,
+    this.approverId,
+    this.reviewerComment,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String? lessonId;
+  final String authorId;
+  final String title;
+  final String deltaJson;
+  final LessonDraftStatus status;
+  final String? approverId;
+  final String? reviewerComment;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  LessonDraft copyWith({
+    String? id,
+    String? lessonId,
+    String? authorId,
+    String? title,
+    String? deltaJson,
+    LessonDraftStatus? status,
+    String? approverId,
+    bool removeApprover = false,
+    String? reviewerComment,
+    bool removeComment = false,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return LessonDraft(
+      id: id ?? this.id,
+      lessonId: lessonId ?? this.lessonId,
+      authorId: authorId ?? this.authorId,
+      title: title ?? this.title,
+      deltaJson: deltaJson ?? this.deltaJson,
+      status: status ?? this.status,
+      approverId: removeApprover ? null : approverId ?? this.approverId,
+      reviewerComment:
+          removeComment ? null : reviewerComment ?? this.reviewerComment,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+class RoundtableSession {
+  const RoundtableSession({
+    required this.id,
+    required this.title,
+    this.description,
+    this.classId,
+    required this.startTime,
+    required this.endTime,
+    this.conferencingUrl,
+    required this.reminderMinutesBefore,
+    required this.createdBy,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String title;
+  final String? description;
+  final String? classId;
+  final DateTime startTime;
+  final DateTime endTime;
+  final String? conferencingUrl;
+  final int reminderMinutesBefore;
+  final String createdBy;
+  final DateTime updatedAt;
+}
+
+enum DiscussionPostStatus { pending, published, rejected }
+
+class DiscussionThread {
+  const DiscussionThread({
+    required this.id,
+    required this.classId,
+    required this.title,
+    required this.createdBy,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String classId;
+  final String title;
+  final String createdBy;
+  final String status;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+}
+
+class DiscussionPost {
+  const DiscussionPost({
+    required this.id,
+    required this.threadId,
+    required this.authorId,
+    this.role,
+    required this.body,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String threadId;
+  final String authorId;
+  final String? role;
+  final String body;
+  final DiscussionPostStatus status;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+}

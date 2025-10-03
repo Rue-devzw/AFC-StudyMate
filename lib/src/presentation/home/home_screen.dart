@@ -6,6 +6,7 @@ import '../bible/bible_screen.dart';
 import '../bible/chapter_screen.dart';
 import '../../domain/bible/entities.dart';
 import '../lessons/lessons_screen.dart';
+import '../teacher/teacher_tools_screen.dart';
 import '../settings/settings_screen.dart';
 import '../providers.dart';
 
@@ -24,6 +25,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final pages = [
       const _HomeDashboard(),
       const LessonsScreen(),
+      const TeacherToolsScreen(),
     ];
 
     return Scaffold(
@@ -48,6 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Lessons'),
+          BottomNavigationBarItem(icon: Icon(Icons.manage_accounts), label: 'Teacher'),
         ],
       ),
     );

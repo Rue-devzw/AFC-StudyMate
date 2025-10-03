@@ -5,6 +5,7 @@ class LocalAccount {
   final String? preferredCohortId;
   final String? preferredCohortTitle;
   final String? preferredLessonClass;
+  final List<String> roles;
   final bool isActive;
 
   const LocalAccount({
@@ -14,6 +15,7 @@ class LocalAccount {
     this.preferredCohortId,
     this.preferredCohortTitle,
     this.preferredLessonClass,
+    this.roles = const [],
     this.isActive = false,
   });
 
@@ -24,6 +26,7 @@ class LocalAccount {
     String? preferredCohortId,
     String? preferredCohortTitle,
     String? preferredLessonClass,
+    List<String>? roles,
     bool? isActive,
   }) {
     return LocalAccount(
@@ -33,6 +36,7 @@ class LocalAccount {
       preferredCohortId: preferredCohortId ?? this.preferredCohortId,
       preferredCohortTitle: preferredCohortTitle ?? this.preferredCohortTitle,
       preferredLessonClass: preferredLessonClass ?? this.preferredLessonClass,
+      roles: roles ?? this.roles,
       isActive: isActive ?? this.isActive,
     );
   }

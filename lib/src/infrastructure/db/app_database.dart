@@ -47,6 +47,7 @@ class LocalUsers extends Table {
   TextColumn get preferredCohortId => text().nullable()();
   TextColumn get preferredCohortTitle => text().nullable()();
   TextColumn get preferredLessonClass => text().nullable()();
+  TextColumn get roles => text().withDefault(const Constant('[]'))();
   BoolColumn get isActive => boolean().withDefault(const Constant(false))();
 
   @override
@@ -203,6 +204,24 @@ class LessonQuizOptions extends Table {
   Set<Column> get primaryKey => {quizId, position};
 }
 
+@DataClassName('LessonDraftRow')
+class LessonDrafts extends Table {
+  TextColumn get id => text()();
+  TextColumn get lessonId => text().nullable()();
+  TextColumn get authorId => text()();
+  TextColumn get title => text()();
+  TextColumn get deltaJson => text()();
+  TextColumn get status => text()
+      .withDefault(const Constant('draft'))();
+  TextColumn get approverId => text().nullable()();
+  TextColumn get reviewerComment => text().nullable()();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 @DataClassName('LessonFeedRow')
 class LessonFeeds extends Table {
   TextColumn get id => text()();
@@ -240,6 +259,56 @@ class LessonSources extends Table {
   IntColumn get lessonCount => integer().withDefault(const Constant(0))();
   IntColumn get attachmentBytes => integer().withDefault(const Constant(0))();
   IntColumn get quotaBytes => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('RoundtableRow')
+class RoundtableEvents extends Table {
+  TextColumn get id => text()();
+  TextColumn get title => text()();
+  TextColumn get description => text().nullable()();
+  TextColumn get classId => text().nullable()();
+  IntColumn get startTime => integer()();
+  IntColumn get endTime => integer()();
+  TextColumn get conferencingUrl => text().nullable()();
+  IntColumn get reminderMinutesBefore =>
+      integer().withDefault(const Constant(30))();
+  TextColumn get createdBy => text()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('DiscussionThreadRow')
+class DiscussionThreads extends Table {
+  TextColumn get id => text()();
+  TextColumn get classId => text()();
+  TextColumn get title => text()();
+  TextColumn get createdBy => text()();
+  TextColumn get status =>
+      text().withDefault(const Constant('open'))();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('DiscussionPostRow')
+class DiscussionPosts extends Table {
+  TextColumn get id => text()();
+  TextColumn get threadId => text()
+      .references(DiscussionThreads, #id, onDelete: KeyAction.cascade)();
+  TextColumn get authorId => text()();
+  TextColumn get role => text().nullable()();
+  TextColumn get body => text()();
+  TextColumn get status =>
+      text().withDefault(const Constant('pending'))();
+  IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -406,8 +475,12 @@ class MessageChangeTrackers extends Table {
     LessonAttachments,
     LessonQuizzes,
     LessonQuizOptions,
+    LessonDrafts,
     LessonFeeds,
     LessonSources,
+    RoundtableEvents,
+    DiscussionThreads,
+    DiscussionPosts,
     Progress,
     LocalUsers,
     SyncQueue,
@@ -448,7 +521,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -517,6 +590,13 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(typingIndicators);
             await m.createTable(moderationActionsTable);
             await m.createTable(moderationAppealsTable);
+          }
+          if (from < 10) {
+            await m.addColumn(localUsers, localUsers.roles);
+            await m.createTable(lessonDrafts);
+            await m.createTable(roundtableEvents);
+            await m.createTable(discussionThreads);
+            await m.createTable(discussionPosts);
           }
         },
       );
@@ -608,6 +688,7 @@ class AppDatabase extends _$AppDatabase {
           id: 'local-user',
           displayName: const Value('You'),
           avatarUrl: const Value(null),
+          roles: const Value('["teacher"]'),
         ),
         mode: InsertMode.insertOrIgnore,
       );

@@ -19,7 +19,10 @@ import '../data/bible/bible_repository_impl.dart';
 import '../data/bible/reading_progress_repository_impl.dart';
 import '../data/chat/chat_remote_data_source.dart';
 import '../data/chat/chat_repository_impl.dart';
+import '../data/lessons/discussion_forum_repository_impl.dart';
+import '../data/lessons/lesson_draft_repository_impl.dart';
 import '../data/lessons/lesson_repository_impl.dart';
+import '../data/lessons/roundtable_repository_impl.dart';
 import '../data/settings/settings_repository_impl.dart';
 import '../data/sync/sync_repository_impl.dart';
 import '../data/bible/verse_of_the_day_service.dart';
@@ -53,8 +56,11 @@ import '../infrastructure/db/daos/account_dao.dart';
 import '../infrastructure/db/daos/annotation_dao.dart';
 import '../infrastructure/db/daos/bible_dao.dart';
 import '../infrastructure/db/daos/chat_dao.dart';
+import '../infrastructure/db/daos/forum_dao.dart';
 import '../infrastructure/db/daos/lesson_dao.dart';
+import '../infrastructure/db/daos/lesson_draft_dao.dart';
 import '../infrastructure/db/daos/sync_dao.dart';
+import '../infrastructure/db/daos/roundtable_dao.dart';
 import '../infrastructure/lessons/lesson_attachment_cache.dart';
 import '../infrastructure/lessons/lesson_cache_invalidator.dart';
 import '../infrastructure/lessons/lesson_ingestion_pipeline.dart';
@@ -127,9 +133,14 @@ final firebaseAuthUserProvider = StreamProvider<User?>((ref) {
 
 final bibleDaoProvider = Provider((ref) => BibleDao(ref.watch(appDatabaseProvider)));
 final lessonDaoProvider = Provider((ref) => LessonDao(ref.watch(appDatabaseProvider)));
+final lessonDraftDaoProvider =
+    Provider((ref) => LessonDraftDao(ref.watch(appDatabaseProvider)));
 final accountDaoProvider = Provider((ref) => AccountDao(ref.watch(appDatabaseProvider)));
 final syncDaoProvider = Provider((ref) => SyncDao(ref.watch(appDatabaseProvider)));
 final chatDaoProvider = Provider((ref) => ChatDao(ref.watch(appDatabaseProvider)));
+final roundtableDaoProvider =
+    Provider((ref) => RoundtableDao(ref.watch(appDatabaseProvider)));
+final forumDaoProvider = Provider((ref) => ForumDao(ref.watch(appDatabaseProvider)));
 final chatRemoteDataSourceProvider =
     Provider<ChatRemoteDataSource>((ref) {
   return ChatRemoteDataSource(
@@ -199,6 +210,28 @@ final lessonRepositoryProvider = Provider<LessonRepository>((ref) {
   final syncDao = ref.watch(syncDaoProvider);
   final syncRepository = ref.watch(syncRepositoryProvider);
   return LessonRepositoryImpl(db, dao, pipeline, syncDao, syncRepository);
+});
+
+final lessonDraftRepositoryProvider = Provider<LessonDraftRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final dao = ref.watch(lessonDraftDaoProvider);
+  final syncRepository = ref.watch(syncRepositoryProvider);
+  return LessonDraftRepositoryImpl(db, dao, syncRepository);
+});
+
+final roundtableRepositoryProvider = Provider<RoundtableRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final dao = ref.watch(roundtableDaoProvider);
+  final syncRepository = ref.watch(syncRepositoryProvider);
+  return RoundtableRepositoryImpl(db, dao, syncRepository);
+});
+
+final discussionForumRepositoryProvider =
+    Provider<DiscussionForumRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final dao = ref.watch(forumDaoProvider);
+  final syncRepository = ref.watch(syncRepositoryProvider);
+  return DiscussionForumRepositoryImpl(db, dao, syncRepository);
 });
 
 final lessonCacheInvalidatorProvider = Provider<LessonCacheInvalidator>((ref) {
@@ -491,6 +524,56 @@ final updateProgressUseCaseProvider = Provider((ref) {
   return UpdateProgressUseCase(ref.watch(lessonRepositoryProvider));
 });
 
+final watchLessonDraftsUseCaseProvider = Provider((ref) {
+  return WatchLessonDraftsUseCase(ref.watch(lessonDraftRepositoryProvider));
+});
+
+final watchPendingDraftApprovalsUseCaseProvider = Provider((ref) {
+  return WatchPendingDraftApprovalsUseCase(
+    ref.watch(lessonDraftRepositoryProvider),
+  );
+});
+
+final saveLessonDraftUseCaseProvider = Provider((ref) {
+  return SaveLessonDraftUseCase(ref.watch(lessonDraftRepositoryProvider));
+});
+
+final deleteLessonDraftUseCaseProvider = Provider((ref) {
+  return DeleteLessonDraftUseCase(ref.watch(lessonDraftRepositoryProvider));
+});
+
+final watchRoundtablesUseCaseProvider = Provider((ref) {
+  return WatchRoundtablesUseCase(ref.watch(roundtableRepositoryProvider));
+});
+
+final saveRoundtableUseCaseProvider = Provider((ref) {
+  return SaveRoundtableUseCase(ref.watch(roundtableRepositoryProvider));
+});
+
+final cancelRoundtableUseCaseProvider = Provider((ref) {
+  return CancelRoundtableUseCase(ref.watch(roundtableRepositoryProvider));
+});
+
+final watchForumThreadsUseCaseProvider = Provider((ref) {
+  return WatchForumThreadsUseCase(ref.watch(discussionForumRepositoryProvider));
+});
+
+final watchForumPostsUseCaseProvider = Provider((ref) {
+  return WatchForumPostsUseCase(ref.watch(discussionForumRepositoryProvider));
+});
+
+final upsertForumThreadUseCaseProvider = Provider((ref) {
+  return UpsertForumThreadUseCase(ref.watch(discussionForumRepositoryProvider));
+});
+
+final upsertForumPostUseCaseProvider = Provider((ref) {
+  return UpsertForumPostUseCase(ref.watch(discussionForumRepositoryProvider));
+});
+
+final deleteForumPostUseCaseProvider = Provider((ref) {
+  return DeleteForumPostUseCase(ref.watch(discussionForumRepositoryProvider));
+});
+
 final lessonTimerServiceProvider =
     Provider.autoDispose.family<LessonTimerService, String>((ref, lessonId) {
   final service = LessonTimerService();
@@ -687,6 +770,14 @@ final activeUserIdProvider = Provider<String?>((ref) {
   return account.maybeWhen(
     data: (value) => value?.id,
     orElse: () => null,
+  );
+});
+
+final userRolesProvider = Provider<Set<String>>((ref) {
+  final account = ref.watch(activeAccountProvider);
+  return account.maybeWhen(
+    data: (value) => value == null ? <String>{} : value.roles.toSet(),
+    orElse: () => <String>{},
   );
 });
 
