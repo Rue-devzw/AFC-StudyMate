@@ -8,6 +8,11 @@ abstract class BibleRepository {
     int bookId,
     int chapter,
   );
+  Stream<List<BibleVerse>> watchChapter(
+    String translationId,
+    int bookId,
+    int chapter,
+  );
   Future<List<BibleSearchResult>> searchVerses(
     String translationId,
     String query, {

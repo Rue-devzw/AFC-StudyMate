@@ -33,36 +33,79 @@ class BibleScreen extends ConsumerWidget {
         children: [
           translationsAsync.when(
             data: (translations) {
-              final selectedId = ref.watch(selectedTranslationIdProvider);
+              final selectedIds = ref.watch(selectedTranslationIdsProvider);
+              final notifier = ref.read(selectedTranslationIdsProvider.notifier);
+              final availableIds = translations.map((t) => t.id).toSet();
+              if (selectedIds.isEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  notifier.setAll([translations.first.id]);
+                });
+              } else if (selectedIds.any((id) => !availableIds.contains(id))) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  notifier.setAll(selectedIds.where(availableIds.contains));
+                });
+              }
+
               return Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: DropdownButtonFormField<String>(
-                  value: selectedId,
-                  items: [
-                    for (final translation in translations)
-                      DropdownMenuItem(
-                        value: translation.id,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(translation.name),
-                            Text(
-                              '${translation.languageName} · ${translation.language.toUpperCase()}',
-                              style: Theme.of(context).textTheme.bodySmall,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Translations',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final translation in translations)
+                          FilterChip(
+                            selected: selectedIds.contains(translation.id),
+                            onSelected: (value) {
+                              notifier.toggle(translation.id);
+                            },
+                            label: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(translation.name),
+                                Text(
+                                  '${translation.languageName} · ${translation.language.toUpperCase()}',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (selectedIds.isNotEmpty)
+                      DropdownButtonFormField<String>(
+                        value: selectedIds.first,
+                        items: [
+                          for (final id in selectedIds)
+                            DropdownMenuItem(
+                              value: id,
+                              child: Text(
+                                translations
+                                    .firstWhere((element) => element.id == id)
+                                    .name,
+                              ),
+                            ),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            notifier.setPrimary(value);
+                          }
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'Primary column',
+                          border: OutlineInputBorder(),
                         ),
                       ),
                   ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      ref.read(selectedTranslationIdProvider.notifier).state = value;
-                    }
-                  },
-                  decoration: const InputDecoration(
-                    labelText: 'Translation',
-                    border: OutlineInputBorder(),
-                  ),
                 ),
               );
             },

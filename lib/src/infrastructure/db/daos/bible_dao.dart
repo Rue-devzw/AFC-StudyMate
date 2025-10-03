@@ -32,6 +32,22 @@ class BibleDao {
     return query.get();
   }
 
+  Stream<List<Verse>> watchChapter(
+    String translationId,
+    int bookId,
+    int chapter,
+  ) {
+    final query = _db.select(_db.verses)
+      ..where((tbl) =>
+          tbl.translationId.equals(translationId) &
+          tbl.bookId.equals(bookId) &
+          tbl.chapter.equals(chapter))
+      ..orderBy([
+        (tbl) => OrderingTerm.asc(tbl.verse),
+      ]);
+    return query.watch();
+  }
+
   Future<List<VerseSearchRow>> search(
     String translationId,
     String query, {

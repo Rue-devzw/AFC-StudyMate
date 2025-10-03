@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../bible/bible_screen.dart';
+import '../bible/chapter_screen.dart';
+import '../../domain/bible/entities.dart';
 import '../lessons/lessons_screen.dart';
 import '../settings/settings_screen.dart';
 import '../providers.dart';
@@ -58,6 +60,9 @@ class _HomeDashboard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final verseAsync = ref.watch(verseOfTheDayProvider);
+    final readingProgressAsync = ref.watch(readingProgressProvider);
+    final readingPosition =
+        readingProgressAsync.maybeWhen(data: (value) => value, orElse: () => null);
 
     return Container(
       color: Theme.of(context).colorScheme.surface,
@@ -154,6 +159,43 @@ class _HomeDashboard extends ConsumerWidget {
                       );
                     },
                   ),
+                  if (readingPosition != null)
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.play_arrow),
+                      label: const Text('Continue Reading'),
+                      onPressed: () async {
+                        final position = readingPosition;
+                        ref
+                            .read(selectedTranslationIdsProvider.notifier)
+                            .setPrimary(position.translationId);
+                        final books =
+                            await ref.read(getBooksUseCaseProvider)(position.translationId);
+                        BibleBook? book;
+                        try {
+                          book = books.firstWhere((b) => b.id == position.bookId);
+                        } catch (_) {
+                          book = null;
+                        }
+                        if (!context.mounted) return;
+                        if (book == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Saved reading location is unavailable.'),
+                            ),
+                          );
+                          return;
+                        }
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChapterScreen(
+                              book: book!,
+                              chapter: position.chapter,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.school_outlined),
                     label: const Text('Browse Lessons'),
