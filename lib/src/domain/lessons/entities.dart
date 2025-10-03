@@ -25,12 +25,14 @@ class LessonAttachment {
     required this.url,
     required this.position,
     this.title,
+    this.localPath,
   });
 
   final LessonAttachmentType type;
   final String url;
   final int position;
   final String? title;
+  final String? localPath;
 }
 
 enum LessonQuizType { mcq, trueFalse, shortAnswer }
