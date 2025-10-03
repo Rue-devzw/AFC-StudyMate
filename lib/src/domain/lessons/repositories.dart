@@ -6,6 +6,10 @@ abstract class LessonRepository {
   Future<Lesson?> getLessonById(String id);
   Stream<List<LessonProgress>> watchProgress(String userId);
   Future<void> upsertProgress(LessonProgress progress);
+  Future<LessonAttachment> addAttachment(
+    String lessonId,
+    LessonAttachment attachment,
+  );
 }
 
 abstract class LessonDraftRepository {

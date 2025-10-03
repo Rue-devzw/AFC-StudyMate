@@ -2,6 +2,7 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        maven(url = "https://github.com/jitsi/jitsi-maven-repository/raw/master/releases")
     }
     dependencies {
         classpath("com.google.gms:google-services:4.4.2")
@@ -12,6 +13,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven(url = "https://github.com/jitsi/jitsi-maven-repository/raw/master/releases")
     }
 }
 
@@ -32,4 +34,3 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
-

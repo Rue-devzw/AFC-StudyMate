@@ -8,9 +8,8 @@ part of 'app_database.dart';
 class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
 
-  late final TableInfo<Table, dynamic> translations =
-      throw UnimplementedError(
-          'Run build_runner to generate table bindings for `translations`.');
+  late final TableInfo<Table, dynamic> translations = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `translations`.');
   late final TableInfo<Table, dynamic> verses = throw UnimplementedError(
       'Run build_runner to generate table bindings for `verses`.');
   late final TableInfo<Table, dynamic> bookmarks = throw UnimplementedError(
@@ -23,12 +22,15 @@ class _$AppDatabase extends GeneratedDatabase {
       'Run build_runner to generate table bindings for `note_revisions`.');
   late final TableInfo<Table, dynamic> lessons = throw UnimplementedError(
       'Run build_runner to generate table bindings for `lessons`.');
-  late final TableInfo<Table, dynamic> lessonObjectives = throw UnimplementedError(
-      'Run build_runner to generate table bindings for `lesson_objectives`.');
-  late final TableInfo<Table, dynamic> lessonScriptures = throw UnimplementedError(
-      'Run build_runner to generate table bindings for `lesson_scriptures`.');
-  late final TableInfo<Table, dynamic> lessonAttachments = throw UnimplementedError(
-      'Run build_runner to generate table bindings for `lesson_attachments`.');
+  late final TableInfo<Table, dynamic> lessonObjectives =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `lesson_objectives`.');
+  late final TableInfo<Table, dynamic> lessonScriptures =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `lesson_scriptures`.');
+  late final TableInfo<Table, dynamic> lessonAttachments =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `lesson_attachments`.');
   late final TableInfo<Table, dynamic> lessonQuizzes = throw UnimplementedError(
       'Run build_runner to generate table bindings for `lesson_quizzes`.');
   late final TableInfo<Table, dynamic> lessonQuizOptions = throw UnimplementedError(
@@ -39,12 +41,17 @@ class _$AppDatabase extends GeneratedDatabase {
       'Run build_runner to generate table bindings for `lesson_sources`.');
   late final TableInfo<Table, dynamic> lessonDrafts = throw UnimplementedError(
       'Run build_runner to generate table bindings for `lesson_drafts`.');
-  late final TableInfo<Table, dynamic> roundtableEvents = throw UnimplementedError(
-      'Run build_runner to generate table bindings for `roundtable_events`.');
-  late final TableInfo<Table, dynamic> discussionThreads = throw UnimplementedError(
-      'Run build_runner to generate table bindings for `discussion_threads`.');
-  late final TableInfo<Table, dynamic> discussionPosts = throw UnimplementedError(
-      'Run build_runner to generate table bindings for `discussion_posts`.');
+  late final TableInfo<Table, dynamic> roundtableEvents =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `roundtable_events`.');
+  late final TableInfo<Table, dynamic> meetingLinks = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `meeting_links`.');
+  late final TableInfo<Table, dynamic> discussionThreads =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `discussion_threads`.');
+  late final TableInfo<Table, dynamic> discussionPosts =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `discussion_posts`.');
   late final TableInfo<Table, dynamic> progress = throw UnimplementedError(
       'Run build_runner to generate table bindings for `progress`.');
   late final TableInfo<Table, dynamic> localUsers = throw UnimplementedError(
@@ -77,7 +84,7 @@ class _$AppDatabase extends GeneratedDatabase {
       throw UnimplementedError('Run build_runner to generate table bindings.');
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 }
 
 /// A lightweight stand-in for the generated [LocalUser] data class.
@@ -124,8 +131,7 @@ class LocalUser {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       preferredCohortId: preferredCohortId ?? this.preferredCohortId,
       preferredCohortTitle: preferredCohortTitle ?? this.preferredCohortTitle,
-      preferredLessonClass:
-          preferredLessonClass ?? this.preferredLessonClass,
+      preferredLessonClass: preferredLessonClass ?? this.preferredLessonClass,
       roles: roles ?? this.roles,
       isActive: isActive ?? this.isActive,
     );
@@ -187,10 +193,8 @@ class LocalUsersCompanion {
       displayName: displayName ?? this.displayName,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       preferredCohortId: preferredCohortId ?? this.preferredCohortId,
-      preferredCohortTitle:
-          preferredCohortTitle ?? this.preferredCohortTitle,
-      preferredLessonClass:
-          preferredLessonClass ?? this.preferredLessonClass,
+      preferredCohortTitle: preferredCohortTitle ?? this.preferredCohortTitle,
+      preferredLessonClass: preferredLessonClass ?? this.preferredLessonClass,
       roles: roles ?? this.roles,
       isActive: isActive ?? this.isActive,
     );
@@ -423,4 +427,144 @@ class ModerationAppealsTableCompanion {
   final Value<String?> resolutionNotes;
   final Value<int> createdAt;
   final Value<int?> resolvedAt;
+}
+
+class RoundtableRow {
+  const RoundtableRow({
+    required this.id,
+    required this.title,
+    this.description,
+    this.classId,
+    required this.startTime,
+    required this.endTime,
+    this.conferencingUrl,
+    this.hostConferencingUrl,
+    this.meetingRoom,
+    required this.reminderMinutesBefore,
+    required this.createdBy,
+    required this.updatedAt,
+    this.recordingStoragePath,
+    this.recordingUrl,
+    this.recordingIndexedAt,
+  });
+
+  final String id;
+  final String title;
+  final String? description;
+  final String? classId;
+  final int startTime;
+  final int endTime;
+  final String? conferencingUrl;
+  final String? hostConferencingUrl;
+  final String? meetingRoom;
+  final int reminderMinutesBefore;
+  final String createdBy;
+  final int updatedAt;
+  final String? recordingStoragePath;
+  final String? recordingUrl;
+  final int? recordingIndexedAt;
+}
+
+class RoundtableEventsCompanion {
+  const RoundtableEventsCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.description = const Value.absent(),
+    this.classId = const Value.absent(),
+    this.startTime = const Value.absent(),
+    this.endTime = const Value.absent(),
+    this.conferencingUrl = const Value.absent(),
+    this.hostConferencingUrl = const Value.absent(),
+    this.meetingRoom = const Value.absent(),
+    this.reminderMinutesBefore = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.recordingStoragePath = const Value.absent(),
+    this.recordingUrl = const Value.absent(),
+    this.recordingIndexedAt = const Value.absent(),
+  });
+
+  final Value<String> id;
+  final Value<String> title;
+  final Value<String?> description;
+  final Value<String?> classId;
+  final Value<int> startTime;
+  final Value<int> endTime;
+  final Value<String?> conferencingUrl;
+  final Value<String?> hostConferencingUrl;
+  final Value<String?> meetingRoom;
+  final Value<int> reminderMinutesBefore;
+  final Value<String> createdBy;
+  final Value<int> updatedAt;
+  final Value<String?> recordingStoragePath;
+  final Value<String?> recordingUrl;
+  final Value<int?> recordingIndexedAt;
+}
+
+class MeetingLinkRow {
+  const MeetingLinkRow({
+    required this.id,
+    required this.contextType,
+    required this.contextId,
+    required this.roomName,
+    required this.role,
+    required this.url,
+    required this.title,
+    required this.createdAt,
+    this.scheduledStart,
+    this.reminderAt,
+    required this.reminderScheduled,
+    this.recordingStoragePath,
+    this.recordingUrl,
+    this.recordingIndexedAt,
+  });
+
+  final String id;
+  final String contextType;
+  final String contextId;
+  final String roomName;
+  final String role;
+  final String url;
+  final String title;
+  final int createdAt;
+  final int? scheduledStart;
+  final int? reminderAt;
+  final bool reminderScheduled;
+  final String? recordingStoragePath;
+  final String? recordingUrl;
+  final int? recordingIndexedAt;
+}
+
+class MeetingLinksCompanion {
+  const MeetingLinksCompanion({
+    this.id = const Value.absent(),
+    this.contextType = const Value.absent(),
+    this.contextId = const Value.absent(),
+    this.roomName = const Value.absent(),
+    this.role = const Value.absent(),
+    this.url = const Value.absent(),
+    this.title = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.scheduledStart = const Value.absent(),
+    this.reminderAt = const Value.absent(),
+    this.reminderScheduled = const Value.absent(),
+    this.recordingStoragePath = const Value.absent(),
+    this.recordingUrl = const Value.absent(),
+    this.recordingIndexedAt = const Value.absent(),
+  });
+
+  final Value<String> id;
+  final Value<String> contextType;
+  final Value<String> contextId;
+  final Value<String> roomName;
+  final Value<String> role;
+  final Value<String> url;
+  final Value<String> title;
+  final Value<int> createdAt;
+  final Value<int?> scheduledStart;
+  final Value<int?> reminderAt;
+  final Value<bool> reminderScheduled;
+  final Value<String?> recordingStoragePath;
+  final Value<String?> recordingUrl;
+  final Value<int?> recordingIndexedAt;
 }
