@@ -58,7 +58,7 @@ class LessonProgressDashboardScreen extends ConsumerWidget {
       final progress = snapshot.progress;
       final status = progress?.status ?? 'not_started';
       final timeSpent = progress?.timeSpentSeconds ?? 0;
-      final quizScore = progress?.quizScore ?? 0;
+      final quizScore = progress?.quizScore ?? 0.0;
       final startedAt = progress?.startedAt?.toIso8601String() ?? '';
       final completedAt = progress?.completedAt?.toIso8601String() ?? '';
       final updatedAt = progress?.updatedAt.toIso8601String() ?? '';
