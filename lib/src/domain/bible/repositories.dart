@@ -13,4 +13,11 @@ abstract class BibleRepository {
     String query, {
     int? limit,
   });
+  Future<BibleTranslation?> findTranslationById(String id);
+  Future<void> saveImportedTranslation(
+    BibleTranslation translation,
+    List<BibleVerse> verses, {
+    bool replaceExisting,
+  });
+  Future<void> buildSearchIndex(String translationId);
 }

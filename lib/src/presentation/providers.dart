@@ -13,6 +13,7 @@ import '../domain/accounts/usecases.dart';
 import '../domain/bible/entities.dart';
 import '../domain/bible/repositories.dart';
 import '../domain/bible/usecases.dart';
+import '../domain/bible/import/import_bible_package_usecase.dart';
 import '../domain/chat/repositories.dart';
 import '../domain/chat/usecases.dart';
 import '../domain/lessons/repositories.dart';
@@ -28,6 +29,7 @@ import '../infrastructure/db/daos/bible_dao.dart';
 import '../infrastructure/db/daos/chat_dao.dart';
 import '../infrastructure/db/daos/lesson_dao.dart';
 import '../infrastructure/db/daos/sync_dao.dart';
+import 'settings/bible_import_controller.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -89,6 +91,10 @@ final getChapterUseCaseProvider = Provider((ref) {
 
 final searchBibleUseCaseProvider = Provider((ref) {
   return SearchBibleUseCase(ref.watch(bibleRepositoryProvider));
+});
+
+final importBiblePackageUseCaseProvider = Provider((ref) {
+  return ImportBiblePackageUseCase(ref.watch(bibleRepositoryProvider));
 });
 
 final watchLessonsUseCaseProvider = Provider((ref) {
@@ -222,6 +228,12 @@ final verseSearchProvider =
 final verseOfTheDayProvider = FutureProvider((ref) async {
   const service = VerseOfTheDayService();
   return service.fetch();
+});
+
+final bibleImportControllerProvider =
+    StateNotifierProvider<BibleImportController, BibleImportState>((ref) {
+  final useCase = ref.watch(importBiblePackageUseCaseProvider);
+  return BibleImportController(useCase);
 });
 
 class ChapterRequest {
