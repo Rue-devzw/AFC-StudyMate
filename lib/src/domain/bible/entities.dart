@@ -47,3 +47,15 @@ class BibleVerse {
     required this.text,
   });
 }
+
+class BibleSearchResult {
+  final BibleVerse verse;
+  final String snippet;
+  final double rank;
+
+  const BibleSearchResult({
+    required this.verse,
+    required this.snippet,
+    required this.rank,
+  });
+}

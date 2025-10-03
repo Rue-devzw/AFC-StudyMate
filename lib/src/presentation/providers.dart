@@ -89,8 +89,8 @@ final getChapterUseCaseProvider = Provider((ref) {
   return GetChapterUseCase(ref.watch(bibleRepositoryProvider));
 });
 
-final searchBibleUseCaseProvider = Provider((ref) {
-  return SearchBibleUseCase(ref.watch(bibleRepositoryProvider));
+final searchVersesUseCaseProvider = Provider((ref) {
+  return SearchVersesUseCase(ref.watch(bibleRepositoryProvider));
 });
 
 final importBiblePackageUseCaseProvider = Provider((ref) {
@@ -205,6 +205,12 @@ final booksProvider = FutureProvider((ref) async {
   return useCase(translationId);
 });
 
+final booksForTranslationProvider = FutureProvider.autoDispose
+    .family<List<BibleBook>, String>((ref, translationId) async {
+  final useCase = ref.watch(getBooksUseCaseProvider);
+  return useCase(translationId);
+});
+
 final lessonsProvider = StreamProvider((ref) {
   final useCase = ref.watch(watchLessonsUseCaseProvider);
   return useCase();
@@ -215,14 +221,32 @@ final lessonListProvider = FutureProvider((ref) async {
   return useCase();
 });
 
-final verseSearchProvider =
-    FutureProvider.family.autoDispose((ref, String query) async {
-  if (query.trim().isEmpty) {
-    return [];
+class VerseSearchRequest {
+  const VerseSearchRequest({
+    required this.translationId,
+    required this.query,
+    this.bookId,
+    this.limit = 20,
+  });
+
+  final String translationId;
+  final String query;
+  final int? bookId;
+  final int limit;
+}
+
+final verseSearchResultsProvider = FutureProvider.autoDispose
+    .family<List<BibleSearchResult>, VerseSearchRequest>((ref, request) async {
+  if (request.query.trim().isEmpty) {
+    return const [];
   }
-  final translationId = ref.watch(selectedTranslationIdProvider);
-  final useCase = ref.watch(searchBibleUseCaseProvider);
-  return useCase(translationId, query, limit: 20);
+  final useCase = ref.watch(searchVersesUseCaseProvider);
+  return useCase(
+    translationId: request.translationId,
+    query: request.query,
+    bookId: request.bookId,
+    limit: request.limit,
+  );
 });
 
 final verseOfTheDayProvider = FutureProvider((ref) async {
