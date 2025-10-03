@@ -144,6 +144,9 @@ class LessonAttachments extends Table {
   TextColumn get type => text()();
   TextColumn get title => text().nullable()();
   TextColumn get url => text()();
+  TextColumn get localPath => text().nullable()();
+  IntColumn get sizeBytes => integer().nullable()();
+  IntColumn get downloadedAt => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {lessonId, position};
@@ -187,6 +190,32 @@ class LessonFeeds extends Table {
   IntColumn get lastModified => integer().nullable()();
   IntColumn get lastFetchedAt => integer().nullable()();
   IntColumn get lastCheckedAt => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('LessonSourceRow')
+class LessonSources extends Table {
+  TextColumn get id => text()();
+  TextColumn get type => text()();
+  TextColumn get location => text()();
+  TextColumn get label => text().nullable()();
+  TextColumn get cohort => text().nullable()();
+  TextColumn get lessonClass => text().nullable()();
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+  BoolColumn get isBundled => boolean().withDefault(const Constant(false))();
+  IntColumn get priority => integer().withDefault(const Constant(0))();
+  TextColumn get checksum => text().nullable()();
+  TextColumn get etag => text().nullable()();
+  IntColumn get lastModified => integer().nullable()();
+  IntColumn get lastSyncedAt => integer().nullable()();
+  IntColumn get lastAttemptedAt => integer().nullable()();
+  IntColumn get lastCheckedAt => integer().nullable()();
+  TextColumn get lastError => text().nullable()();
+  IntColumn get lessonCount => integer().withDefault(const Constant(0))();
+  IntColumn get attachmentBytes => integer().withDefault(const Constant(0))();
+  IntColumn get quotaBytes => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -256,6 +285,7 @@ class Messages extends Table {
     LessonQuizzes,
     LessonQuizOptions,
     LessonFeeds,
+    LessonSources,
     Progress,
     LocalUsers,
     SyncQueue,
@@ -277,7 +307,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -301,6 +331,15 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(lessonQuizzes);
             await m.createTable(lessonQuizOptions);
             await m.createTable(lessonFeeds);
+          }
+          if (from < 5) {
+            await m.addColumn(
+                lessonAttachments, lessonAttachments.localPath);
+            await m.addColumn(
+                lessonAttachments, lessonAttachments.sizeBytes);
+            await m.addColumn(
+                lessonAttachments, lessonAttachments.downloadedAt);
+            await m.createTable(lessonSources);
           }
         },
       );

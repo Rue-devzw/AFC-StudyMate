@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,6 +22,9 @@ class _AppBootstrap extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Ensure the local database has baseline data available.
     ref.read(appDatabaseProvider).ensureSeeded();
+    final syncService = ref.read(lessonSyncServiceProvider);
+    syncService.ensureBackgroundScheduled();
+    unawaited(syncService.syncAll());
     return const StudyMateApp();
   }
 }

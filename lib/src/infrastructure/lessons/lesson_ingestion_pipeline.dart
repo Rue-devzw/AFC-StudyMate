@@ -7,16 +7,20 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
 import '../db/app_database.dart';
+import 'lesson_source_registry.dart';
 
 class LessonIngestionPipeline {
   LessonIngestionPipeline(
     this._db,
     this._bundle, {
+    LessonSourceRegistry? registry,
     http.Client? httpClient,
-  }) : _httpClient = httpClient ?? http.Client();
+  })  : _registry = registry,
+        _httpClient = httpClient ?? http.Client();
 
   final AppDatabase _db;
   final AssetBundle _bundle;
+  final LessonSourceRegistry? _registry;
   final http.Client _httpClient;
 
   Future<void>? _bundledIngestion;
@@ -26,6 +30,7 @@ class LessonIngestionPipeline {
   }
 
   Future<void> _ingestBundledFeeds() async {
+    await _registry?.registerBundledSources(_bundle);
     final indexJson = await _safeLoadString('assets/lessons/index.json');
     if (indexJson == null || indexJson.trim().isEmpty) {
       return;
@@ -46,27 +51,17 @@ class LessonIngestionPipeline {
       if (assetPath == null) {
         continue;
       }
-      final jsonString = await _safeLoadString(assetPath);
-      if (jsonString == null) {
-        continue;
-      }
-      final checksum = sha1.convert(utf8.encode(jsonString)).toString();
-      final parsed = _parseFeed(
-        jsonString,
-        fallbackClass: feed['class'] as String?,
-      );
-      await _persistFeed(
+      await ingestAssetFeed(
+        assetPath: assetPath,
         feedId: feed['id'] as String? ?? 'asset:$assetPath',
-        source: 'asset:$assetPath',
-        checksum: checksum,
-        cohortTitle: parsed.cohortTitle ?? feed['title'] as String?,
-        cohortClass: parsed.cohortClass ?? feed['class'] as String?,
-        lessons: parsed.lessons,
+        fallbackClass: feed['class'] as String?,
+        fallbackTitle: feed['title'] as String?,
       );
     }
   }
 
-  Future<void> ingestRemoteFeed(Uri uri, {String? feedId}) async {
+  Future<LessonFeedIngestionResult> ingestRemoteFeed(Uri uri,
+      {String? feedId}) async {
     final response = await _httpClient.get(uri);
     if (response.statusCode >= 400) {
       throw http.ClientException(
@@ -89,7 +84,14 @@ class LessonIngestionPipeline {
       }
     }
 
-    await _persistFeed(
+    final id = feedId ?? uri.toString();
+    await _registry?.upsertSource(
+      id: id,
+      type: LessonSourceType.remote,
+      location: uri.toString(),
+    );
+
+    final result = await _persistFeed(
       feedId: feedId ?? uri.toString(),
       source: uri.toString(),
       checksum: checksum,
@@ -99,9 +101,66 @@ class LessonIngestionPipeline {
       etag: response.headers['etag'],
       lastModified: lastModified,
     );
+
+    await _registry?.updateSuccess(
+      id,
+      checksum: result.checksum,
+      etag: result.etag,
+      lastModified: result.lastModified,
+      lessonCount: result.lessonCount,
+    );
+
+    return result;
   }
 
-  Future<void> _persistFeed({
+  Future<LessonFeedIngestionResult?> ingestAssetFeed({
+    required String assetPath,
+    required String feedId,
+    String? fallbackClass,
+    String? fallbackTitle,
+  }) async {
+    await _registry?.upsertSource(
+      id: feedId,
+      type: LessonSourceType.asset,
+      location: 'asset:$assetPath',
+      label: fallbackTitle,
+      lessonClass: fallbackClass,
+      cohort: fallbackTitle,
+      isBundled: true,
+    );
+
+    final jsonString = await _safeLoadString(assetPath);
+    if (jsonString == null) {
+      return null;
+    }
+
+    final checksum = sha1.convert(utf8.encode(jsonString)).toString();
+    final parsed = _parseFeed(
+      jsonString,
+      fallbackClass: fallbackClass,
+    );
+
+    final result = await _persistFeed(
+      feedId: feedId,
+      source: 'asset:$assetPath',
+      checksum: checksum,
+      cohortTitle: parsed.cohortTitle ?? fallbackTitle,
+      cohortClass: parsed.cohortClass ?? fallbackClass,
+      lessons: parsed.lessons,
+    );
+
+    if (result != null) {
+      await _registry?.updateSuccess(
+        feedId,
+        checksum: result.checksum,
+        lessonCount: result.lessonCount,
+      );
+    }
+
+    return result;
+  }
+
+  Future<LessonFeedIngestionResult?> _persistFeed({
     required String feedId,
     required String source,
     required String checksum,
@@ -114,6 +173,7 @@ class LessonIngestionPipeline {
     final now = DateTime.now().millisecondsSinceEpoch;
     final lessonIds = lessons.map((lesson) => lesson.id).toList();
 
+    LessonFeedIngestionResult? result;
     await _db.transaction(() async {
       if (lessonIds.isNotEmpty) {
         final existing = await (_db.select(_db.lessons)
@@ -163,6 +223,13 @@ class LessonIngestionPipeline {
       }
 
       if (lessons.isEmpty) {
+        result = LessonFeedIngestionResult(
+          feedId: feedId,
+          checksum: checksum,
+          lessonIds: const [],
+          etag: etag,
+          lastModified: lastModified,
+        );
         return;
       }
 
@@ -286,6 +353,16 @@ class LessonIngestionPipeline {
             lastCheckedAt: Value(now),
           ),
         );
+
+    result ??= LessonFeedIngestionResult(
+      feedId: feedId,
+      checksum: checksum,
+      lessonIds: lessonIds,
+      etag: etag,
+      lastModified: lastModified,
+    );
+
+    return result;
   }
 
   Future<String?> _safeLoadString(String assetPath) async {
@@ -469,6 +546,24 @@ class LessonIngestionPipeline {
   void dispose() {
     _httpClient.close();
   }
+}
+
+class LessonFeedIngestionResult {
+  const LessonFeedIngestionResult({
+    required this.feedId,
+    required this.checksum,
+    required this.lessonIds,
+    this.etag,
+    this.lastModified,
+  });
+
+  final String feedId;
+  final String checksum;
+  final List<String> lessonIds;
+  final String? etag;
+  final DateTime? lastModified;
+
+  int get lessonCount => lessonIds.length;
 }
 
 class _ParsedFeed {

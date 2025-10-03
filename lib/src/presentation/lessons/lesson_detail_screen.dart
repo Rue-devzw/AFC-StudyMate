@@ -104,7 +104,14 @@ class LessonDetailScreen extends StatelessWidget {
                   child: ListTile(
                     leading: Icon(_iconForAttachment(attachment.type)),
                     title: Text(attachment.title ?? attachment.url),
-                    subtitle: Text(attachment.url),
+                    subtitle: Text(
+                      attachment.localPath == null
+                          ? attachment.url
+                          : 'Available offline · ${attachment.url}',
+                    ),
+                    trailing: attachment.localPath == null
+                        ? null
+                        : const Icon(Icons.offline_pin, size: 18),
                     onTap: () {
                       // Attachments currently open externally; integration can be added later.
                     },

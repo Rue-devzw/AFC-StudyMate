@@ -7,9 +7,11 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../domain/bible/import/exceptions.dart';
 import '../../domain/bible/import/import_models.dart';
+import '../../infrastructure/lessons/lesson_source_registry.dart';
 import '../providers.dart';
 import 'bible_import_controller.dart';
 import 'about_screen.dart';
+import 'lesson_sync_controller.dart';
 import 'privacy_policy_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -19,6 +21,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeModeAsync = ref.watch(themeModeControllerProvider);
     final translationsAsync = ref.watch(translationsProvider);
+    final syncState = ref.watch(lessonSyncControllerProvider);
     final importState = ref.watch(bibleImportControllerProvider);
 
     ref.listen<BibleImportState>(bibleImportControllerProvider,
@@ -131,7 +134,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-            ),
+          ),
           translationsAsync.when(
             data: (translations) => Column(
               children: [
@@ -163,6 +166,48 @@ class SettingsScreen extends ConsumerWidget {
               child: Text('Failed to load translations: $error'),
             ),
           ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Lessons'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.sync_outlined),
+            title: const Text('Sync lessons'),
+            subtitle: Text(_buildSyncSubtitle(syncState)),
+            trailing: syncState.isSyncing
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () => ref
+                        .read(lessonSyncControllerProvider.notifier)
+                        .syncNow(),
+                  ),
+            enabled: !syncState.isSyncing,
+            onTap: syncState.isSyncing
+                ? null
+                : () => ref
+                    .read(lessonSyncControllerProvider.notifier)
+                    .syncNow(),
+          ),
+          if (syncState.lastError != null)
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              child: Text(
+                syncState.lastError!,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+          for (final status in syncState.sources)
+            _LessonSourceTile(status: status),
           const Divider(),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -269,6 +314,103 @@ class SettingsScreen extends ConsumerWidget {
           ],
         );
       },
+    );
+  }
+}
+
+String _buildSyncSubtitle(LessonSyncState state) {
+  final parts = <String>[];
+  if (state.isSyncing) {
+    parts.add('Sync in progress…');
+  } else if (state.lastRun != null) {
+    parts.add('Last sync: ${_formatTimestamp(state.lastRun!)}');
+  } else {
+    parts.add('Not yet synced');
+  }
+  return parts.join(' • ');
+}
+
+String _formatTimestamp(DateTime timestamp) {
+  final now = DateTime.now();
+  final difference = now.difference(timestamp);
+  if (difference.inMinutes < 1) {
+    return 'just now';
+  } else if (difference.inHours < 1) {
+    return '${difference.inMinutes} minute${difference.inMinutes == 1 ? '' : 's'} ago';
+  } else if (difference.inDays < 1) {
+    return '${difference.inHours} hour${difference.inHours == 1 ? '' : 's'} ago';
+  }
+  return '${timestamp.year}-${timestamp.month.toString().padLeft(2, '0')}-${timestamp.day.toString().padLeft(2, '0')}';
+}
+
+String _formatBytes(int bytes) {
+  if (bytes <= 0) {
+    return '0 B';
+  }
+  const units = ['B', 'KB', 'MB', 'GB'];
+  var size = bytes.toDouble();
+  var unitIndex = 0;
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex++;
+  }
+  return '${size.toStringAsFixed(unitIndex == 0 ? 0 : 1)} ${units[unitIndex]}';
+}
+
+class _LessonSourceTile extends ConsumerWidget {
+  const _LessonSourceTile({required this.status});
+
+  final LessonSourceStatus status;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final checksumLabel = status.checksum == null || status.checksum!.isEmpty
+        ? '—'
+        : status.checksum!.substring(
+            0,
+            status.checksum!.length < 7 ? status.checksum!.length : 7,
+          );
+    final subtitle = <Widget>[
+      Text(
+        'Last sync: ${status.lastSyncedAt == null ? '—' : _formatTimestamp(status.lastSyncedAt!)}',
+        style: theme.textTheme.bodySmall,
+      ),
+      Text(
+        'Version: $checksumLabel',
+        style: theme.textTheme.bodySmall,
+      ),
+      Text(
+        'Attachments: ${_formatBytes(status.attachmentBytes)} cached',
+        style: theme.textTheme.bodySmall,
+      ),
+    ];
+    if (status.lastError != null && status.lastError!.isNotEmpty) {
+      subtitle.add(
+        Text(
+          'Error: ${status.lastError}',
+          style: theme.textTheme.bodySmall
+              ?.copyWith(color: theme.colorScheme.error),
+        ),
+      );
+    }
+    return SwitchListTile.adaptive(
+      title: Text(status.displayName),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: subtitle,
+      ),
+      secondary: Icon(
+        status.type == LessonSourceType.remote
+            ? Icons.cloud_download_outlined
+            : Icons.folder_copy_outlined,
+      ),
+      value: status.enabled,
+      onChanged: status.isBundled
+          ? null
+          : (value) => ref
+              .read(lessonSyncControllerProvider.notifier)
+              .toggleSource(status.id, value),
     );
   }
 }

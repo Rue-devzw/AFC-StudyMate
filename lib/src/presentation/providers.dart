@@ -41,9 +41,13 @@ import '../infrastructure/db/daos/bible_dao.dart';
 import '../infrastructure/db/daos/chat_dao.dart';
 import '../infrastructure/db/daos/lesson_dao.dart';
 import '../infrastructure/db/daos/sync_dao.dart';
+import '../infrastructure/lessons/lesson_attachment_cache.dart';
 import '../infrastructure/lessons/lesson_cache_invalidator.dart';
 import '../infrastructure/lessons/lesson_ingestion_pipeline.dart';
+import '../infrastructure/lessons/lesson_source_registry.dart';
+import '../infrastructure/lessons/lesson_sync_service.dart';
 import 'settings/bible_import_controller.dart';
+import 'settings/lesson_sync_controller.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -59,11 +63,41 @@ final chatDaoProvider = Provider((ref) => ChatDao(ref.watch(appDatabaseProvider)
 final annotationDaoProvider =
     Provider((ref) => AnnotationDao(ref.watch(appDatabaseProvider)));
 
+final lessonSourceRegistryProvider = Provider<LessonSourceRegistry>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  return LessonSourceRegistry(db);
+});
+
 final lessonIngestionPipelineProvider = Provider<LessonIngestionPipeline>((ref) {
   final db = ref.watch(appDatabaseProvider);
-  final pipeline = LessonIngestionPipeline(db, rootBundle);
+  final registry = ref.watch(lessonSourceRegistryProvider);
+  final pipeline = LessonIngestionPipeline(db, rootBundle, registry: registry);
   ref.onDispose(pipeline.dispose);
   return pipeline;
+});
+
+final lessonSyncServiceProvider = Provider<LessonSyncService>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final pipeline = ref.watch(lessonIngestionPipelineProvider);
+  final registry = ref.watch(lessonSourceRegistryProvider);
+  final attachmentCache = LessonAttachmentCache(db);
+  final service = LessonSyncService(
+    bundle: rootBundle,
+    pipeline: pipeline,
+    registry: registry,
+    attachmentCache: attachmentCache,
+  );
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+final lessonSyncControllerProvider =
+    StateNotifierProvider<LessonSyncController, LessonSyncState>((ref) {
+  final registry = ref.watch(lessonSourceRegistryProvider);
+  final service = ref.watch(lessonSyncServiceProvider);
+  final controller = LessonSyncController(registry, service);
+  ref.onDispose(controller.dispose);
+  return controller;
 });
 
 final bibleRepositoryProvider = Provider<BibleRepository>((ref) {
@@ -80,9 +114,8 @@ final lessonRepositoryProvider = Provider<LessonRepository>((ref) {
 });
 
 final lessonCacheInvalidatorProvider = Provider<LessonCacheInvalidator>((ref) {
-  final db = ref.watch(appDatabaseProvider);
-  final pipeline = ref.watch(lessonIngestionPipelineProvider);
-  final invalidator = LessonCacheInvalidator(db, pipeline);
+  final service = ref.watch(lessonSyncServiceProvider);
+  final invalidator = LessonCacheInvalidator(service);
   invalidator.start();
   ref.onDispose(invalidator.dispose);
   return invalidator;

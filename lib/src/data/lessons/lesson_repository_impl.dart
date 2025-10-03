@@ -123,6 +123,7 @@ class LessonRepositoryImpl implements LessonRepository {
               url: attachment.url,
               position: attachment.position,
               title: attachment.title,
+              localPath: attachment.localPath,
             ),
           )
           .toList(),
