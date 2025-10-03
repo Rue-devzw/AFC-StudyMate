@@ -59,6 +59,12 @@ class LessonRepositoryImpl implements LessonRepository {
       status: Value(progress.status),
       quizScore: Value(progress.quizScore),
       timeSpentSeconds: Value(progress.timeSpentSeconds),
+      startedAt: progress.startedAt == null
+          ? const Value.absent()
+          : Value(progress.startedAt!.millisecondsSinceEpoch),
+      completedAt: progress.completedAt == null
+          ? const Value.absent()
+          : Value(progress.completedAt!.millisecondsSinceEpoch),
       updatedAt: Value(progress.updatedAt.millisecondsSinceEpoch),
     );
     return _dao.upsertProgress(companion);
@@ -191,6 +197,12 @@ class LessonRepositoryImpl implements LessonRepository {
             quizScore: row.quizScore,
             timeSpentSeconds: row.timeSpentSeconds,
             updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
+            startedAt: row.startedAt == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(row.startedAt!),
+            completedAt: row.completedAt == null
+                ? null
+                : DateTime.fromMillisecondsSinceEpoch(row.completedAt!),
           ),
         )
         .toList();

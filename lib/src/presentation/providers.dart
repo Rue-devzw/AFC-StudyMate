@@ -27,6 +27,9 @@ import '../domain/bible/import/import_bible_package_usecase.dart';
 import '../domain/chat/repositories.dart';
 import '../domain/chat/usecases.dart';
 import '../domain/lessons/entities.dart';
+import '../domain/lessons/progress_dashboard.dart';
+import '../domain/lessons/services/lesson_quiz_grader.dart';
+import '../domain/lessons/services/lesson_timer_service.dart';
 import '../domain/lessons/repositories.dart';
 import '../domain/lessons/usecases.dart';
 import '../domain/settings/repositories.dart';
@@ -46,6 +49,7 @@ import '../infrastructure/lessons/lesson_cache_invalidator.dart';
 import '../infrastructure/lessons/lesson_ingestion_pipeline.dart';
 import '../infrastructure/lessons/lesson_source_registry.dart';
 import '../infrastructure/lessons/lesson_sync_service.dart';
+import '../utils/iterable_extensions.dart';
 import 'settings/bible_import_controller.dart';
 import 'settings/lesson_sync_controller.dart';
 
@@ -258,6 +262,169 @@ final watchLessonProgressUseCaseProvider = Provider((ref) {
 
 final updateProgressUseCaseProvider = Provider((ref) {
   return UpdateProgressUseCase(ref.watch(lessonRepositoryProvider));
+});
+
+final lessonTimerServiceProvider =
+    Provider.autoDispose.family<LessonTimerService, String>((ref, lessonId) {
+  final service = LessonTimerService();
+  ref.onDispose(service.dispose);
+  return service;
+});
+
+final lessonQuizGraderProvider = Provider((ref) {
+  return const LessonQuizGrader();
+});
+
+class LessonProgressRequest {
+  const LessonProgressRequest({
+    required this.userId,
+    required this.lessonId,
+  });
+
+  final String userId;
+  final String lessonId;
+}
+
+final lessonProgressProvider = StreamProvider.autoDispose
+    .family<LessonProgress?, LessonProgressRequest>((ref, request) {
+  final useCase = ref.watch(watchLessonProgressUseCaseProvider);
+  return useCase(request.userId).map((progressList) {
+    return progressList.firstWhereOrNull(
+      (progress) => progress.lessonId == request.lessonId,
+    );
+  });
+});
+
+final lessonProgressDashboardProvider =
+    StreamProvider.autoDispose<LessonProgressDashboardData>((ref) {
+  const userId = 'local-user';
+  final lessonsStream = ref.watch(watchLessonsUseCaseProvider)(
+    filter: const LessonQuery(),
+  );
+  final progressStream =
+      ref.watch(watchLessonProgressUseCaseProvider)(userId);
+
+  return Rx.combineLatest2<List<Lesson>, List<LessonProgress>,
+      LessonProgressDashboardData>(
+    lessonsStream,
+    progressStream,
+    (lessons, progress) {
+      final snapshots = <LessonProgressSnapshot>[];
+      final classBuckets = <String, List<LessonProgressSnapshot>>{};
+      var completed = 0;
+      var inProgress = 0;
+      var notStarted = 0;
+      var totalTime = 0;
+      final quizScores = <double>[];
+      final completionsByDay = <DateTime, int>{};
+
+      for (final lesson in lessons) {
+        final entry =
+            progress.firstWhereOrNull((item) => item.lessonId == lesson.id);
+        final snapshot =
+            LessonProgressSnapshot(lesson: lesson, progress: entry);
+        snapshots.add(snapshot);
+        classBuckets.putIfAbsent(lesson.lessonClass, () => []).add(snapshot);
+        if (entry == null) {
+          notStarted += 1;
+          continue;
+        }
+        totalTime += entry.timeSpentSeconds;
+        if (entry.quizScore != null) {
+          quizScores.add(entry.quizScore!);
+        }
+        switch (entry.status) {
+          case 'completed':
+            completed += 1;
+            if (entry.completedAt != null) {
+              final completedAt = entry.completedAt!;
+              final date = DateTime(
+                completedAt.year,
+                completedAt.month,
+                completedAt.day,
+              );
+              completionsByDay[date] =
+                  (completionsByDay[date] ?? 0) + 1;
+            }
+            break;
+          case 'in_progress':
+            inProgress += 1;
+            break;
+          default:
+            notStarted += 1;
+            break;
+        }
+      }
+
+      final classSummaries = <LessonClassSummary>[];
+      classBuckets.forEach((lessonClass, entries) {
+        final totalLessons = entries.length;
+        var classCompleted = 0;
+        var classInProgress = 0;
+        var classNotStarted = 0;
+        var classTime = 0;
+        final classScores = <double>[];
+
+        for (final snapshot in entries) {
+          final progressEntry = snapshot.progress;
+          if (progressEntry == null) {
+            classNotStarted += 1;
+            continue;
+          }
+          classTime += progressEntry.timeSpentSeconds;
+          if (progressEntry.quizScore != null) {
+            classScores.add(progressEntry.quizScore!);
+          }
+          switch (progressEntry.status) {
+            case 'completed':
+              classCompleted += 1;
+              break;
+            case 'in_progress':
+              classInProgress += 1;
+              break;
+            default:
+              classNotStarted += 1;
+              break;
+          }
+        }
+
+        final averageScore = classScores.isEmpty
+            ? 0
+            : classScores.reduce((a, b) => a + b) / classScores.length;
+
+        classSummaries.add(
+          LessonClassSummary(
+            lessonClass: lessonClass,
+            totalLessons: totalLessons,
+            completedLessons: classCompleted,
+            inProgressLessons: classInProgress,
+            notStartedLessons: classNotStarted,
+            totalTimeSpentSeconds: classTime,
+            averageQuizScore: averageScore,
+          ),
+        );
+      });
+
+      classSummaries.sort(
+        (a, b) => a.lessonClass.compareTo(b.lessonClass),
+      );
+
+      final averageQuizScore = quizScores.isEmpty
+          ? 0
+          : quizScores.reduce((a, b) => a + b) / quizScores.length;
+
+      return LessonProgressDashboardData(
+        snapshots: snapshots,
+        completedCount: completed,
+        inProgressCount: inProgress,
+        notStartedCount: notStarted,
+        totalTimeSpentSeconds: totalTime,
+        averageQuizScore: averageQuizScore,
+        classSummaries: classSummaries,
+        completionsByDay: completionsByDay,
+      );
+    },
+  );
 });
 
 final getCurrentAccountUseCaseProvider = Provider((ref) {

@@ -229,6 +229,8 @@ class Progress extends Table {
   TextColumn get status => text()();
   RealColumn get quizScore => real().nullable()();
   IntColumn get timeSpentSeconds => integer().withDefault(const Constant(0))();
+  IntColumn get startedAt => integer().nullable()();
+  IntColumn get completedAt => integer().nullable()();
   IntColumn get updatedAt => integer()();
 
   @override
@@ -307,7 +309,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -340,6 +342,10 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(
                 lessonAttachments, lessonAttachments.downloadedAt);
             await m.createTable(lessonSources);
+          }
+          if (from < 6) {
+            await m.addColumn(progress, progress.startedAt);
+            await m.addColumn(progress, progress.completedAt);
           }
         },
       );

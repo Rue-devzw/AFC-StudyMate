@@ -97,6 +97,8 @@ class LessonProgress {
   final double? quizScore;
   final int timeSpentSeconds;
   final DateTime updatedAt;
+  final DateTime? startedAt;
+  final DateTime? completedAt;
 
   const LessonProgress({
     required this.id,
@@ -106,7 +108,38 @@ class LessonProgress {
     this.quizScore,
     this.timeSpentSeconds = 0,
     required this.updatedAt,
+    this.startedAt,
+    this.completedAt,
   });
+
+  LessonProgress copyWith({
+    String? id,
+    String? userId,
+    String? lessonId,
+    String? status,
+    double? quizScore,
+    bool removeQuizScore = false,
+    int? timeSpentSeconds,
+    DateTime? updatedAt,
+    DateTime? startedAt,
+    bool removeStartedAt = false,
+    DateTime? completedAt,
+    bool removeCompletedAt = false,
+  }) {
+    return LessonProgress(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      lessonId: lessonId ?? this.lessonId,
+      status: status ?? this.status,
+      quizScore: removeQuizScore ? null : quizScore ?? this.quizScore,
+      timeSpentSeconds: timeSpentSeconds ?? this.timeSpentSeconds,
+      updatedAt: updatedAt ?? this.updatedAt,
+      startedAt:
+          removeStartedAt ? null : startedAt ?? this.startedAt,
+      completedAt:
+          removeCompletedAt ? null : completedAt ?? this.completedAt,
+    );
+  }
 }
 
 enum LessonCompletionFilter { all, notStarted, inProgress, completed }

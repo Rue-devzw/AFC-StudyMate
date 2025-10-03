@@ -51,5 +51,5 @@ class _$AppDatabase extends GeneratedDatabase {
       throw UnimplementedError('Run build_runner to generate table bindings.');
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 }
