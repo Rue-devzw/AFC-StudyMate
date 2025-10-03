@@ -37,14 +37,72 @@ class BibleDao {
     String query, {
     int? limit,
   }) {
-    final q = _db.select(_db.verses)
+    return _searchWithFts(translationId, query, limit: limit);
+  }
+
+  Future<List<Verse>> _searchWithFts(
+    String translationId,
+    String query, {
+    int? limit,
+  }) async {
+    final hasIndex = await _db.hasSearchIndex(translationId);
+    if (hasIndex) {
+      final tableName = _db.ftsTableNameFor(translationId);
+      final matchQuery = _prepareFtsQuery(query);
+      final buffer = StringBuffer()
+        ..writeln('SELECT v.translation_id, v.book_id, v.chapter, v.verse, v.text')
+        ..writeln('FROM $tableName f')
+        ..writeln('JOIN verses v ON v.rowid = f.rowid')
+        ..writeln('WHERE v.translation_id = ? AND f MATCH ?')
+        ..writeln('ORDER BY v.book_id ASC, v.chapter ASC, v.verse ASC');
+      if (limit != null) {
+        buffer.writeln('LIMIT ?');
+      }
+      final rows = await _db
+          .customSelect(
+            buffer.toString(),
+            variables: [
+              Variable<String>(translationId),
+              Variable<String>(matchQuery),
+              if (limit != null) Variable<int>(limit),
+            ],
+            readsFrom: {_db.verses},
+          )
+          .get();
+      return rows
+          .map(
+            (row) => Verse(
+              translationId: row.read<String>('translation_id'),
+              bookId: row.read<int>('book_id'),
+              chapter: row.read<int>('chapter'),
+              verse: row.read<int>('verse'),
+              text: row.read<String>('text'),
+            ),
+          )
+          .toList();
+    }
+
+    final likeQuery = _db.select(_db.verses)
       ..where((tbl) => tbl.translationId.equals(translationId) &
           tbl.text.lower().like('%${query.toLowerCase()}%'))
-      ..orderBy([(tbl) => OrderingTerm.asc(tbl.bookId), (tbl) => OrderingTerm.asc(tbl.chapter), (tbl) => OrderingTerm.asc(tbl.verse)]);
+      ..orderBy([
+        (tbl) => OrderingTerm.asc(tbl.bookId),
+        (tbl) => OrderingTerm.asc(tbl.chapter),
+        (tbl) => OrderingTerm.asc(tbl.verse),
+      ]);
     if (limit != null) {
-      q.limit(limit);
+      likeQuery.limit(limit);
     }
-    return q.get();
+    return likeQuery.get();
+  }
+
+  String _prepareFtsQuery(String query) {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
+      return trimmed;
+    }
+    final escaped = trimmed.replaceAll('"', '""');
+    return '"$escaped"';
   }
 
   Future<List<BookAggregate>> getBooks(String translationId) async {

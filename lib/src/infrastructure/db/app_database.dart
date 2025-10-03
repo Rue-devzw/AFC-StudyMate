@@ -310,4 +310,38 @@ class AppDatabase extends _$AppDatabase {
     ).map((row) => row.read<int>('count')).getSingleOrNull();
     return (count ?? 0) > 0;
   }
+
+  String ftsTableNameFor(String translationId) {
+    final sanitized = translationId.replaceAll(RegExp(r'[^a-zA-Z0-9_]'), '_');
+    return 'verses_${sanitized}_fts';
+  }
+
+  Future<void> dropSearchIndex(String translationId) async {
+    final tableName = ftsTableNameFor(translationId);
+    await customStatement('DROP TABLE IF EXISTS $tableName');
+  }
+
+  Future<void> rebuildFtsFor(String translationId) async {
+    final tableName = ftsTableNameFor(translationId);
+    await dropSearchIndex(translationId);
+    await customStatement(
+      'CREATE VIRTUAL TABLE $tableName USING fts5(text, book_id UNINDEXED, chapter UNINDEXED, verse UNINDEXED, tokenize="unicode61 remove_diacritics 2")',
+    );
+    await customStatement(
+      'INSERT INTO $tableName(rowid, text, book_id, chapter, verse) SELECT rowid, text, book_id, chapter, verse FROM verses WHERE translation_id = ?',
+      [translationId],
+    );
+  }
+
+  Future<bool> hasSearchIndex(String translationId) async {
+    final tableName = ftsTableNameFor(translationId);
+    final rows = await customSelect(
+      'SELECT name FROM sqlite_master WHERE type = ? AND name = ?',
+      variables: [
+        const Variable<String>('table'),
+        Variable<String>(tableName),
+      ],
+    ).get();
+    return rows.isNotEmpty;
+  }
 }
