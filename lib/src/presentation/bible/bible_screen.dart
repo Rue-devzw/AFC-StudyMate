@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/bible/entities.dart';
 import '../providers.dart';
 import 'book_screen.dart';
+import 'search_screen.dart';
 
 class BibleScreen extends ConsumerWidget {
   const BibleScreen({super.key});
@@ -16,6 +17,17 @@ class BibleScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Bible'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const BibleSearchScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

@@ -35,16 +35,22 @@ class GetChapterUseCase {
   }
 }
 
-class SearchBibleUseCase {
+class SearchVersesUseCase {
   final BibleRepository _repository;
 
-  const SearchBibleUseCase(this._repository);
+  const SearchVersesUseCase(this._repository);
 
-  Future<List<BibleVerse>> call(
-    String translationId,
-    String query, {
-    int? limit,
+  Future<List<BibleSearchResult>> call({
+    required String translationId,
+    required String query,
+    int? bookId,
+    int limit = 50,
   }) {
-    return _repository.search(translationId, query, limit: limit);
+    return _repository.searchVerses(
+      translationId,
+      query,
+      bookId: bookId,
+      limit: limit,
+    );
   }
 }

@@ -316,21 +316,93 @@ class AppDatabase extends _$AppDatabase {
     return 'verses_${sanitized}_fts';
   }
 
+  String _ftsTriggerName(String translationId, String suffix) {
+    final tableName = ftsTableNameFor(translationId);
+    return '${tableName}_$suffix';
+  }
+
+  String _escapeLiteral(String value) => value.replaceAll("'", "''");
+
+  Future<void> _createFtsInfrastructure(String translationId) async {
+    final tableName = ftsTableNameFor(translationId);
+    final escapedId = _escapeLiteral(translationId);
+
+    await customStatement(
+      'CREATE VIRTUAL TABLE IF NOT EXISTS $tableName USING fts5(\n'
+      '  text,\n'
+      '  book_id UNINDEXED,\n'
+      '  chapter UNINDEXED,\n'
+      '  verse UNINDEXED,\n'
+      '  tokenize="unicode61 remove_diacritics 2"\n'
+      ')',
+    );
+
+    final insertTrigger = _ftsTriggerName(translationId, 'ai');
+    final updateTrigger = _ftsTriggerName(translationId, 'au');
+    final deleteTrigger = _ftsTriggerName(translationId, 'ad');
+
+    await customStatement(
+      'CREATE TRIGGER IF NOT EXISTS $insertTrigger\n'
+      'AFTER INSERT ON verses\n'
+      "WHEN NEW.translation_id = '$escapedId'\n"
+      'BEGIN\n'
+      '  INSERT INTO $tableName(rowid, text, book_id, chapter, verse)\n'
+      '  VALUES(NEW.rowid, NEW.text, NEW.book_id, NEW.chapter, NEW.verse);\n'
+      'END',
+    );
+
+    await customStatement(
+      'CREATE TRIGGER IF NOT EXISTS $updateTrigger\n'
+      'AFTER UPDATE ON verses\n'
+      'WHEN OLD.translation_id = NEW.translation_id\n'
+      "  AND NEW.translation_id = '$escapedId'\n"
+      'BEGIN\n'
+      "  INSERT INTO $tableName($tableName, rowid, text, book_id, chapter, verse)\n"
+      '  VALUES(\'delete\', OLD.rowid, OLD.text, OLD.book_id, OLD.chapter, OLD.verse);\n'
+      '  INSERT INTO $tableName(rowid, text, book_id, chapter, verse)\n'
+      '  VALUES(NEW.rowid, NEW.text, NEW.book_id, NEW.chapter, NEW.verse);\n'
+      'END',
+    );
+
+    await customStatement(
+      'CREATE TRIGGER IF NOT EXISTS $deleteTrigger\n'
+      'AFTER DELETE ON verses\n'
+      "WHEN OLD.translation_id = '$escapedId'\n"
+      'BEGIN\n'
+      "  INSERT INTO $tableName($tableName, rowid, text, book_id, chapter, verse)\n"
+      '  VALUES(\'delete\', OLD.rowid, OLD.text, OLD.book_id, OLD.chapter, OLD.verse);\n'
+      'END',
+    );
+  }
+
   Future<void> dropSearchIndex(String translationId) async {
     final tableName = ftsTableNameFor(translationId);
+    await customStatement(
+        'DROP TRIGGER IF EXISTS ${_ftsTriggerName(translationId, 'ai')}');
+    await customStatement(
+        'DROP TRIGGER IF EXISTS ${_ftsTriggerName(translationId, 'au')}');
+    await customStatement(
+        'DROP TRIGGER IF EXISTS ${_ftsTriggerName(translationId, 'ad')}');
     await customStatement('DROP TABLE IF EXISTS $tableName');
   }
 
   Future<void> rebuildFtsFor(String translationId) async {
     final tableName = ftsTableNameFor(translationId);
     await dropSearchIndex(translationId);
-    await customStatement(
-      'CREATE VIRTUAL TABLE $tableName USING fts5(text, book_id UNINDEXED, chapter UNINDEXED, verse UNINDEXED, tokenize="unicode61 remove_diacritics 2")',
-    );
+    await _createFtsInfrastructure(translationId);
     await customStatement(
       'INSERT INTO $tableName(rowid, text, book_id, chapter, verse) SELECT rowid, text, book_id, chapter, verse FROM verses WHERE translation_id = ?',
       [translationId],
     );
+  }
+
+  Future<void> ensureSearchIndex(String translationId) async {
+    final exists = await hasSearchIndex(translationId);
+    if (!exists) {
+      await rebuildFtsFor(translationId);
+    } else {
+      await _createFtsInfrastructure(translationId);
+    }
   }
 
   Future<bool> hasSearchIndex(String translationId) async {

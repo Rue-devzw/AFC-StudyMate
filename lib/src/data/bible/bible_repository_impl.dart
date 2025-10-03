@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+import '../../domain/bible/book_names.dart';
 import '../../domain/bible/entities.dart';
 import '../../domain/bible/repositories.dart';
 import '../../infrastructure/db/app_database.dart';
@@ -53,7 +54,7 @@ class BibleRepositoryImpl implements BibleRepository {
         .map(
           (agg) => BibleBook(
             id: agg.bookId,
-            name: bookNameForId(agg.bookId),
+            name: bibleBookNameForId(agg.bookId),
             chapterCount: agg.chapters,
           ),
         )
@@ -82,24 +83,34 @@ class BibleRepositoryImpl implements BibleRepository {
   }
 
   @override
-  Future<List<BibleVerse>> search(
+  Future<List<BibleSearchResult>> searchVerses(
     String translationId,
     String query, {
-    int? limit,
+    int? bookId,
+    int limit = 50,
   }) async {
     await _ensureSeeded();
     if (query.trim().isEmpty) {
       return const [];
     }
-    final rows = await _dao.search(translationId, query, limit: limit);
+    final rows = await _dao.search(
+      translationId,
+      query,
+      limit: limit,
+      bookId: bookId,
+    );
     return rows
         .map(
-          (row) => BibleVerse(
-            translationId: row.translationId,
-            bookId: row.bookId,
-            chapter: row.chapter,
-            verse: row.verse,
-            text: row.text,
+          (row) => BibleSearchResult(
+            verse: BibleVerse(
+              translationId: row.translationId,
+              bookId: row.bookId,
+              chapter: row.chapter,
+              verse: row.verse,
+              text: row.text,
+            ),
+            snippet: row.snippet,
+            rank: row.rank,
           ),
         )
         .toList();

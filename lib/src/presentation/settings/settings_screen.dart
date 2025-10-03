@@ -47,7 +47,7 @@ class SettingsScreen extends ConsumerWidget {
           );
           ref.invalidate(translationsProvider);
           ref.invalidate(booksProvider);
-          ref.invalidate(verseSearchProvider);
+          ref.invalidate(verseSearchResultsProvider);
           ref.read(bibleImportControllerProvider.notifier).clearOutcome();
         });
       } else if (previous?.error != next.error && next.error != null) {

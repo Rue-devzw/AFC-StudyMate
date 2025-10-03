@@ -8,10 +8,11 @@ abstract class BibleRepository {
     int bookId,
     int chapter,
   );
-  Future<List<BibleVerse>> search(
+  Future<List<BibleSearchResult>> searchVerses(
     String translationId,
     String query, {
-    int? limit,
+    int? bookId,
+    int limit,
   });
   Future<BibleTranslation?> findTranslationById(String id);
   Future<void> saveImportedTranslation(
