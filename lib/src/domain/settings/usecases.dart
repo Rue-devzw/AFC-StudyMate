@@ -6,7 +6,8 @@ class GetThemeModeUseCase {
 
   const GetThemeModeUseCase(this._repository);
 
-  Future<AppThemeMode> call() => _repository.getThemeMode();
+  Future<AppThemeMode> call(String userId) =>
+      _repository.getThemeMode(userId);
 }
 
 class SaveThemeModeUseCase {
@@ -14,6 +15,6 @@ class SaveThemeModeUseCase {
 
   const SaveThemeModeUseCase(this._repository);
 
-  Future<void> call(AppThemeMode mode) =>
-      _repository.saveThemeMode(mode);
+  Future<void> call(String userId, AppThemeMode mode) =>
+      _repository.saveThemeMode(userId, mode);
 }

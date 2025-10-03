@@ -14,9 +14,22 @@ class AccountRepositoryImpl implements AccountRepository {
   Future<void> _ensureSeeded() => _db.ensureSeeded();
 
   @override
+  Stream<List<LocalAccount>> watchAccounts() async* {
+    await _ensureSeeded();
+    yield* _dao.watchAccounts().map((rows) => rows.map(_map).toList());
+  }
+
+  @override
+  Future<List<LocalAccount>> getAccounts() async {
+    await _ensureSeeded();
+    final rows = await _dao.getAccounts();
+    return rows.map(_map).toList();
+  }
+
+  @override
   Future<LocalAccount?> getCurrentAccount() async {
     await _ensureSeeded();
-    final row = await _dao.getAccount();
+    final row = await _dao.getActiveAccount();
     if (row == null) {
       return null;
     }
@@ -26,7 +39,15 @@ class AccountRepositoryImpl implements AccountRepository {
   @override
   Stream<LocalAccount?> watchCurrentAccount() async* {
     await _ensureSeeded();
-    yield* _dao.watchAccount().map((row) => row == null ? null : _map(row));
+    yield* _dao
+        .watchActiveAccount()
+        .map((row) => row == null ? null : _map(row));
+  }
+
+  @override
+  Future<void> setActiveAccount(String id) async {
+    await _ensureSeeded();
+    await _dao.setActiveAccount(id);
   }
 
   @override
@@ -35,13 +56,25 @@ class AccountRepositoryImpl implements AccountRepository {
       id: Value(account.id),
       displayName: Value(account.displayName),
       avatarUrl: Value(account.avatarUrl),
+      preferredCohortId: Value(account.preferredCohortId),
+      preferredCohortTitle: Value(account.preferredCohortTitle),
+      preferredLessonClass: Value(account.preferredLessonClass),
+      isActive: Value(account.isActive),
     );
     return _dao.upsertAccount(companion);
   }
 
   @override
-  Future<void> deleteAccount(String id) {
-    return _dao.deleteAccount(id);
+  Future<void> deleteAccount(String id) async {
+    await _ensureSeeded();
+    final account = await _dao.getAccountById(id);
+    await _dao.deleteAccount(id);
+    if (account?.isActive == true) {
+      final remaining = await _dao.getAccounts();
+      if (remaining.isNotEmpty) {
+        await _dao.setActiveAccount(remaining.first.id);
+      }
+    }
   }
 
   LocalAccount _map(LocalUser row) {
@@ -49,6 +82,10 @@ class AccountRepositoryImpl implements AccountRepository {
       id: row.id,
       displayName: row.displayName,
       avatarUrl: row.avatarUrl,
+      preferredCohortId: row.preferredCohortId,
+      preferredCohortTitle: row.preferredCohortTitle,
+      preferredLessonClass: row.preferredLessonClass,
+      isActive: row.isActive,
     );
   }
 }

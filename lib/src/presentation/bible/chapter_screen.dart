@@ -39,6 +39,12 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
       data: (data) => {for (final translation in data) translation.id: translation},
       orElse: () => <String, BibleTranslation>{},
     );
+    final userId = ref.watch(activeUserIdProvider);
+    if (userId == null || userId.isEmpty) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     final parallelAsync = ref.watch(
       parallelChapterProvider(
@@ -56,6 +62,7 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
 
     for (final translationId in translationIds) {
       final request = AnnotationRequest(
+        userId: userId,
         translationId: translationId,
         bookId: widget.book.id,
         chapter: widget.chapter,
@@ -146,6 +153,7 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
                                     bookmark,
                                     highlight,
                                     note,
+                                    userId,
                                   );
                                 },
                               ),
@@ -175,6 +183,7 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
     Bookmark? bookmark,
     Highlight? highlight,
     Note? note,
+    String userId,
   ) async {
     final location = VerseLocation(
       translationId: verse.translationId,
@@ -211,7 +220,8 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
                 title: const Text('Remove highlight'),
                 onTap: () async {
                   Navigator.pop(sheetContext);
-                  await ref.read(removeHighlightUseCaseProvider)(highlight.id);
+                  await ref
+                      .read(removeHighlightUseCaseProvider)(userId, highlight.id);
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Highlight removed.')),
@@ -241,7 +251,11 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
   }
 
   Future<void> _toggleBookmark(BuildContext context, VerseLocation location) async {
-    final result = await ref.read(toggleBookmarkUseCaseProvider)(location);
+    final userId = ref.read(activeUserIdProvider);
+    if (userId == null || userId.isEmpty) {
+      return;
+    }
+    final result = await ref.read(toggleBookmarkUseCaseProvider)(userId, location);
     if (!mounted) return;
     if (result != null) {
       await _updateReadingProgress(location);
@@ -261,6 +275,10 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
     VerseLocation location,
     Highlight? existing,
   ) async {
+    final userId = ref.read(activeUserIdProvider);
+    if (userId == null || userId.isEmpty) {
+      return;
+    }
     final selected = await showDialog<String>(
       context: context,
       builder: (dialogContext) => SimpleDialog(
@@ -299,6 +317,7 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
       return;
     }
     await ref.read(saveHighlightUseCaseProvider)(
+      userId,
       Highlight(
         id: existing?.id ?? '',
         location: location,
@@ -318,6 +337,10 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
     VerseLocation location,
     Note? note,
   ) async {
+    final userId = ref.read(activeUserIdProvider);
+    if (userId == null || userId.isEmpty) {
+      return;
+    }
     final controller = TextEditingController(text: note?.text ?? '');
     try {
       final result = await showDialog<String>(
@@ -349,7 +372,7 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
       }
       if (result.isEmpty) {
         if (note != null) {
-          await ref.read(deleteNoteUseCaseProvider)(note.id);
+          await ref.read(deleteNoteUseCaseProvider)(userId, note.id);
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Note removed.')),
@@ -357,7 +380,7 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
         }
         return;
       }
-      await ref.read(saveNoteUseCaseProvider)(location, result);
+      await ref.read(saveNoteUseCaseProvider)(userId, location, result);
       await _updateReadingProgress(location);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -369,8 +392,13 @@ class _ChapterScreenState extends ConsumerState<ChapterScreen> {
   }
 
   Future<void> _updateReadingProgress(VerseLocation location) {
+    final userId = ref.read(activeUserIdProvider);
+    if (userId == null || userId.isEmpty) {
+      return Future.value();
+    }
     final saveProgress = ref.read(saveReadingProgressUseCaseProvider);
     return saveProgress(
+      userId,
       ReadingPosition(
         translationId: location.translationId,
         bookId: location.bookId,
@@ -532,7 +560,12 @@ class _TranslationAnnotationSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(activeUserIdProvider);
+    if (userId == null || userId.isEmpty) {
+      return const SizedBox.shrink();
+    }
     final request = AnnotationRequest(
+      userId: userId,
       translationId: translationId,
       bookId: book.id,
       chapter: chapter,
@@ -571,8 +604,10 @@ class _TranslationAnnotationSection extends ConsumerWidget {
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline),
                 onPressed: () async {
-                  await ref
-                      .read(toggleBookmarkUseCaseProvider)(bookmark.location);
+                  await ref.read(toggleBookmarkUseCaseProvider)(
+                    userId,
+                    bookmark.location,
+                  );
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -596,7 +631,8 @@ class _TranslationAnnotationSection extends ConsumerWidget {
               trailing: IconButton(
                 icon: const Icon(Icons.delete_outline),
                 onPressed: () async {
-                  await ref.read(removeHighlightUseCaseProvider)(highlight.id);
+                  await ref
+                      .read(removeHighlightUseCaseProvider)(userId, highlight.id);
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -625,6 +661,10 @@ class _NoteListTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userId = ref.watch(activeUserIdProvider);
+    if (userId == null || userId.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return ExpansionTile(
       title: Text('Verse ${note.location.verse} · v${note.version}'),
       subtitle: Text(note.text),
@@ -637,7 +677,7 @@ class _NoteListTile extends ConsumerWidget {
               tooltip: 'Undo to previous version',
               onPressed: note.canUndo
                   ? () async {
-                      await ref.read(undoNoteUseCaseProvider)(note.id);
+                      await ref.read(undoNoteUseCaseProvider)(userId, note.id);
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Note reverted.')),
@@ -648,7 +688,7 @@ class _NoteListTile extends ConsumerWidget {
             IconButton(
               icon: const Icon(Icons.delete_outline),
               onPressed: () async {
-                await ref.read(deleteNoteUseCaseProvider)(note.id);
+                await ref.read(deleteNoteUseCaseProvider)(userId, note.id);
                 if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Note deleted.')),

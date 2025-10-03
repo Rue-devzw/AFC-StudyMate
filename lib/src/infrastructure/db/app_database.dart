@@ -38,8 +38,24 @@ class Verses extends Table {
   Set<Column> get primaryKey => {translationId, bookId, chapter, verse};
 }
 
+class LocalUsers extends Table {
+  TextColumn get id => text()();
+  TextColumn get displayName => text().nullable()();
+  TextColumn get avatarUrl => text().nullable()();
+  TextColumn get preferredCohortId => text().nullable()();
+  TextColumn get preferredCohortTitle => text().nullable()();
+  TextColumn get preferredLessonClass => text().nullable()();
+  BoolColumn get isActive => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 class Bookmarks extends Table {
   TextColumn get id => text()();
+  TextColumn get userId => text()
+      .references(LocalUsers, #id, onDelete: KeyAction.cascade)
+      .withDefault(const Constant('local-user'))();
   TextColumn get translationId => text()
       .references(Translations, #id, onDelete: KeyAction.cascade)();
   IntColumn get bookId => integer()();
@@ -53,6 +69,9 @@ class Bookmarks extends Table {
 
 class Highlights extends Table {
   TextColumn get id => text()();
+  TextColumn get userId => text()
+      .references(LocalUsers, #id, onDelete: KeyAction.cascade)
+      .withDefault(const Constant('local-user'))();
   TextColumn get translationId => text()
       .references(Translations, #id, onDelete: KeyAction.cascade)();
   IntColumn get bookId => integer()();
@@ -67,6 +86,9 @@ class Highlights extends Table {
 
 class Notes extends Table {
   TextColumn get id => text()();
+  TextColumn get userId => text()
+      .references(LocalUsers, #id, onDelete: KeyAction.cascade)
+      .withDefault(const Constant('local-user'))();
   TextColumn get translationId => text()
       .references(Translations, #id, onDelete: KeyAction.cascade)();
   IntColumn get bookId => integer()();
@@ -237,15 +259,6 @@ class Progress extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-class LocalUsers extends Table {
-  TextColumn get id => text()();
-  TextColumn get displayName => text().nullable()();
-  TextColumn get avatarUrl => text().nullable()();
-
-  @override
-  Set<Column> get primaryKey => {id};
-}
-
 class SyncQueue extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()();
@@ -309,7 +322,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -346,6 +359,25 @@ class AppDatabase extends _$AppDatabase {
           if (from < 6) {
             await m.addColumn(progress, progress.startedAt);
             await m.addColumn(progress, progress.completedAt);
+          }
+          if (from < 7) {
+            await m.addColumn(bookmarks, bookmarks.userId);
+            await m.addColumn(highlights, highlights.userId);
+            await m.addColumn(notes, notes.userId);
+            await m.addColumn(localUsers, localUsers.preferredCohortId);
+            await m.addColumn(localUsers, localUsers.preferredCohortTitle);
+            await m.addColumn(localUsers, localUsers.preferredLessonClass);
+            await m.addColumn(localUsers, localUsers.isActive);
+            await m.customStatement(
+                "UPDATE local_users SET is_active = CASE WHEN id = 'local-user' THEN 1 ELSE 0 END");
+            await m.customStatement(
+                "INSERT INTO local_users (id, display_name, avatar_url, preferred_cohort_id, preferred_cohort_title, preferred_lesson_class, is_active) SELECT 'local-user', NULL, NULL, NULL, NULL, NULL, 1 WHERE NOT EXISTS (SELECT 1 FROM local_users WHERE id = 'local-user')");
+            await m.customStatement(
+                "UPDATE bookmarks SET user_id = 'local-user' WHERE user_id IS NULL");
+            await m.customStatement(
+                "UPDATE highlights SET user_id = 'local-user' WHERE user_id IS NULL");
+            await m.customStatement(
+                "UPDATE notes SET user_id = 'local-user' WHERE user_id IS NULL");
           }
         },
       );
