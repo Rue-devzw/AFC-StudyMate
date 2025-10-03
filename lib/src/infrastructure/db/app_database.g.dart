@@ -403,6 +403,222 @@ class HighlightsCompanion {
   }
 }
 
+class LessonSourceRow {
+  const LessonSourceRow({
+    required this.id,
+    required this.type,
+    required this.location,
+    this.label,
+    this.cohort,
+    this.lessonClass,
+    this.enabled = true,
+    this.isBundled = false,
+    this.priority = 0,
+    this.checksum,
+    this.etag,
+    this.lastModified,
+    this.lastSyncedAt,
+    this.lastAttemptedAt,
+    this.lastCheckedAt,
+    this.lastError,
+    this.lessonCount = 0,
+    this.attachmentBytes = 0,
+    this.quotaBytes,
+  });
+
+  final String id;
+  final String type;
+  final String location;
+  final String? label;
+  final String? cohort;
+  final String? lessonClass;
+  final bool enabled;
+  final bool isBundled;
+  final int priority;
+  final String? checksum;
+  final String? etag;
+  final int? lastModified;
+  final int? lastSyncedAt;
+  final int? lastAttemptedAt;
+  final int? lastCheckedAt;
+  final String? lastError;
+  final int lessonCount;
+  final int attachmentBytes;
+  final int? quotaBytes;
+
+  LessonSourceRow copyWith({
+    String? id,
+    String? type,
+    String? location,
+    String? label,
+    String? cohort,
+    String? lessonClass,
+    bool? enabled,
+    bool? isBundled,
+    int? priority,
+    String? checksum,
+    String? etag,
+    int? lastModified,
+    int? lastSyncedAt,
+    int? lastAttemptedAt,
+    int? lastCheckedAt,
+    String? lastError,
+    int? lessonCount,
+    int? attachmentBytes,
+    int? quotaBytes,
+  }) {
+    return LessonSourceRow(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      location: location ?? this.location,
+      label: label ?? this.label,
+      cohort: cohort ?? this.cohort,
+      lessonClass: lessonClass ?? this.lessonClass,
+      enabled: enabled ?? this.enabled,
+      isBundled: isBundled ?? this.isBundled,
+      priority: priority ?? this.priority,
+      checksum: checksum ?? this.checksum,
+      etag: etag ?? this.etag,
+      lastModified: lastModified ?? this.lastModified,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      lastAttemptedAt: lastAttemptedAt ?? this.lastAttemptedAt,
+      lastCheckedAt: lastCheckedAt ?? this.lastCheckedAt,
+      lastError: lastError ?? this.lastError,
+      lessonCount: lessonCount ?? this.lessonCount,
+      attachmentBytes: attachmentBytes ?? this.attachmentBytes,
+      quotaBytes: quotaBytes ?? this.quotaBytes,
+    );
+  }
+}
+
+class LessonSourcesCompanion {
+  const LessonSourcesCompanion({
+    this.id = const Value.absent(),
+    this.type = const Value.absent(),
+    this.location = const Value.absent(),
+    this.label = const Value.absent(),
+    this.cohort = const Value.absent(),
+    this.lessonClass = const Value.absent(),
+    this.enabled = const Value.absent(),
+    this.isBundled = const Value.absent(),
+    this.priority = const Value.absent(),
+    this.checksum = const Value.absent(),
+    this.etag = const Value.absent(),
+    this.lastModified = const Value.absent(),
+    this.lastSyncedAt = const Value.absent(),
+    this.lastAttemptedAt = const Value.absent(),
+    this.lastCheckedAt = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.lessonCount = const Value.absent(),
+    this.attachmentBytes = const Value.absent(),
+    this.quotaBytes = const Value.absent(),
+  });
+
+  LessonSourcesCompanion.insert({
+    required String id,
+    required String type,
+    required String location,
+    Value<String?> label = const Value.absent(),
+    Value<String?> cohort = const Value.absent(),
+    Value<String?> lessonClass = const Value.absent(),
+    Value<bool> enabled = const Value.absent(),
+    Value<bool> isBundled = const Value.absent(),
+    Value<int> priority = const Value.absent(),
+    Value<String?> checksum = const Value.absent(),
+    Value<String?> etag = const Value.absent(),
+    Value<int?> lastModified = const Value.absent(),
+    Value<int?> lastSyncedAt = const Value.absent(),
+    Value<int?> lastAttemptedAt = const Value.absent(),
+    Value<int?> lastCheckedAt = const Value.absent(),
+    Value<String?> lastError = const Value.absent(),
+    Value<int> lessonCount = const Value.absent(),
+    Value<int> attachmentBytes = const Value.absent(),
+    Value<int?> quotaBytes = const Value.absent(),
+  })  : id = Value(id),
+        type = Value(type),
+        location = Value(location),
+        label = label,
+        cohort = cohort,
+        lessonClass = lessonClass,
+        enabled = enabled,
+        isBundled = isBundled,
+        priority = priority,
+        checksum = checksum,
+        etag = etag,
+        lastModified = lastModified,
+        lastSyncedAt = lastSyncedAt,
+        lastAttemptedAt = lastAttemptedAt,
+        lastCheckedAt = lastCheckedAt,
+        lastError = lastError,
+        lessonCount = lessonCount,
+        attachmentBytes = attachmentBytes,
+        quotaBytes = quotaBytes;
+
+  final Value<String> id;
+  final Value<String> type;
+  final Value<String> location;
+  final Value<String?> label;
+  final Value<String?> cohort;
+  final Value<String?> lessonClass;
+  final Value<bool> enabled;
+  final Value<bool> isBundled;
+  final Value<int> priority;
+  final Value<String?> checksum;
+  final Value<String?> etag;
+  final Value<int?> lastModified;
+  final Value<int?> lastSyncedAt;
+  final Value<int?> lastAttemptedAt;
+  final Value<int?> lastCheckedAt;
+  final Value<String?> lastError;
+  final Value<int> lessonCount;
+  final Value<int> attachmentBytes;
+  final Value<int?> quotaBytes;
+
+  LessonSourcesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? type,
+    Value<String>? location,
+    Value<String?>? label,
+    Value<String?>? cohort,
+    Value<String?>? lessonClass,
+    Value<bool>? enabled,
+    Value<bool>? isBundled,
+    Value<int>? priority,
+    Value<String?>? checksum,
+    Value<String?>? etag,
+    Value<int?>? lastModified,
+    Value<int?>? lastSyncedAt,
+    Value<int?>? lastAttemptedAt,
+    Value<int?>? lastCheckedAt,
+    Value<String?>? lastError,
+    Value<int>? lessonCount,
+    Value<int>? attachmentBytes,
+    Value<int?>? quotaBytes,
+  }) {
+    return LessonSourcesCompanion(
+      id: id ?? this.id,
+      type: type ?? this.type,
+      location: location ?? this.location,
+      label: label ?? this.label,
+      cohort: cohort ?? this.cohort,
+      lessonClass: lessonClass ?? this.lessonClass,
+      enabled: enabled ?? this.enabled,
+      isBundled: isBundled ?? this.isBundled,
+      priority: priority ?? this.priority,
+      checksum: checksum ?? this.checksum,
+      etag: etag ?? this.etag,
+      lastModified: lastModified ?? this.lastModified,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      lastAttemptedAt: lastAttemptedAt ?? this.lastAttemptedAt,
+      lastCheckedAt: lastCheckedAt ?? this.lastCheckedAt,
+      lastError: lastError ?? this.lastError,
+      lessonCount: lessonCount ?? this.lessonCount,
+      attachmentBytes: attachmentBytes ?? this.attachmentBytes,
+      quotaBytes: quotaBytes ?? this.quotaBytes,
+    );
+  }
+}
+
 class NotesData {
   const NotesData({
     required this.id,
