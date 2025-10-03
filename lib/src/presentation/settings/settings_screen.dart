@@ -9,6 +9,7 @@ import '../../domain/bible/import/exceptions.dart';
 import '../../domain/bible/import/import_models.dart';
 import '../../infrastructure/lessons/lesson_source_registry.dart';
 import '../providers.dart';
+import '../accounts/cloud_auth_sheet.dart';
 import 'bible_import_controller.dart';
 import 'about_screen.dart';
 import 'lesson_sync_controller.dart';
@@ -25,6 +26,8 @@ class SettingsScreen extends ConsumerWidget {
     final syncState = ref.watch(lessonSyncControllerProvider);
     final importState = ref.watch(bibleImportControllerProvider);
     final activeAccountAsync = ref.watch(activeAccountProvider);
+    final cloudUserAsync = ref.watch(firebaseAuthUserProvider);
+    final authState = ref.watch(cloudAuthControllerProvider);
 
     ref.listen<BibleImportState>(bibleImportControllerProvider,
         (previous, next) {
@@ -102,6 +105,63 @@ class SettingsScreen extends ConsumerWidget {
                   );
                 },
                 child: const Text('Manage'),
+              ),
+            ),
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Cloud sync'),
+          ),
+          cloudUserAsync.when(
+            data: (user) {
+              if (user == null) {
+                return ListTile(
+                  leading: const Icon(Icons.cloud_outlined),
+                  title: const Text('Not connected'),
+                  subtitle: const Text('Sign in to sync lessons, notes and chat across devices.'),
+                  trailing: FilledButton.tonal(
+                    onPressed: authState.isLoading
+                        ? null
+                        : () => CloudAuthSheet.show(context),
+                    child: const Text('Sign in'),
+                  ),
+                );
+              }
+              final providers =
+                  user.providerData.map((item) => item.providerId).join(', ');
+              return ListTile(
+                leading: const Icon(Icons.cloud_done_outlined),
+                title: Text(user.displayName ?? user.email ?? 'Signed in'),
+                subtitle: Text(
+                  providers.isEmpty
+                      ? 'Cloud sync is active.'
+                      : 'Connected via $providers',
+                ),
+                trailing: authState.isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : TextButton(
+                        onPressed: () => _signOutCloud(context, ref),
+                        child: const Text('Sign out'),
+                      ),
+              );
+            },
+            loading: () => const ListTile(
+              leading: CircularProgressIndicator(),
+              title: Text('Checking cloud status...'),
+            ),
+            error: (error, stack) => ListTile(
+              leading: const Icon(Icons.cloud_off_outlined),
+              title: const Text('Cloud status unavailable'),
+              subtitle: Text('Failed to load: $error'),
+              trailing: TextButton(
+                onPressed:
+                    authState.isLoading ? null : () => CloudAuthSheet.show(context),
+                child: const Text('Retry'),
               ),
             ),
           ),
@@ -352,6 +412,19 @@ class SettingsScreen extends ConsumerWidget {
           ],
         );
       },
+    );
+  }
+
+  Future<void> _signOutCloud(BuildContext context, WidgetRef ref) async {
+    final controller = ref.read(cloudAuthControllerProvider.notifier);
+    final success = await controller.signOut();
+    final state = ref.read(cloudAuthControllerProvider);
+    if (!context.mounted) return;
+    final message = success
+        ? 'Signed out of cloud account.'
+        : state.errorMessage ?? 'Unable to sign out. Please try again.';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 }

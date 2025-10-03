@@ -52,6 +52,11 @@ dependencies:
   crypto: ^3.0.3
   rxdart: ^0.28.0
   workmanager: ^0.5.2
+  firebase_core: ^2.25.5
+  firebase_auth: ^4.17.5
+  firebase_storage: ^11.7.3
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.1.0
 
 
 dev_dependencies:

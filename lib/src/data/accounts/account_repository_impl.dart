@@ -77,6 +77,16 @@ class AccountRepositoryImpl implements AccountRepository {
     }
   }
 
+  @override
+  Future<LocalAccount?> getAccountById(String id) async {
+    await _ensureSeeded();
+    final row = await _dao.getAccountById(id);
+    if (row == null) {
+      return null;
+    }
+    return _map(row);
+  }
+
   LocalAccount _map(LocalUser row) {
     return LocalAccount(
       id: row.id,

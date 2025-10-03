@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../domain/accounts/entities.dart';
 import '../providers.dart';
+import 'cloud_auth_sheet.dart';
 import 'profile_management_screen.dart';
 
 const _avatarOptions = [
@@ -25,6 +26,8 @@ class ProfileOnboardingScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final accountsAsync = ref.watch(accountsProvider);
+    final cloudUserAsync = ref.watch(firebaseAuthUserProvider);
+    final authState = ref.watch(cloudAuthControllerProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -82,6 +85,66 @@ class ProfileOnboardingScreen extends ConsumerWidget {
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(
                     child: Text('Failed to load profiles: $error'),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              cloudUserAsync.when(
+                data: (user) {
+                  if (user == null) {
+                    return Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.cloud_outlined),
+                        title: const Text('Connect a cloud account'),
+                        subtitle: const Text(
+                            'Sign in with email, Google or Apple to sync progress across devices.'),
+                        trailing: FilledButton(
+                          onPressed:
+                              authState.isLoading ? null : () => CloudAuthSheet.show(context),
+                          child: const Text('Sign in'),
+                        ),
+                      ),
+                    );
+                  }
+                  final providerSummary =
+                      user.providerData.map((item) => item.providerId).toList();
+                  return Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.cloud_done_outlined),
+                      title: Text(user.displayName ?? user.email ?? 'Signed in'),
+                      subtitle: Text(
+                        providerSummary.isEmpty
+                            ? 'Cloud sync is active.'
+                            : 'Cloud sync via ${providerSummary.join(', ')}',
+                      ),
+                      trailing: authState.isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : TextButton(
+                              onPressed: () => _signOutCloud(context, ref),
+                              child: const Text('Sign out'),
+                            ),
+                    ),
+                  );
+                },
+                loading: () => const SizedBox(
+                  height: 72,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (error, stack) => Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.cloud_off_outlined),
+                    title: const Text('Cloud sync unavailable'),
+                    subtitle: Text('Failed to load status: $error'),
+                    trailing: TextButton(
+                      onPressed: authState.isLoading
+                          ? null
+                          : () => CloudAuthSheet.show(context),
+                      child: const Text('Try again'),
+                    ),
                   ),
                 ),
               ),
@@ -156,6 +219,21 @@ class ProfileOnboardingScreen extends ConsumerWidget {
         );
       }
     }
+  }
+
+  Future<void> _signOutCloud(BuildContext context, WidgetRef ref) async {
+    final controller = ref.read(cloudAuthControllerProvider.notifier);
+    final success = await controller.signOut();
+    final state = ref.read(cloudAuthControllerProvider);
+    if (!context.mounted) {
+      return;
+    }
+    final message = success
+        ? 'Signed out of cloud account.'
+        : state.errorMessage ?? 'Unable to sign out. Please try again.';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 }
 
