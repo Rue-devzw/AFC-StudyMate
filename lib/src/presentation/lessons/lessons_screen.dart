@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/lessons/entities.dart';
 import '../providers.dart';
 import 'lesson_detail_screen.dart';
+import 'lesson_progress_dashboard_screen.dart';
 
 class LessonsScreen extends ConsumerWidget {
   const LessonsScreen({super.key});
@@ -16,6 +17,20 @@ class LessonsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Lessons'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bar_chart_rounded),
+            tooltip: 'Progress dashboard',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const LessonProgressDashboardScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
