@@ -117,7 +117,8 @@ class AgeCohortThemeProfile {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceVariant.withOpacity(0.4),
+        fillColor:
+            colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: colorScheme.outlineVariant),
@@ -128,8 +129,8 @@ class AgeCohortThemeProfile {
         ),
       ),
       focusColor: colorScheme.primary,
-      splashColor: colorScheme.primary.withOpacity(0.1),
-      highlightColor: colorScheme.primary.withOpacity(0.1),
+      splashColor: colorScheme.primary.withValues(alpha: 0.1),
+      highlightColor: colorScheme.primary.withValues(alpha: 0.1),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         selectedItemColor: colorScheme.primary,
         unselectedItemColor: colorScheme.onSurfaceVariant,
@@ -170,7 +171,6 @@ class AgeCohortThemeProfile {
 
     return scheme.copyWith(
       surface: surface,
-      background: surface,
       onSurface: isDark ? Colors.white : Colors.black,
       primary: isDark ? Colors.amberAccent : seed,
       onPrimary: isDark ? Colors.black : Colors.white,
