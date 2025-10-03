@@ -20,8 +20,6 @@ class LessonDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
-  static const _userId = 'local-user';
-
   LessonProgress? _progress;
   late LessonTimerService _timerService;
   StreamSubscription<int>? _timerSub;
@@ -29,6 +27,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
   Map<String, LessonQuizSubmission> _responses = const {};
   double? _lastQuizScore;
   bool _isPersisting = false;
+  String? _userId;
+  ProviderSubscription<AsyncValue<LessonProgress?>>? _progressSubscription;
 
   @override
   void initState() {
@@ -43,10 +43,43 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         _sessionSeconds = seconds;
       });
     });
-    ref.listen<AsyncValue<LessonProgress?>>(
+    ref.listen<String?>(
+      activeUserIdProvider,
+      (previous, next) {
+        if (!mounted) {
+          return;
+        }
+        if (next == null || next.isEmpty) {
+          setState(() {
+            _userId = null;
+            _progress = null;
+          });
+          _progressSubscription?.close();
+          _progressSubscription = null;
+          return;
+        }
+        if (next != _userId) {
+          _userId = next;
+          _subscribeToProgress(next);
+        }
+      },
+      fireImmediately: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    _timerSub?.cancel();
+    _progressSubscription?.close();
+    super.dispose();
+  }
+
+  void _subscribeToProgress(String userId) {
+    _progressSubscription?.close();
+    _progressSubscription = ref.listen<AsyncValue<LessonProgress?>>(
       lessonProgressProvider(
         LessonProgressRequest(
-          userId: _userId,
+          userId: userId,
           lessonId: widget.lesson.id,
         ),
       ),
@@ -60,17 +93,18 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
           });
         });
       },
+      fireImmediately: true,
     );
   }
 
   @override
-  void dispose() {
-    _timerSub?.cancel();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final userId = ref.watch(activeUserIdProvider);
+    if (userId == null || userId.isEmpty) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     final theme = Theme.of(context);
     final ageLabel = widget.lesson.ageRange != null
         ? '${widget.lesson.ageRange!.min}-${widget.lesson.ageRange!.max} years'
@@ -78,7 +112,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
     final progressAsync = ref.watch(
       lessonProgressProvider(
         LessonProgressRequest(
-          userId: _userId,
+          userId: userId,
           lessonId: widget.lesson.id,
         ),
       ),
@@ -385,6 +419,13 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
     setState(() {
       _isPersisting = true;
     });
+    final userId = _userId;
+    if (userId == null || userId.isEmpty) {
+      setState(() {
+        _isPersisting = false;
+      });
+      return;
+    }
     final elapsedSeconds = consumeTimer ? _timerService.consume() : 0;
     final now = DateTime.now();
     final existing = _progress;
@@ -395,8 +436,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         ? now
         : (clearCompletion ? null : existing?.completedAt);
     final progress = LessonProgress(
-      id: existing?.id ?? '${_userId}_${widget.lesson.id}',
-      userId: _userId,
+      id: existing?.id ?? '${userId}_${widget.lesson.id}',
+      userId: userId,
       lessonId: widget.lesson.id,
       status: status,
       quizScore: quizScore ?? existing?.quizScore,

@@ -6,8 +6,18 @@ class WatchBookmarksForChapterUseCase {
 
   final AnnotationRepository _repository;
 
-  Stream<List<Bookmark>> call(String translationId, int bookId, int chapter) {
-    return _repository.watchBookmarksForChapter(translationId, bookId, chapter);
+  Stream<List<Bookmark>> call(
+    String userId,
+    String translationId,
+    int bookId,
+    int chapter,
+  ) {
+    return _repository.watchBookmarksForChapter(
+      userId,
+      translationId,
+      bookId,
+      chapter,
+    );
   }
 }
 
@@ -16,18 +26,19 @@ class ToggleBookmarkUseCase {
 
   final AnnotationRepository _repository;
 
-  Future<Bookmark?> call(VerseLocation location) async {
+  Future<Bookmark?> call(String userId, VerseLocation location) async {
     final existing = await _repository.findBookmark(
+      userId,
       location.translationId,
       location.bookId,
       location.chapter,
       location.verse,
     );
     if (existing != null) {
-      await _repository.deleteBookmark(existing.id);
+      await _repository.deleteBookmark(userId, existing.id);
       return null;
     }
-    return _repository.createBookmark(location);
+    return _repository.createBookmark(userId, location);
   }
 }
 
@@ -36,8 +47,18 @@ class WatchHighlightsForChapterUseCase {
 
   final AnnotationRepository _repository;
 
-  Stream<List<Highlight>> call(String translationId, int bookId, int chapter) {
-    return _repository.watchHighlightsForChapter(translationId, bookId, chapter);
+  Stream<List<Highlight>> call(
+    String userId,
+    String translationId,
+    int bookId,
+    int chapter,
+  ) {
+    return _repository.watchHighlightsForChapter(
+      userId,
+      translationId,
+      bookId,
+      chapter,
+    );
   }
 }
 
@@ -46,8 +67,8 @@ class SaveHighlightUseCase {
 
   final AnnotationRepository _repository;
 
-  Future<Highlight> call(Highlight highlight) {
-    return _repository.saveHighlight(highlight);
+  Future<Highlight> call(String userId, Highlight highlight) {
+    return _repository.saveHighlight(userId, highlight);
   }
 }
 
@@ -56,8 +77,8 @@ class RemoveHighlightUseCase {
 
   final AnnotationRepository _repository;
 
-  Future<void> call(String id) {
-    return _repository.deleteHighlight(id);
+  Future<void> call(String userId, String id) {
+    return _repository.deleteHighlight(userId, id);
   }
 }
 
@@ -66,8 +87,18 @@ class WatchNotesForChapterUseCase {
 
   final AnnotationRepository _repository;
 
-  Stream<List<Note>> call(String translationId, int bookId, int chapter) {
-    return _repository.watchNotesForChapter(translationId, bookId, chapter);
+  Stream<List<Note>> call(
+    String userId,
+    String translationId,
+    int bookId,
+    int chapter,
+  ) {
+    return _repository.watchNotesForChapter(
+      userId,
+      translationId,
+      bookId,
+      chapter,
+    );
   }
 }
 
@@ -76,8 +107,8 @@ class SaveNoteUseCase {
 
   final AnnotationRepository _repository;
 
-  Future<Note> call(VerseLocation location, String text) {
-    return _repository.saveNote(location, text);
+  Future<Note> call(String userId, VerseLocation location, String text) {
+    return _repository.saveNote(userId, location, text);
   }
 }
 
@@ -86,8 +117,8 @@ class DeleteNoteUseCase {
 
   final AnnotationRepository _repository;
 
-  Future<void> call(String id) {
-    return _repository.deleteNote(id);
+  Future<void> call(String userId, String id) {
+    return _repository.deleteNote(userId, id);
   }
 }
 
@@ -96,8 +127,8 @@ class UndoNoteUseCase {
 
   final AnnotationRepository _repository;
 
-  Future<Note?> call(String id) {
-    return _repository.revertToPreviousVersion(id);
+  Future<Note?> call(String userId, String id) {
+    return _repository.revertToPreviousVersion(userId, id);
   }
 }
 
@@ -106,7 +137,7 @@ class GetNoteHistoryUseCase {
 
   final AnnotationRepository _repository;
 
-  Future<List<NoteHistoryEntry>> call(String noteId) {
-    return _repository.getHistory(noteId);
+  Future<List<NoteHistoryEntry>> call(String userId, String noteId) {
+    return _repository.getHistory(userId, noteId);
   }
 }

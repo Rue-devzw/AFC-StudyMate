@@ -10,28 +10,37 @@ class ReadingProgressRepositoryImpl implements ReadingProgressRepository {
   ReadingProgressRepositoryImpl();
 
   static const _storageKey = 'reading_progress_state';
-  final _controller = StreamController<ReadingPosition?>.broadcast();
-  bool _initialised = false;
+  final _controllers = <String, StreamController<ReadingPosition?>>{};
+  final _initialisedUsers = <String>{};
 
-  Future<void> _ensureInitialised() async {
-    if (_initialised) {
+  StreamController<ReadingPosition?> _controllerFor(String userId) {
+    return _controllers.putIfAbsent(
+      userId,
+      () => StreamController<ReadingPosition?>.broadcast(),
+    );
+  }
+
+  String _keyFor(String userId) => '${_storageKey}_$userId';
+
+  Future<void> _ensureInitialised(String userId) async {
+    if (_initialisedUsers.contains(userId)) {
       return;
     }
-    final position = await getLastPosition();
-    _controller.add(position);
-    _initialised = true;
+    final position = await getLastPosition(userId);
+    _controllerFor(userId).add(position);
+    _initialisedUsers.add(userId);
   }
 
   @override
-  Stream<ReadingPosition?> watch() async* {
-    await _ensureInitialised();
-    yield* _controller.stream;
+  Stream<ReadingPosition?> watch(String userId) async* {
+    await _ensureInitialised(userId);
+    yield* _controllerFor(userId).stream;
   }
 
   @override
-  Future<ReadingPosition?> getLastPosition() async {
+  Future<ReadingPosition?> getLastPosition(String userId) async {
     final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getString(_storageKey);
+    final stored = prefs.getString(_keyFor(userId));
     if (stored == null) {
       return null;
     }
@@ -50,7 +59,7 @@ class ReadingProgressRepositoryImpl implements ReadingProgressRepository {
   }
 
   @override
-  Future<void> savePosition(ReadingPosition position) async {
+  Future<void> savePosition(String userId, ReadingPosition position) async {
     final prefs = await SharedPreferences.getInstance();
     final payload = jsonEncode({
       'translationId': position.translationId,
@@ -59,12 +68,16 @@ class ReadingProgressRepositoryImpl implements ReadingProgressRepository {
       'verse': position.verse,
       'updatedAt': position.updatedAt.millisecondsSinceEpoch,
     });
-    await prefs.setString(_storageKey, payload);
-    await _ensureInitialised();
-    _controller.add(position);
+    await prefs.setString(_keyFor(userId), payload);
+    await _ensureInitialised(userId);
+    _controllerFor(userId).add(position);
   }
 
   void dispose() {
-    _controller.close();
+    for (final controller in _controllers.values) {
+      controller.close();
+    }
+    _controllers.clear();
+    _initialisedUsers.clear();
   }
 }

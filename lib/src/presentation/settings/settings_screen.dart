@@ -13,6 +13,7 @@ import 'bible_import_controller.dart';
 import 'about_screen.dart';
 import 'lesson_sync_controller.dart';
 import 'privacy_policy_screen.dart';
+import '../accounts/profile_management_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -23,6 +24,7 @@ class SettingsScreen extends ConsumerWidget {
     final translationsAsync = ref.watch(translationsProvider);
     final syncState = ref.watch(lessonSyncControllerProvider);
     final importState = ref.watch(bibleImportControllerProvider);
+    final activeAccountAsync = ref.watch(activeAccountProvider);
 
     ref.listen<BibleImportState>(bibleImportControllerProvider,
         (previous, next) {
@@ -68,6 +70,42 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
+          activeAccountAsync.when(
+            data: (account) => ListTile(
+              leading: _ProfileAvatar(avatar: account?.avatarUrl, name: account?.displayName),
+              title: Text(account?.displayName?.isNotEmpty == true
+                  ? account!.displayName!
+                  : 'No profile selected'),
+              subtitle: const Text('Current profile'),
+              trailing: TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileManagementScreen()),
+                  );
+                },
+                child: const Text('Manage'),
+              ),
+            ),
+            loading: () => const ListTile(
+              leading: CircularProgressIndicator(),
+              title: Text('Loading profile...'),
+            ),
+            error: (error, stack) => ListTile(
+              leading: const Icon(Icons.error_outline),
+              title: Text('Failed to load profile: $error'),
+              trailing: TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const ProfileManagementScreen()),
+                  );
+                },
+                child: const Text('Manage'),
+              ),
+            ),
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('About'),
@@ -315,6 +353,22 @@ class SettingsScreen extends ConsumerWidget {
         );
       },
     );
+  }
+}
+
+class _ProfileAvatar extends StatelessWidget {
+  const _ProfileAvatar({this.avatar, this.name});
+
+  final String? avatar;
+  final String? name;
+
+  @override
+  Widget build(BuildContext context) {
+    if (avatar != null && avatar!.isNotEmpty) {
+      return CircleAvatar(child: Text(avatar!, style: const TextStyle(fontSize: 20)));
+    }
+    final initial = (name ?? '').trim().isNotEmpty ? name!.trim()[0].toUpperCase() : '?';
+    return CircleAvatar(child: Text(initial));
   }
 }
 

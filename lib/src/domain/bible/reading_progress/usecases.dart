@@ -6,7 +6,7 @@ class WatchReadingProgressUseCase {
 
   final ReadingProgressRepository _repository;
 
-  Stream<ReadingPosition?> call() => _repository.watch();
+  Stream<ReadingPosition?> call(String userId) => _repository.watch(userId);
 }
 
 class GetLastReadingPositionUseCase {
@@ -14,7 +14,8 @@ class GetLastReadingPositionUseCase {
 
   final ReadingProgressRepository _repository;
 
-  Future<ReadingPosition?> call() => _repository.getLastPosition();
+  Future<ReadingPosition?> call(String userId) =>
+      _repository.getLastPosition(userId);
 }
 
 class SaveReadingProgressUseCase {
@@ -22,6 +23,6 @@ class SaveReadingProgressUseCase {
 
   final ReadingProgressRepository _repository;
 
-  Future<void> call(ReadingPosition position) =>
-      _repository.savePosition(position);
+  Future<void> call(String userId, ReadingPosition position) =>
+      _repository.savePosition(userId, position);
 }

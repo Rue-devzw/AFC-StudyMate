@@ -149,7 +149,7 @@ class LessonQuery {
     this.classes,
     this.age,
     this.completion = LessonCompletionFilter.all,
-    this.userId = 'local-user',
+    required this.userId,
   });
 
   final Set<String>? classes;

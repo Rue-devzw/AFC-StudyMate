@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../providers.dart';
 import '../home/home_screen.dart';
+import '../accounts/profile_onboarding_screen.dart';
 
 class StudyMateApp extends ConsumerWidget {
   const StudyMateApp({super.key});
@@ -89,13 +90,37 @@ class StudyMateApp extends ConsumerWidget {
       ),
     );
 
+    final accountAsync = ref.watch(activeAccountProvider);
+
     return themeMode.when(
-      data: (mode) => MaterialApp(
-        title: 'AFC StudyMate',
-        theme: lightTheme,
-        darkTheme: darkTheme,
-        themeMode: mode,
-        home: const HomeScreen(),
+      data: (mode) => accountAsync.when(
+        data: (account) => MaterialApp(
+          title: 'AFC StudyMate',
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: mode,
+          home: account == null
+              ? const ProfileOnboardingScreen()
+              : const HomeScreen(),
+        ),
+        loading: () => MaterialApp(
+          title: 'AFC StudyMate',
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          home: const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          ),
+        ),
+        error: (error, stack) => MaterialApp(
+          title: 'AFC StudyMate',
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          home: Scaffold(
+            body: Center(
+              child: Text('Failed to load profiles: $error'),
+            ),
+          ),
+        ),
       ),
       loading: () => MaterialApp(
         title: 'AFC StudyMate',

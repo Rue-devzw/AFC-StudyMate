@@ -131,6 +131,58 @@ final accountRepositoryProvider = Provider<AccountRepository>((ref) {
   return AccountRepositoryImpl(db, dao);
 });
 
+final watchAccountsUseCaseProvider = Provider((ref) {
+  return WatchAccountsUseCase(ref.watch(accountRepositoryProvider));
+});
+
+final getAccountsUseCaseProvider = Provider((ref) {
+  return GetAccountsUseCase(ref.watch(accountRepositoryProvider));
+});
+
+final setActiveAccountUseCaseProvider = Provider((ref) {
+  return SetActiveAccountUseCase(ref.watch(accountRepositoryProvider));
+});
+
+class CohortOption {
+  const CohortOption({
+    required this.id,
+    this.title,
+    this.lessonClass,
+  });
+
+  final String id;
+  final String? title;
+  final String? lessonClass;
+
+  String get displayName {
+    if (title != null && title!.isNotEmpty) {
+      return title!;
+    }
+    if (lessonClass != null && lessonClass!.isNotEmpty) {
+      return lessonClass!;
+    }
+    return id;
+  }
+}
+
+final cohortOptionsProvider = FutureProvider<List<CohortOption>>((ref) async {
+  final db = ref.watch(appDatabaseProvider);
+  final rows = await db.select(db.lessonFeeds).get();
+  final options = <String, CohortOption>{};
+  for (final row in rows) {
+    final id = row.id;
+    final title = row.cohort ?? row.id;
+    options[id] = CohortOption(
+      id: id,
+      title: title,
+      lessonClass: row.lessonClass,
+    );
+  }
+  final list = options.values.toList()
+    ..sort((a, b) => a.displayName.compareTo(b.displayName));
+  return list;
+});
+
 final syncRepositoryProvider = Provider<SyncRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final dao = ref.watch(syncDaoProvider);
@@ -297,9 +349,21 @@ final lessonProgressProvider = StreamProvider.autoDispose
 
 final lessonProgressDashboardProvider =
     StreamProvider.autoDispose<LessonProgressDashboardData>((ref) {
-  const userId = 'local-user';
+  final userId = ref.watch(activeUserIdProvider);
+  if (userId == null) {
+    return Stream.value(const LessonProgressDashboardData(
+      snapshots: [],
+      completedCount: 0,
+      inProgressCount: 0,
+      notStartedCount: 0,
+      totalTimeSpentSeconds: 0,
+      averageQuizScore: 0,
+      classSummaries: [],
+      completionsByDay: <DateTime, int>{},
+    ));
+  }
   final lessonsStream = ref.watch(watchLessonsUseCaseProvider)(
-    filter: const LessonQuery(),
+    filter: LessonQuery(userId: userId),
   );
   final progressStream =
       ref.watch(watchLessonProgressUseCaseProvider)(userId);
@@ -435,6 +499,22 @@ final watchAccountUseCaseProvider = Provider((ref) {
   return WatchAccountUseCase(ref.watch(accountRepositoryProvider));
 });
 
+final activeAccountProvider = StreamProvider<LocalAccount?>((ref) {
+  return ref.watch(watchAccountUseCaseProvider)();
+});
+
+final accountsProvider = StreamProvider<List<LocalAccount>>((ref) {
+  return ref.watch(watchAccountsUseCaseProvider)();
+});
+
+final activeUserIdProvider = Provider<String?>((ref) {
+  final account = ref.watch(activeAccountProvider);
+  return account.maybeWhen(
+    data: (value) => value?.id,
+    orElse: () => null,
+  );
+});
+
 final saveAccountUseCaseProvider = Provider((ref) {
   return SaveAccountUseCase(ref.watch(accountRepositoryProvider));
 });
@@ -541,7 +621,7 @@ class LessonFilterState {
     this.selectedClass,
     this.age,
     this.completion = LessonCompletionFilter.all,
-    this.userId = 'local-user',
+    required this.userId,
   });
 
   final String? selectedClass;
@@ -577,7 +657,12 @@ class LessonFilterState {
 }
 
 class LessonFiltersNotifier extends StateNotifier<LessonFilterState> {
-  LessonFiltersNotifier() : super(const LessonFilterState());
+  LessonFiltersNotifier(String userId)
+      : super(LessonFilterState(userId: userId));
+
+  void setUser(String userId) {
+    state = state.copyWith(userId: userId);
+  }
 
   void setClass(String? lessonClass) {
     state = state.copyWith(selectedClass: lessonClass, resetClass: lessonClass == null);
@@ -594,7 +679,14 @@ class LessonFiltersNotifier extends StateNotifier<LessonFilterState> {
 
 final lessonFiltersProvider =
     StateNotifierProvider<LessonFiltersNotifier, LessonFilterState>((ref) {
-  return LessonFiltersNotifier();
+  final userId = ref.watch(activeUserIdProvider) ?? '';
+  final notifier = LessonFiltersNotifier(userId);
+  ref.listen<String?>(activeUserIdProvider, (previous, next) {
+    if (next != null) {
+      notifier.setUser(next);
+    }
+  });
+  return notifier;
 });
 
 final booksProvider = FutureProvider((ref) async {
@@ -743,11 +835,13 @@ List<ParallelVerseRow> _mergeParallelVerses(
 
 class AnnotationRequest {
   const AnnotationRequest({
+    required this.userId,
     required this.translationId,
     required this.bookId,
     required this.chapter,
   });
 
+  final String userId;
   final String translationId;
   final int bookId;
   final int chapter;
@@ -756,38 +850,64 @@ class AnnotationRequest {
 final chapterBookmarksProvider = StreamProvider.autoDispose
     .family<List<Bookmark>, AnnotationRequest>((ref, request) {
   final useCase = ref.watch(watchBookmarksForChapterUseCaseProvider);
-  return useCase(request.translationId, request.bookId, request.chapter);
+  return useCase(
+    request.userId,
+    request.translationId,
+    request.bookId,
+    request.chapter,
+  );
 });
 
 final chapterHighlightsProvider = StreamProvider.autoDispose
     .family<List<Highlight>, AnnotationRequest>((ref, request) {
   final useCase = ref.watch(watchHighlightsForChapterUseCaseProvider);
-  return useCase(request.translationId, request.bookId, request.chapter);
+  return useCase(
+    request.userId,
+    request.translationId,
+    request.bookId,
+    request.chapter,
+  );
 });
 
 final chapterNotesProvider = StreamProvider.autoDispose
     .family<List<Note>, AnnotationRequest>((ref, request) {
   final useCase = ref.watch(watchNotesForChapterUseCaseProvider);
-  return useCase(request.translationId, request.bookId, request.chapter);
+  return useCase(
+    request.userId,
+    request.translationId,
+    request.bookId,
+    request.chapter,
+  );
 });
 
 final readingProgressProvider = StreamProvider<ReadingPosition?>((ref) {
+  final userId = ref.watch(activeUserIdProvider);
+  if (userId == null) {
+    return Stream.value(null);
+  }
   final useCase = ref.watch(watchReadingProgressUseCaseProvider);
-  return useCase();
+  return useCase(userId);
 });
 
 class ThemeModeController extends AsyncNotifier<ThemeMode> {
   @override
   Future<ThemeMode> build() async {
+    final userId = ref.watch(activeUserIdProvider);
+    if (userId == null) {
+      return ThemeMode.system;
+    }
     final getThemeMode = ref.read(getThemeModeUseCaseProvider);
-    final mode = await getThemeMode();
+    final mode = await getThemeMode(userId);
     return _map(mode);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
-    final saveTheme = ref.read(saveThemeModeUseCaseProvider);
     final domainMode = _reverseMap(mode);
-    await saveTheme(domainMode);
+    final userId = ref.read(activeUserIdProvider);
+    if (userId != null) {
+      final saveTheme = ref.read(saveThemeModeUseCaseProvider);
+      await saveTheme(userId, domainMode);
+    }
     state = AsyncValue.data(mode);
   }
 

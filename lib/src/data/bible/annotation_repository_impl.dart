@@ -16,36 +16,40 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
 
   @override
   Stream<List<Bookmark>> watchBookmarksForChapter(
+    String userId,
     String translationId,
     int bookId,
     int chapter,
   ) async* {
     await _ensureSeeded();
-    yield* _dao.watchBookmarksForChapter(translationId, bookId, chapter).map(
-      (rows) => rows.map(_mapBookmark).toList(),
-    );
+    yield* _dao
+        .watchBookmarksForChapter(userId, translationId, bookId, chapter)
+        .map((rows) => rows.map(_mapBookmark).toList());
   }
 
   @override
   Future<Bookmark?> findBookmark(
+    String userId,
     String translationId,
     int bookId,
     int chapter,
     int verse,
   ) async {
     await _ensureSeeded();
-    final row = await _dao.findBookmark(translationId, bookId, chapter, verse);
+    final row =
+        await _dao.findBookmark(userId, translationId, bookId, chapter, verse);
     return row == null ? null : _mapBookmark(row);
   }
 
   @override
-  Future<Bookmark> createBookmark(VerseLocation location) async {
+  Future<Bookmark> createBookmark(String userId, VerseLocation location) async {
     await _ensureSeeded();
     final id = _uuid.v4();
     final now = DateTime.now();
     await _dao.insertBookmark(
       BookmarksCompanion.insert(
         id: id,
+        userId: userId,
         translationId: location.translationId,
         bookId: location.bookId,
         chapter: location.chapter,
@@ -57,42 +61,51 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
   }
 
   @override
-  Future<void> deleteBookmark(String id) {
-    return _dao.deleteBookmark(id);
+  Future<void> deleteBookmark(String userId, String id) {
+    return _dao.deleteBookmark(userId, id);
   }
 
   @override
   Stream<List<Highlight>> watchHighlightsForChapter(
+    String userId,
     String translationId,
     int bookId,
     int chapter,
   ) async* {
     await _ensureSeeded();
-    yield* _dao.watchHighlightsForChapter(translationId, bookId, chapter).map(
-      (rows) => rows.map(_mapHighlight).toList(),
-    );
+    yield* _dao
+        .watchHighlightsForChapter(userId, translationId, bookId, chapter)
+        .map((rows) => rows.map(_mapHighlight).toList());
   }
 
   @override
   Future<Highlight?> findHighlight(
+    String userId,
     String translationId,
     int bookId,
     int chapter,
     int verse,
   ) async {
     await _ensureSeeded();
-    final row = await _dao.findHighlight(translationId, bookId, chapter, verse);
+    final row = await _dao.findHighlight(
+      userId,
+      translationId,
+      bookId,
+      chapter,
+      verse,
+    );
     return row == null ? null : _mapHighlight(row);
   }
 
   @override
-  Future<Highlight> saveHighlight(Highlight highlight) async {
+  Future<Highlight> saveHighlight(String userId, Highlight highlight) async {
     await _ensureSeeded();
     final id = highlight.id.isEmpty ? _uuid.v4() : highlight.id;
     final now = DateTime.now();
     await _dao.upsertHighlight(
       HighlightsCompanion.insert(
         id: id,
+        userId: userId,
         translationId: highlight.location.translationId,
         bookId: highlight.location.bookId,
         chapter: highlight.location.chapter,
@@ -110,56 +123,74 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
   }
 
   @override
-  Future<void> deleteHighlight(String id) {
-    return _dao.deleteHighlight(id);
+  Future<void> deleteHighlight(String userId, String id) {
+    return _dao.deleteHighlight(userId, id);
   }
 
   @override
   Stream<List<Note>> watchNotesForChapter(
+    String userId,
     String translationId,
     int bookId,
     int chapter,
   ) async* {
     await _ensureSeeded();
-    yield* _dao.watchNotesForChapter(translationId, bookId, chapter).asyncMap(
-      (rows) async {
-        final notes = <Note>[];
-        for (final row in rows) {
-          final historyRows = await _dao.getRevisions(row.id);
-          notes.add(_mapNote(row, historyRows));
-        }
-        return notes;
-      },
-    );
+    yield* _dao
+        .watchNotesForChapter(userId, translationId, bookId, chapter)
+        .asyncMap((rows) async {
+      final notes = <Note>[];
+      for (final row in rows) {
+        final historyRows = await _dao.getRevisions(userId, row.id);
+        notes.add(_mapNote(row, historyRows));
+      }
+      return notes;
+    });
   }
 
   @override
   Future<Note?> findNote(
+    String userId,
     String translationId,
     int bookId,
     int chapter,
     int verse,
   ) async {
     await _ensureSeeded();
-    final row = await _dao.findNote(translationId, bookId, chapter, verse);
+    final row = await _dao.findNote(
+      userId,
+      translationId,
+      bookId,
+      chapter,
+      verse,
+    );
     if (row == null) {
       return null;
     }
-    final historyRows = await _dao.getRevisions(row.id);
+    final historyRows = await _dao.getRevisions(userId, row.id);
     return _mapNote(row, historyRows);
   }
 
   @override
-  Future<Note> saveNote(VerseLocation location, String text) async {
+  Future<Note> saveNote(
+    String userId,
+    VerseLocation location,
+    String text,
+  ) async {
     await _ensureSeeded();
     final now = DateTime.now();
-    final existing =
-        await _dao.findNote(location.translationId, location.bookId, location.chapter, location.verse);
+    final existing = await _dao.findNote(
+      userId,
+      location.translationId,
+      location.bookId,
+      location.chapter,
+      location.verse,
+    );
     if (existing == null) {
       final id = _uuid.v4();
       await _dao.insertNote(
         NotesCompanion.insert(
           id: id,
+          userId: userId,
           translationId: location.translationId,
           bookId: location.bookId,
           chapter: location.chapter,
@@ -192,6 +223,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
     final newVersion = existing.version + 1;
     await _dao.updateNote(
       existing.id,
+      userId,
       text,
       newVersion,
       now.millisecondsSinceEpoch,
@@ -205,24 +237,28 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
       ),
     );
     final updated = await _dao.findNote(
+      userId,
       location.translationId,
       location.bookId,
       location.chapter,
       location.verse,
     );
-    final historyRows = await _dao.getRevisions(existing.id);
+    final historyRows = await _dao.getRevisions(userId, existing.id);
     return _mapNote(updated!, historyRows);
   }
 
   @override
-  Future<void> deleteNote(String id) {
-    return (_db.delete(_db.notes)..where((tbl) => tbl.id.equals(id))).go();
+  Future<void> deleteNote(String userId, String id) {
+    return _dao.deleteNote(userId, id);
   }
 
   @override
-  Future<List<NoteHistoryEntry>> getHistory(String noteId) async {
+  Future<List<NoteHistoryEntry>> getHistory(
+    String userId,
+    String noteId,
+  ) async {
     await _ensureSeeded();
-    final rows = await _dao.getRevisions(noteId);
+    final rows = await _dao.getRevisions(userId, noteId);
     return rows
         .map(
           (row) => NoteHistoryEntry(
@@ -235,19 +271,23 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
   }
 
   @override
-  Future<Note?> revertToPreviousVersion(String noteId) async {
+  Future<Note?> revertToPreviousVersion(String userId, String noteId) async {
     await _ensureSeeded();
-    final history = await _dao.getRevisions(noteId);
+    final note = await _dao.findNoteById(userId, noteId);
+    if (note == null) {
+      return null;
+    }
+    final history = await _dao.getRevisions(userId, noteId);
     if (history.length < 2) {
       return null;
     }
-    final current = history.first;
-    final target = history[1];
+    final previous = history[1];
     final now = DateTime.now();
-    final newVersion = current.version + 1;
+    final newVersion = note.version + 1;
     await _dao.updateNote(
       noteId,
-      target.text,
+      userId,
+      previous.text,
       newVersion,
       now.millisecondsSinceEpoch,
     );
@@ -255,16 +295,13 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
       NoteRevisionsCompanion.insert(
         noteId: noteId,
         version: newVersion,
-        text: target.text,
+        text: previous.text,
         updatedAt: now.millisecondsSinceEpoch,
       ),
     );
-    final updated = await _dao.findNoteById(noteId);
-    if (updated == null) {
-      return null;
-    }
-    final updatedHistory = await _dao.getRevisions(noteId);
-    return _mapNote(updated, updatedHistory);
+    final updated = await _dao.findNoteById(userId, noteId);
+    final updatedHistory = await _dao.getRevisions(userId, noteId);
+    return updated == null ? null : _mapNote(updated, updatedHistory);
   }
 
   Bookmark _mapBookmark(BookmarksData row) {

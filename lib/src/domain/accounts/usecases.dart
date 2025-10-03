@@ -1,6 +1,22 @@
 import 'entities.dart';
 import 'repositories.dart';
 
+class WatchAccountsUseCase {
+  const WatchAccountsUseCase(this._repository);
+
+  final AccountRepository _repository;
+
+  Stream<List<LocalAccount>> call() => _repository.watchAccounts();
+}
+
+class GetAccountsUseCase {
+  const GetAccountsUseCase(this._repository);
+
+  final AccountRepository _repository;
+
+  Future<List<LocalAccount>> call() => _repository.getAccounts();
+}
+
 class GetCurrentAccountUseCase {
   final AccountRepository _repository;
 
@@ -15,6 +31,14 @@ class WatchAccountUseCase {
   const WatchAccountUseCase(this._repository);
 
   Stream<LocalAccount?> call() => _repository.watchCurrentAccount();
+}
+
+class SetActiveAccountUseCase {
+  final AccountRepository _repository;
+
+  const SetActiveAccountUseCase(this._repository);
+
+  Future<void> call(String id) => _repository.setActiveAccount(id);
 }
 
 class SaveAccountUseCase {
