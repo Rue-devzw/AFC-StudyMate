@@ -1,17 +1,18 @@
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../domain/settings/entities.dart';
 import '../../domain/settings/repositories.dart';
+import '../../infrastructure/security/secure_storage_service.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
+  SettingsRepositoryImpl(this._storage);
+
+  final SecureStorageService _storage;
   static const _themeKey = 'app_theme_mode';
 
   String _keyFor(String userId) => '${_themeKey}_$userId';
 
   @override
   Future<AppThemeMode> getThemeMode(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final value = prefs.getString(_keyFor(userId));
+    final value = await _storage.read(_keyFor(userId));
     switch (value) {
       case 'light':
         return AppThemeMode.light;
@@ -24,18 +25,22 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
   @override
   Future<void> saveThemeMode(String userId, AppThemeMode mode) async {
-    final prefs = await SharedPreferences.getInstance();
     final key = _keyFor(userId);
     switch (mode) {
       case AppThemeMode.system:
-        await prefs.remove(key);
+        await _storage.delete(key);
         break;
       case AppThemeMode.light:
-        await prefs.setString(key, 'light');
+        await _storage.write(key, 'light');
         break;
       case AppThemeMode.dark:
-        await prefs.setString(key, 'dark');
+        await _storage.write(key, 'dark');
         break;
     }
+  }
+
+  @override
+  Future<void> clearThemeMode(String userId) {
+    return _storage.delete(_keyFor(userId));
   }
 }

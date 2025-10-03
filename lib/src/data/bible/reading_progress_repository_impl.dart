@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../domain/bible/reading_progress/entities.dart';
 import '../../domain/bible/reading_progress/repositories.dart';
+import '../../infrastructure/security/secure_storage_service.dart';
 
 class ReadingProgressRepositoryImpl implements ReadingProgressRepository {
-  ReadingProgressRepositoryImpl();
+  ReadingProgressRepositoryImpl(this._storage);
 
   static const _storageKey = 'reading_progress_state';
   final _controllers = <String, StreamController<ReadingPosition?>>{};
   final _initialisedUsers = <String>{};
+  final SecureStorageService _storage;
 
   StreamController<ReadingPosition?> _controllerFor(String userId) {
     return _controllers.putIfAbsent(
@@ -39,8 +39,7 @@ class ReadingProgressRepositoryImpl implements ReadingProgressRepository {
 
   @override
   Future<ReadingPosition?> getLastPosition(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getString(_keyFor(userId));
+    final stored = await _storage.read(_keyFor(userId));
     if (stored == null) {
       return null;
     }
@@ -60,7 +59,6 @@ class ReadingProgressRepositoryImpl implements ReadingProgressRepository {
 
   @override
   Future<void> savePosition(String userId, ReadingPosition position) async {
-    final prefs = await SharedPreferences.getInstance();
     final payload = jsonEncode({
       'translationId': position.translationId,
       'bookId': position.bookId,
@@ -68,9 +66,17 @@ class ReadingProgressRepositoryImpl implements ReadingProgressRepository {
       'verse': position.verse,
       'updatedAt': position.updatedAt.millisecondsSinceEpoch,
     });
-    await prefs.setString(_keyFor(userId), payload);
+    await _storage.write(_keyFor(userId), payload);
     await _ensureInitialised(userId);
     _controllerFor(userId).add(position);
+  }
+
+  @override
+  Future<void> clear(String userId) async {
+    await _storage.delete(_keyFor(userId));
+    final controller = _controllers[userId];
+    controller?.add(null);
+    _initialisedUsers.remove(userId);
   }
 
   void dispose() {
