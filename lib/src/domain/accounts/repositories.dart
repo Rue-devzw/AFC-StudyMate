@@ -8,4 +8,5 @@ abstract class AccountRepository {
   Future<void> setActiveAccount(String id);
   Future<void> saveAccount(LocalAccount account);
   Future<void> deleteAccount(String id);
+  Future<LocalAccount?> getAccountById(String id);
 }

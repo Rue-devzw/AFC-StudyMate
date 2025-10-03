@@ -26,4 +26,12 @@ class SyncDao {
   Future<void> remove(String id) {
     return (_db.delete(_db.syncQueue)..where((tbl) => tbl.id.equals(id))).go();
   }
+
+  Future<bool> hasOperation(String userId, String opType) async {
+    final query = _db.select(_db.syncQueue)
+      ..where((tbl) => tbl.userId.equals(userId) & tbl.opType.equals(opType))
+      ..limit(1);
+    final result = await query.getSingleOrNull();
+    return result != null;
+  }
 }

@@ -1,6 +1,13 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../data/accounts/account_repository_impl.dart';
@@ -49,14 +56,63 @@ import '../infrastructure/lessons/lesson_cache_invalidator.dart';
 import '../infrastructure/lessons/lesson_ingestion_pipeline.dart';
 import '../infrastructure/lessons/lesson_source_registry.dart';
 import '../infrastructure/lessons/lesson_sync_service.dart';
+import '../infrastructure/accounts/cloud_account_coordinator.dart';
+import '../infrastructure/accounts/firebase_auth_service.dart';
 import '../utils/iterable_extensions.dart';
 import 'settings/bible_import_controller.dart';
 import 'settings/lesson_sync_controller.dart';
+import 'accounts/cloud_auth_controller.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
   ref.onDispose(db.close);
   return db;
+});
+
+final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
+  return FirebaseAuth.instance;
+});
+
+final firebaseStorageProvider = Provider<FirebaseStorage>((ref) {
+  return FirebaseStorage.instance;
+});
+
+final googleSignInProvider = Provider<GoogleSignIn>((ref) {
+  String? clientId;
+  if (!kIsWeb && Firebase.apps.isNotEmpty) {
+    final app = Firebase.app();
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        clientId = app.options.iosClientId;
+        break;
+      case TargetPlatform.android:
+        clientId = app.options.androidClientId;
+        break;
+      default:
+        clientId = null;
+    }
+  }
+  return GoogleSignIn(
+    clientId: clientId,
+    scopes: const ['email', 'profile'],
+  );
+});
+
+final firebaseAuthServiceProvider = Provider<FirebaseAuthService>((ref) {
+  return FirebaseAuthService(
+    auth: ref.watch(firebaseAuthProvider),
+    googleSignIn: ref.watch(googleSignInProvider),
+  );
+});
+
+final cloudAuthControllerProvider =
+    StateNotifierProvider<CloudAuthController, CloudAuthState>((ref) {
+  return CloudAuthController(ref.watch(firebaseAuthServiceProvider));
+});
+
+final firebaseAuthUserProvider = StreamProvider<User?>((ref) {
+  return ref.watch(firebaseAuthProvider).authStateChanges();
 });
 
 final bibleDaoProvider = Provider((ref) => BibleDao(ref.watch(appDatabaseProvider)));
@@ -187,6 +243,23 @@ final syncRepositoryProvider = Provider<SyncRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final dao = ref.watch(syncDaoProvider);
   return SyncRepositoryImpl(db, dao);
+});
+
+final cloudAccountCoordinatorProvider =
+    Provider<CloudAccountCoordinator>((ref) {
+  return CloudAccountCoordinator(
+    ref.watch(accountRepositoryProvider),
+    ref.watch(syncRepositoryProvider),
+  );
+});
+
+final cloudAccountBindingProvider = Provider<void>((ref) {
+  ref.listen<AsyncValue<User?>>(firebaseAuthUserProvider, (previous, next) {
+    next.whenData((user) {
+      final coordinator = ref.read(cloudAccountCoordinatorProvider);
+      unawaited(coordinator.handleAuthState(user));
+    });
+  });
 });
 
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {

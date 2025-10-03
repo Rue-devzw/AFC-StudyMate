@@ -19,6 +19,19 @@ scripture resources for offline-first use in African faith communities.
    flutter test
    ```
 
+4. Configure Firebase for cloud authentication and storage:
+
+   - Create a Firebase project and add Android, iOS, and Web apps using the
+     package/bundle identifiers `org.afc.studymate`.
+   - Replace the placeholder values in `lib/firebase_options.dart` with the
+     generated credentials or run `flutterfire configure` and copy the output.
+   - Download the platform config files, rename them to `google-services.json`
+     (Android) and `GoogleService-Info.plist` (iOS), and place them alongside
+     the provided `.example` templates in `android/app/` and `ios/Runner/`.
+   - Enable Email/Password, Google, and Apple providers in Firebase Auth and
+     supply the corresponding OAuth client IDs for the web meta tags in
+     `web/index.html`.
+
 ## Bundled Bible assets
 
 The app expects bundled Bible translations (SQLite databases plus JSON manifests)

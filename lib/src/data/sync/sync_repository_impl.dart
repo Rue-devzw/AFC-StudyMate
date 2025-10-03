@@ -47,6 +47,12 @@ class SyncRepositoryImpl implements SyncRepository {
     return _dao.remove(id);
   }
 
+  @override
+  Future<bool> hasOperation(String userId, String opType) async {
+    await _ensureSeeded();
+    return _dao.hasOperation(userId, opType);
+  }
+
   List<SyncOperation> _mapList(List<SyncQueueData> rows) {
     return rows
         .map(

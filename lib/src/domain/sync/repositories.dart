@@ -5,4 +5,5 @@ abstract class SyncRepository {
   Future<void> enqueue(SyncOperation operation);
   Future<void> markAttempt(String id);
   Future<void> remove(String id);
+  Future<bool> hasOperation(String userId, String opType);
 }
