@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../domain/accounts/entities.dart';
 import '../providers.dart';
+import '../l10n/l10n.dart';
 import 'cloud_auth_sheet.dart';
 import 'profile_management_screen.dart';
 
@@ -37,13 +38,13 @@ class ProfileOnboardingScreen extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Welcome to AFC StudyMate',
+                context.l10n.onboardingWelcomeTitle,
                 style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
               Text(
-                'Create or choose a local profile to personalise your study experience.',
+                context.l10n.onboardingWelcomeDescription,
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -63,19 +64,21 @@ class ProfileOnboardingScreen extends ConsumerWidget {
                           elevation: 2,
                           child: ListTile(
                             leading: _ProfileAvatar(avatar: profile.avatarUrl, name: profile.displayName),
-                            title: Text(profile.displayName?.isNotEmpty == true
-                                ? profile.displayName!
-                                : 'Profile ${index + 1}'),
+                            title: Text(
+                              profile.displayName?.isNotEmpty == true
+                                  ? profile.displayName!
+                                  : context.l10n.onboardingDefaultProfileName(index + 1),
+                            ),
                             subtitle: Text(
                               profile.preferredCohortTitle?.isNotEmpty == true
                                   ? profile.preferredCohortTitle!
                                   : profile.preferredLessonClass?.isNotEmpty == true
                                       ? profile.preferredLessonClass!
-                                      : 'No cohort preference',
+                                      : context.l10n.onboardingNoCohortPreference,
                             ),
                             trailing: ElevatedButton(
                               onPressed: () => _selectProfile(context, ref, profile.id),
-                              child: const Text('Use profile'),
+                              child: Text(context.l10n.onboardingUseProfile),
                             ),
                           ),
                         );
@@ -84,7 +87,7 @@ class ProfileOnboardingScreen extends ConsumerWidget {
                   },
                   loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stack) => Center(
-                    child: Text('Failed to load profiles: $error'),
+                    child: Text(context.l10n.onboardingProfilesLoadError('$error')),
                   ),
                 ),
               ),
@@ -95,13 +98,14 @@ class ProfileOnboardingScreen extends ConsumerWidget {
                     return Card(
                       child: ListTile(
                         leading: const Icon(Icons.cloud_outlined),
-                        title: const Text('Connect a cloud account'),
-                        subtitle: const Text(
-                            'Sign in with email, Google or Apple to sync progress across devices.'),
+                        title: Text(context.l10n.onboardingConnectCloudAccount),
+                        subtitle: Text(
+                          context.l10n.onboardingConnectCloudDescription,
+                        ),
                         trailing: FilledButton(
                           onPressed:
                               authState.isLoading ? null : () => CloudAuthSheet.show(context),
-                          child: const Text('Sign in'),
+                          child: Text(context.l10n.actionSignIn),
                         ),
                       ),
                     );
@@ -111,11 +115,16 @@ class ProfileOnboardingScreen extends ConsumerWidget {
                   return Card(
                     child: ListTile(
                       leading: const Icon(Icons.cloud_done_outlined),
-                      title: Text(user.displayName ?? user.email ?? 'Signed in'),
+                      title: Text(
+                        user.displayName ??
+                            user.email ??
+                            context.l10n.onboardingSignedInFallback,
+                      ),
                       subtitle: Text(
                         providerSummary.isEmpty
-                            ? 'Cloud sync is active.'
-                            : 'Cloud sync via ${providerSummary.join(', ')}',
+                            ? context.l10n.onboardingCloudSyncActive
+                            : context.l10n
+                                .onboardingCloudSyncVia(providerSummary.join(', ')),
                       ),
                       trailing: authState.isLoading
                           ? const SizedBox(
@@ -125,7 +134,7 @@ class ProfileOnboardingScreen extends ConsumerWidget {
                             )
                           : TextButton(
                               onPressed: () => _signOutCloud(context, ref),
-                              child: const Text('Sign out'),
+                              child: Text(context.l10n.actionSignOut),
                             ),
                     ),
                   );
@@ -137,13 +146,15 @@ class ProfileOnboardingScreen extends ConsumerWidget {
                 error: (error, stack) => Card(
                   child: ListTile(
                     leading: const Icon(Icons.cloud_off_outlined),
-                    title: const Text('Cloud sync unavailable'),
-                    subtitle: Text('Failed to load status: $error'),
+                    title: Text(context.l10n.onboardingCloudUnavailable),
+                    subtitle: Text(
+                      context.l10n.onboardingCloudStatusError('$error'),
+                    ),
                     trailing: TextButton(
                       onPressed: authState.isLoading
                           ? null
                           : () => CloudAuthSheet.show(context),
-                      child: const Text('Try again'),
+                      child: Text(context.l10n.actionTryAgain),
                     ),
                   ),
                 ),
@@ -152,7 +163,7 @@ class ProfileOnboardingScreen extends ConsumerWidget {
               FilledButton.icon(
                 onPressed: () => _createProfile(context, ref),
                 icon: const Icon(Icons.add),
-                label: const Text('Create profile'),
+                label: Text(context.l10n.onboardingCreateProfile),
               ),
               const SizedBox(height: 12),
               TextButton(
@@ -161,7 +172,7 @@ class ProfileOnboardingScreen extends ConsumerWidget {
                     MaterialPageRoute(builder: (_) => const ProfileManagementScreen()),
                   );
                 },
-                child: const Text('Manage existing profiles'),
+                child: Text(context.l10n.onboardingManageProfiles),
               ),
             ],
           ),
@@ -192,13 +203,15 @@ class ProfileOnboardingScreen extends ConsumerWidget {
       await ref.read(setActiveAccountUseCaseProvider)(id);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile created.')),
+          SnackBar(content: Text(context.l10n.snackbarProfileCreated)),
         );
       }
     } catch (error) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to create profile: $error')),
+          SnackBar(
+            content: Text(context.l10n.snackbarProfileCreateFailed('$error')),
+          ),
         );
       }
     }
@@ -209,13 +222,15 @@ class ProfileOnboardingScreen extends ConsumerWidget {
       await ref.read(setActiveAccountUseCaseProvider)(id);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile selected.')),
+          SnackBar(content: Text(context.l10n.snackbarProfileSelected)),
         );
       }
     } catch (error) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to select profile: $error')),
+          SnackBar(
+            content: Text(context.l10n.snackbarProfileSelectFailed('$error')),
+          ),
         );
       }
     }
@@ -229,8 +244,8 @@ class ProfileOnboardingScreen extends ConsumerWidget {
       return;
     }
     final message = success
-        ? 'Signed out of cloud account.'
-        : state.errorMessage ?? 'Unable to sign out. Please try again.';
+        ? context.l10n.snackbarCloudSignedOut
+        : state.errorMessage ?? context.l10n.snackbarCloudSignOutFailed;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
@@ -251,15 +266,15 @@ class _EmptyState extends StatelessWidget {
           const Icon(Icons.person_add_alt_1, size: 64),
           const SizedBox(height: 16),
           Text(
-            'No profiles yet',
+            context.l10n.emptyProfilesTitle,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          const Text('Create your first profile to get started.'),
+          Text(context.l10n.emptyProfilesDescription),
           const SizedBox(height: 16),
           FilledButton(
             onPressed: onCreate,
-            child: const Text('Create profile'),
+            child: Text(context.l10n.emptyProfilesCreate),
           ),
         ],
       ),
@@ -331,7 +346,11 @@ class _ProfileFormDialogState extends ConsumerState<ProfileFormDialog> {
     );
 
     return AlertDialog(
-      title: Text(widget.initial == null ? 'Create profile' : 'Edit profile'),
+      title: Text(
+        widget.initial == null
+            ? context.l10n.dialogCreateProfileTitle
+            : context.l10n.dialogEditProfileTitle,
+      ),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -341,17 +360,21 @@ class _ProfileFormDialogState extends ConsumerState<ProfileFormDialog> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Display name'),
+                decoration:
+                    InputDecoration(labelText: context.l10n.formDisplayNameLabel),
                 textCapitalization: TextCapitalization.words,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a name';
+                    return context.l10n.formDisplayNameValidation;
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
-              Text('Choose an avatar', style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                context.l10n.formChooseAvatar,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -366,9 +389,9 @@ class _ProfileFormDialogState extends ConsumerState<ProfileFormDialog> {
                           _selectedAvatar = avatar;
                         });
                       },
-                    ),
+                  ),
                   ChoiceChip(
-                    label: const Text('None'),
+                    label: Text(context.l10n.formAvatarNone),
                     selected: _selectedAvatar == null,
                     onSelected: (_) {
                       setState(() {
@@ -379,14 +402,17 @@ class _ProfileFormDialogState extends ConsumerState<ProfileFormDialog> {
                 ],
               ),
               const SizedBox(height: 16),
-              Text('Preferred cohort', style: Theme.of(context).textTheme.titleSmall),
+              Text(
+                context.l10n.formPreferredCohort,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String?>(
                 value: _selectedCohortId,
                 items: [
-                  const DropdownMenuItem<String?>(
+                  DropdownMenuItem<String?>(
                     value: null,
-                    child: Text('No preference'),
+                    child: Text(context.l10n.formPreferredCohortNone),
                   ),
                   for (final option in cohortOptions)
                     DropdownMenuItem<String?>(
@@ -407,7 +433,7 @@ class _ProfileFormDialogState extends ConsumerState<ProfileFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(context.l10n.actionCancel),
         ),
         FilledButton(
           onPressed: () {
@@ -432,7 +458,7 @@ class _ProfileFormDialogState extends ConsumerState<ProfileFormDialog> {
               ),
             );
           },
-          child: const Text('Save'),
+          child: Text(context.l10n.actionSave),
         ),
       ],
     );

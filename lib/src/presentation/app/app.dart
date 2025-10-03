@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../domain/accounts/entities.dart';
 import '../providers.dart';
 import '../home/home_screen.dart';
 import '../accounts/profile_onboarding_screen.dart';
 import '../theme/age_cohort_theme_profiles.dart';
+import '../l10n/l10n.dart';
 
 class StudyMateApp extends ConsumerWidget {
   const StudyMateApp({super.key});
@@ -44,7 +47,14 @@ class StudyMateApp extends ConsumerWidget {
     required LocalAccount? account,
   }) {
     return MaterialApp(
-      title: 'AFC StudyMate',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: profile.toThemeData(Brightness.light),
       darkTheme: profile.toThemeData(Brightness.dark),
       themeMode: themeMode,
@@ -59,7 +69,14 @@ class StudyMateApp extends ConsumerWidget {
     AgeCohortThemeProfile profile,
   ) {
     return MaterialApp(
-      title: 'AFC StudyMate',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: profile.toThemeData(Brightness.light),
       darkTheme: profile.toThemeData(Brightness.dark),
       themeMode: themeMode,
@@ -75,13 +92,22 @@ class StudyMateApp extends ConsumerWidget {
     Object error,
   ) {
     return MaterialApp(
-      title: 'AFC StudyMate',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: profile.toThemeData(Brightness.light),
       darkTheme: profile.toThemeData(Brightness.dark),
       themeMode: themeMode,
-      home: Scaffold(
-        body: Center(
-          child: Text('Failed to load theme: $error'),
+      home: Builder(
+        builder: (context) => Scaffold(
+          body: Center(
+            child: Text(context.l10n.appThemeLoadError('$error')),
+          ),
         ),
       ),
     );
