@@ -18,3 +18,21 @@ class SaveThemeModeUseCase {
   Future<void> call(String userId, AppThemeMode mode) =>
       _repository.saveThemeMode(userId, mode);
 }
+
+class GetNotificationPreferencesUseCase {
+  final SettingsRepository _repository;
+
+  const GetNotificationPreferencesUseCase(this._repository);
+
+  Future<NotificationPreferences> call(String userId) =>
+      _repository.getNotificationPreferences(userId);
+}
+
+class SaveNotificationPreferencesUseCase {
+  final SettingsRepository _repository;
+
+  const SaveNotificationPreferencesUseCase(this._repository);
+
+  Future<void> call(String userId, NotificationPreferences preferences) =>
+      _repository.saveNotificationPreferences(userId, preferences);
+}

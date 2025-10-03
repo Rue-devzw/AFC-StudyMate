@@ -36,6 +36,8 @@ class _AppBootstrap extends ConsumerWidget {
     final dataSync = ref.read(syncOrchestratorProvider);
     dataSync.ensureBackgroundScheduled();
     unawaited(dataSync.syncNow().catchError((_) {}));
+    ref.watch(notificationServiceProvider);
+    ref.watch(chatNotificationObserverProvider);
     return const StudyMateApp();
   }
 }

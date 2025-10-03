@@ -45,6 +45,15 @@ class _$AppDatabase extends GeneratedDatabase {
       'Run build_runner to generate table bindings for `sync_queue`.');
   late final TableInfo<Table, dynamic> messages = throw UnimplementedError(
       'Run build_runner to generate table bindings for `messages`.');
+  late final TableInfo<Table, dynamic> typingIndicators =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `typing_indicators`.');
+  late final TableInfo<Table, dynamic> moderationActionsTable =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `moderation_actions_table`.');
+  late final TableInfo<Table, dynamic> moderationAppealsTable =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `moderation_appeals_table`.');
   late final TableInfo<Table, dynamic> noteChangeTrackers =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `note_change_trackers`.');
@@ -60,7 +69,7 @@ class _$AppDatabase extends GeneratedDatabase {
       throw UnimplementedError('Run build_runner to generate table bindings.');
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 }
 
 /// A lightweight stand-in for the generated [LocalUser] data class.
@@ -168,4 +177,232 @@ class LocalUsersCompanion {
       isActive: isActive ?? this.isActive,
     );
   }
+}
+
+class Message {
+  const Message({
+    required this.id,
+    required this.classId,
+    required this.userId,
+    required this.body,
+    required this.createdAt,
+    required this.updatedAt,
+    this.deleted = false,
+    this.flagged = false,
+    this.attachments = '[]',
+    this.authorName,
+  });
+
+  final String id;
+  final String classId;
+  final String userId;
+  final String body;
+  final int createdAt;
+  final int updatedAt;
+  final bool deleted;
+  final bool flagged;
+  final String attachments;
+  final String? authorName;
+}
+
+class MessagesCompanion {
+  const MessagesCompanion({
+    this.id = const Value.absent(),
+    this.classId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.body = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deleted = const Value.absent(),
+    this.flagged = const Value.absent(),
+    this.attachments = const Value.absent(),
+    this.authorName = const Value.absent(),
+  });
+
+  const MessagesCompanion.insert({
+    required String id,
+    required String classId,
+    required String userId,
+    required String body,
+    required int createdAt,
+    required int updatedAt,
+    Value<bool> deleted = const Value(false),
+    Value<bool> flagged = const Value(false),
+    Value<String> attachments = const Value('[]'),
+    Value<String?> authorName = const Value.absent(),
+  })  : id = Value(id),
+        classId = Value(classId),
+        userId = Value(userId),
+        body = Value(body),
+        createdAt = Value(createdAt),
+        updatedAt = Value(updatedAt),
+        deleted = deleted,
+        flagged = flagged,
+        attachments = attachments,
+        authorName = authorName;
+
+  final Value<String> id;
+  final Value<String> classId;
+  final Value<String> userId;
+  final Value<String> body;
+  final Value<int> createdAt;
+  final Value<int> updatedAt;
+  final Value<bool> deleted;
+  final Value<bool> flagged;
+  final Value<String> attachments;
+  final Value<String?> authorName;
+
+  MessagesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? classId,
+    Value<String>? userId,
+    Value<String>? body,
+    Value<int>? createdAt,
+    Value<int>? updatedAt,
+    Value<bool>? deleted,
+    Value<bool>? flagged,
+    Value<String>? attachments,
+    Value<String?>? authorName,
+  }) {
+    return MessagesCompanion(
+      id: id ?? this.id,
+      classId: classId ?? this.classId,
+      userId: userId ?? this.userId,
+      body: body ?? this.body,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deleted: deleted ?? this.deleted,
+      flagged: flagged ?? this.flagged,
+      attachments: attachments ?? this.attachments,
+      authorName: authorName ?? this.authorName,
+    );
+  }
+}
+
+class TypingIndicatorRow {
+  const TypingIndicatorRow({
+    required this.classId,
+    required this.userId,
+    required this.isTyping,
+    required this.updatedAt,
+  });
+
+  final String classId;
+  final String userId;
+  final bool isTyping;
+  final int updatedAt;
+}
+
+class TypingIndicatorsCompanion {
+  const TypingIndicatorsCompanion({
+    this.classId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.isTyping = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+
+  final Value<String> classId;
+  final Value<String> userId;
+  final Value<bool> isTyping;
+  final Value<int> updatedAt;
+}
+
+class ModerationActionRow {
+  const ModerationActionRow({
+    required this.id,
+    required this.classId,
+    required this.targetUserId,
+    required this.moderatorId,
+    required this.type,
+    required this.status,
+    this.reason,
+    required this.metadata,
+    required this.createdAt,
+    this.expiresAt,
+  });
+
+  final String id;
+  final String classId;
+  final String targetUserId;
+  final String moderatorId;
+  final String type;
+  final String status;
+  final String? reason;
+  final String metadata;
+  final int createdAt;
+  final int? expiresAt;
+}
+
+class ModerationActionsTableCompanion {
+  const ModerationActionsTableCompanion({
+    this.id = const Value.absent(),
+    this.classId = const Value.absent(),
+    this.targetUserId = const Value.absent(),
+    this.moderatorId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.status = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.metadata = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.expiresAt = const Value.absent(),
+  });
+
+  final Value<String> id;
+  final Value<String> classId;
+  final Value<String> targetUserId;
+  final Value<String> moderatorId;
+  final Value<String> type;
+  final Value<String> status;
+  final Value<String?> reason;
+  final Value<String> metadata;
+  final Value<int> createdAt;
+  final Value<int?> expiresAt;
+}
+
+class ModerationAppealRow {
+  const ModerationAppealRow({
+    required this.id,
+    required this.actionId,
+    required this.classId,
+    required this.userId,
+    required this.message,
+    required this.status,
+    this.resolutionNotes,
+    required this.createdAt,
+    this.resolvedAt,
+  });
+
+  final String id;
+  final String actionId;
+  final String classId;
+  final String userId;
+  final String message;
+  final String status;
+  final String? resolutionNotes;
+  final int createdAt;
+  final int? resolvedAt;
+}
+
+class ModerationAppealsTableCompanion {
+  const ModerationAppealsTableCompanion({
+    this.id = const Value.absent(),
+    this.actionId = const Value.absent(),
+    this.classId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.message = const Value.absent(),
+    this.status = const Value.absent(),
+    this.resolutionNotes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.resolvedAt = const Value.absent(),
+  });
+
+  final Value<String> id;
+  final Value<String> actionId;
+  final Value<String> classId;
+  final Value<String> userId;
+  final Value<String> message;
+  final Value<String> status;
+  final Value<String?> resolutionNotes;
+  final Value<int> createdAt;
+  final Value<int?> resolvedAt;
 }

@@ -282,6 +282,55 @@ class Messages extends Table {
       .withDefault(const Constant(0))();
   BoolColumn get deleted => boolean().withDefault(const Constant(false))();
   BoolColumn get flagged => boolean().withDefault(const Constant(false))();
+  TextColumn get attachments =>
+      text().withDefault(const Constant('[]'))();
+  TextColumn get authorName => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('TypingIndicatorRow')
+class TypingIndicators extends Table {
+  TextColumn get classId => text()();
+  TextColumn get userId => text()();
+  BoolColumn get isTyping => boolean().withDefault(const Constant(false))();
+  IntColumn get updatedAt => integer().withDefault(const Constant(0))();
+
+  @override
+  Set<Column> get primaryKey => {classId, userId};
+}
+
+@DataClassName('ModerationActionRow')
+class ModerationActionsTable extends Table {
+  TextColumn get id => text()();
+  TextColumn get classId => text()();
+  TextColumn get targetUserId => text()();
+  TextColumn get moderatorId => text()();
+  TextColumn get type => text()();
+  TextColumn get status => text()();
+  TextColumn get reason => text().nullable()();
+  TextColumn get metadata =>
+      text().withDefault(const Constant('{}'))();
+  IntColumn get createdAt => integer()();
+  IntColumn get expiresAt => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('ModerationAppealRow')
+class ModerationAppealsTable extends Table {
+  TextColumn get id => text()();
+  TextColumn get actionId => text()()
+      .references(ModerationActionsTable, #id, onDelete: KeyAction.cascade)();
+  TextColumn get classId => text()();
+  TextColumn get userId => text()();
+  TextColumn get message => text()();
+  TextColumn get status => text()();
+  TextColumn get resolutionNotes => text().nullable()();
+  IntColumn get createdAt => integer()();
+  IntColumn get resolvedAt => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -361,6 +410,9 @@ class MessageChangeTrackers extends Table {
     LocalUsers,
     SyncQueue,
     Messages,
+    TypingIndicators,
+    ModerationActionsTable,
+    ModerationAppealsTable,
     NoteChangeTrackers,
     ProgressChangeTrackers,
     MessageChangeTrackers,
@@ -381,7 +433,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -443,6 +495,13 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(noteChangeTrackers);
             await m.createTable(progressChangeTrackers);
             await m.createTable(messageChangeTrackers);
+          }
+          if (from < 9) {
+            await m.addColumn(messages, messages.attachments);
+            await m.addColumn(messages, messages.authorName);
+            await m.createTable(typingIndicators);
+            await m.createTable(moderationActionsTable);
+            await m.createTable(moderationAppealsTable);
           }
         },
       );
