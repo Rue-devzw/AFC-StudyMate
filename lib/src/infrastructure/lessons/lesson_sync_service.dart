@@ -11,6 +11,7 @@ import 'lesson_attachment_cache.dart';
 import 'lesson_ingestion_pipeline.dart';
 import 'lesson_source_registry.dart';
 import 'lesson_sync_constants.dart';
+import '../sync/sync_orchestrator.dart';
 
 const String kLessonSyncBackgroundTask = 'afc_lesson_sync';
 
@@ -333,6 +334,10 @@ void lessonSyncCallbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     WidgetsFlutterBinding.ensureInitialized();
     DartPluginRegistrant.ensureInitialized();
+
+    if (task == kDataSyncBackgroundTask) {
+      return await runDataSyncTask();
+    }
 
     final db = AppDatabase();
     final registry = LessonSourceRegistry(db);

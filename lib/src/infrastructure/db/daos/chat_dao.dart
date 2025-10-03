@@ -22,4 +22,9 @@ class ChatDao {
     return (_db.update(_db.messages)..where((tbl) => tbl.id.equals(id)))
         .write(companion);
   }
+
+  Future<Message?> getMessageById(String id) {
+    return (_db.select(_db.messages)..where((tbl) => tbl.id.equals(id)))
+        .getSingleOrNull();
+  }
 }

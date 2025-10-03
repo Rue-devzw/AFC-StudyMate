@@ -278,11 +278,67 @@ class Messages extends Table {
   TextColumn get userId => text()();
   TextColumn get body => text()();
   IntColumn get createdAt => integer()();
+  IntColumn get updatedAt => integer()
+      .withDefault(const Constant(0))();
   BoolColumn get deleted => boolean().withDefault(const Constant(false))();
   BoolColumn get flagged => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
+}
+
+class NoteChangeTrackers extends Table {
+  TextColumn get noteId => text()
+      .references(Notes, #id, onDelete: KeyAction.noAction)();
+  TextColumn get userId => text()();
+  IntColumn get localUpdatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get remoteUpdatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get lastSyncedAt => integer().nullable()();
+  TextColumn get lastOperation =>
+      text().withDefault(const Constant('upsert'))();
+  TextColumn get status => text().withDefault(const Constant('pending'))();
+  TextColumn get conflictReason => text().nullable()();
+  TextColumn get conflictPayload => text().nullable()();
+  IntColumn get conflictDetectedAt => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {noteId};
+}
+
+class ProgressChangeTrackers extends Table {
+  TextColumn get progressId => text()
+      .references(Progress, #id, onDelete: KeyAction.noAction)();
+  TextColumn get userId => text()();
+  IntColumn get localUpdatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get remoteUpdatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get lastSyncedAt => integer().nullable()();
+  TextColumn get lastOperation =>
+      text().withDefault(const Constant('upsert'))();
+  TextColumn get status => text().withDefault(const Constant('pending'))();
+  TextColumn get conflictReason => text().nullable()();
+  TextColumn get conflictPayload => text().nullable()();
+  IntColumn get conflictDetectedAt => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {progressId};
+}
+
+class MessageChangeTrackers extends Table {
+  TextColumn get messageId => text()
+      .references(Messages, #id, onDelete: KeyAction.cascade)();
+  TextColumn get userId => text()();
+  IntColumn get localUpdatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get remoteUpdatedAt => integer().withDefault(const Constant(0))();
+  IntColumn get lastSyncedAt => integer().nullable()();
+  TextColumn get lastOperation =>
+      text().withDefault(const Constant('upsert'))();
+  TextColumn get status => text().withDefault(const Constant('pending'))();
+  TextColumn get conflictReason => text().nullable()();
+  TextColumn get conflictPayload => text().nullable()();
+  IntColumn get conflictDetectedAt => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {messageId};
 }
 
 @DriftDatabase(
@@ -305,6 +361,9 @@ class Messages extends Table {
     LocalUsers,
     SyncQueue,
     Messages,
+    NoteChangeTrackers,
+    ProgressChangeTrackers,
+    MessageChangeTrackers,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -322,7 +381,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -378,6 +437,12 @@ class AppDatabase extends _$AppDatabase {
                 "UPDATE highlights SET user_id = 'local-user' WHERE user_id IS NULL");
             await m.customStatement(
                 "UPDATE notes SET user_id = 'local-user' WHERE user_id IS NULL");
+          }
+          if (from < 8) {
+            await m.addColumn(messages, messages.updatedAt);
+            await m.createTable(noteChangeTrackers);
+            await m.createTable(progressChangeTrackers);
+            await m.createTable(messageChangeTrackers);
           }
         },
       );

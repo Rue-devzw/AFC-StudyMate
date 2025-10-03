@@ -33,6 +33,9 @@ class _AppBootstrap extends ConsumerWidget {
     final syncService = ref.read(lessonSyncServiceProvider);
     syncService.ensureBackgroundScheduled();
     unawaited(syncService.syncAll());
+    final dataSync = ref.read(syncOrchestratorProvider);
+    dataSync.ensureBackgroundScheduled();
+    unawaited(dataSync.syncNow().catchError((_) {}));
     return const StudyMateApp();
   }
 }

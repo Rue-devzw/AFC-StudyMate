@@ -4,16 +4,27 @@ import 'package:drift/drift.dart';
 
 import '../../domain/lessons/entities.dart' as domain;
 import '../../domain/lessons/repositories.dart';
+import '../../domain/sync/entities.dart';
+import '../../domain/sync/repositories.dart';
 import '../../infrastructure/db/app_database.dart' as db;
 import '../../infrastructure/db/daos/lesson_dao.dart';
+import '../../infrastructure/db/daos/sync_dao.dart';
 import '../../infrastructure/lessons/lesson_ingestion_pipeline.dart';
 
 class LessonRepositoryImpl implements LessonRepository {
-  LessonRepositoryImpl(this._db, this._dao, this._pipeline);
+  LessonRepositoryImpl(
+    this._db,
+    this._dao,
+    this._pipeline,
+    this._syncDao,
+    this._syncRepository,
+  );
 
   final db.AppDatabase _db;
   final LessonDao _dao;
   final LessonIngestionPipeline _pipeline;
+  final SyncDao _syncDao;
+  final SyncRepository _syncRepository;
 
   Future<void> _ensureSeeded() async {
     await _db.ensureSeeded();
@@ -51,7 +62,8 @@ class LessonRepositoryImpl implements LessonRepository {
   }
 
   @override
-  Future<void> upsertProgress(domain.LessonProgress progress) {
+  Future<void> upsertProgress(domain.LessonProgress progress) async {
+    await _ensureSeeded();
     final companion = db.ProgressCompanion(
       id: Value(progress.id),
       userId: Value(progress.userId),
@@ -67,7 +79,31 @@ class LessonRepositoryImpl implements LessonRepository {
           : Value(progress.completedAt!.millisecondsSinceEpoch),
       updatedAt: Value(progress.updatedAt.millisecondsSinceEpoch),
     );
-    return _dao.upsertProgress(companion);
+    await _dao.upsertProgress(companion);
+    await _syncDao.recordProgressChange(
+      progressId: progress.id,
+      userId: progress.userId,
+      localUpdatedAt: progress.updatedAt.millisecondsSinceEpoch,
+      operation: 'upsert',
+    );
+    await _syncRepository.enqueue(
+      SyncOperation(
+        id: 'progress:${progress.id}',
+        userId: progress.userId,
+        opType: 'progress.upsert',
+        payload: {
+          'progressId': progress.id,
+          'lessonId': progress.lessonId,
+          'status': progress.status,
+          'quizScore': progress.quizScore,
+          'timeSpentSeconds': progress.timeSpentSeconds,
+          'updatedAt': progress.updatedAt.millisecondsSinceEpoch,
+          'startedAt': progress.startedAt?.millisecondsSinceEpoch,
+          'completedAt': progress.completedAt?.millisecondsSinceEpoch,
+        },
+        createdAt: progress.updatedAt,
+      ),
+    );
   }
 
   LessonQueryFilter _mapFilter(domain.LessonQuery? filter) {
