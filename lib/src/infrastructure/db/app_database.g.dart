@@ -201,6 +201,390 @@ class LocalUsersCompanion {
   }
 }
 
+class BookmarksData {
+  const BookmarksData({
+    required this.id,
+    required this.userId,
+    required this.translationId,
+    required this.bookId,
+    required this.chapter,
+    required this.verse,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String userId;
+  final String translationId;
+  final int bookId;
+  final int chapter;
+  final int verse;
+  final int createdAt;
+
+  BookmarksData copyWith({
+    String? id,
+    String? userId,
+    String? translationId,
+    int? bookId,
+    int? chapter,
+    int? verse,
+    int? createdAt,
+  }) {
+    return BookmarksData(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      translationId: translationId ?? this.translationId,
+      bookId: bookId ?? this.bookId,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+}
+
+class BookmarksCompanion {
+  const BookmarksCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.translationId = const Value.absent(),
+    this.bookId = const Value.absent(),
+    this.chapter = const Value.absent(),
+    this.verse = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+
+  BookmarksCompanion.insert({
+    required String id,
+    required String userId,
+    required String translationId,
+    required int bookId,
+    required int chapter,
+    required int verse,
+    required int createdAt,
+  })  : id = Value(id),
+        userId = Value(userId),
+        translationId = Value(translationId),
+        bookId = Value(bookId),
+        chapter = Value(chapter),
+        verse = Value(verse),
+        createdAt = Value(createdAt);
+
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> translationId;
+  final Value<int> bookId;
+  final Value<int> chapter;
+  final Value<int> verse;
+  final Value<int> createdAt;
+
+  BookmarksCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? translationId,
+    Value<int>? bookId,
+    Value<int>? chapter,
+    Value<int>? verse,
+    Value<int>? createdAt,
+  }) {
+    return BookmarksCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      translationId: translationId ?? this.translationId,
+      bookId: bookId ?? this.bookId,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+}
+
+class HighlightsData {
+  const HighlightsData({
+    required this.id,
+    required this.userId,
+    required this.translationId,
+    required this.bookId,
+    required this.chapter,
+    required this.verse,
+    required this.colour,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String userId;
+  final String translationId;
+  final int bookId;
+  final int chapter;
+  final int verse;
+  final String colour;
+  final int createdAt;
+
+  HighlightsData copyWith({
+    String? id,
+    String? userId,
+    String? translationId,
+    int? bookId,
+    int? chapter,
+    int? verse,
+    String? colour,
+    int? createdAt,
+  }) {
+    return HighlightsData(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      translationId: translationId ?? this.translationId,
+      bookId: bookId ?? this.bookId,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      colour: colour ?? this.colour,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+}
+
+class HighlightsCompanion {
+  const HighlightsCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.translationId = const Value.absent(),
+    this.bookId = const Value.absent(),
+    this.chapter = const Value.absent(),
+    this.verse = const Value.absent(),
+    this.colour = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+
+  HighlightsCompanion.insert({
+    required String id,
+    required String userId,
+    required String translationId,
+    required int bookId,
+    required int chapter,
+    required int verse,
+    required String colour,
+    required int createdAt,
+  })  : id = Value(id),
+        userId = Value(userId),
+        translationId = Value(translationId),
+        bookId = Value(bookId),
+        chapter = Value(chapter),
+        verse = Value(verse),
+        colour = Value(colour),
+        createdAt = Value(createdAt);
+
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> translationId;
+  final Value<int> bookId;
+  final Value<int> chapter;
+  final Value<int> verse;
+  final Value<String> colour;
+  final Value<int> createdAt;
+
+  HighlightsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? translationId,
+    Value<int>? bookId,
+    Value<int>? chapter,
+    Value<int>? verse,
+    Value<String>? colour,
+    Value<int>? createdAt,
+  }) {
+    return HighlightsCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      translationId: translationId ?? this.translationId,
+      bookId: bookId ?? this.bookId,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      colour: colour ?? this.colour,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+}
+
+class NotesData {
+  const NotesData({
+    required this.id,
+    required this.userId,
+    required this.translationId,
+    required this.bookId,
+    required this.chapter,
+    required this.verse,
+    required this.text,
+    required this.version,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String userId;
+  final String translationId;
+  final int bookId;
+  final int chapter;
+  final int verse;
+  final String text;
+  final int version;
+  final int updatedAt;
+
+  NotesData copyWith({
+    String? id,
+    String? userId,
+    String? translationId,
+    int? bookId,
+    int? chapter,
+    int? verse,
+    String? text,
+    int? version,
+    int? updatedAt,
+  }) {
+    return NotesData(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      translationId: translationId ?? this.translationId,
+      bookId: bookId ?? this.bookId,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      text: text ?? this.text,
+      version: version ?? this.version,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+class NotesCompanion {
+  const NotesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.translationId = const Value.absent(),
+    this.bookId = const Value.absent(),
+    this.chapter = const Value.absent(),
+    this.verse = const Value.absent(),
+    this.text = const Value.absent(),
+    this.version = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+
+  NotesCompanion.insert({
+    required String id,
+    required String userId,
+    required String translationId,
+    required int bookId,
+    required int chapter,
+    required int verse,
+    required String text,
+    required int version,
+    required int updatedAt,
+  })  : id = Value(id),
+        userId = Value(userId),
+        translationId = Value(translationId),
+        bookId = Value(bookId),
+        chapter = Value(chapter),
+        verse = Value(verse),
+        text = Value(text),
+        version = Value(version),
+        updatedAt = Value(updatedAt);
+
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> translationId;
+  final Value<int> bookId;
+  final Value<int> chapter;
+  final Value<int> verse;
+  final Value<String> text;
+  final Value<int> version;
+  final Value<int> updatedAt;
+
+  NotesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? translationId,
+    Value<int>? bookId,
+    Value<int>? chapter,
+    Value<int>? verse,
+    Value<String>? text,
+    Value<int>? version,
+    Value<int>? updatedAt,
+  }) {
+    return NotesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      translationId: translationId ?? this.translationId,
+      bookId: bookId ?? this.bookId,
+      chapter: chapter ?? this.chapter,
+      verse: verse ?? this.verse,
+      text: text ?? this.text,
+      version: version ?? this.version,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+class NoteRevisionsData {
+  const NoteRevisionsData({
+    required this.noteId,
+    required this.version,
+    required this.text,
+    required this.updatedAt,
+  });
+
+  final String noteId;
+  final int version;
+  final String text;
+  final int updatedAt;
+
+  NoteRevisionsData copyWith({
+    String? noteId,
+    int? version,
+    String? text,
+    int? updatedAt,
+  }) {
+    return NoteRevisionsData(
+      noteId: noteId ?? this.noteId,
+      version: version ?? this.version,
+      text: text ?? this.text,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+class NoteRevisionsCompanion {
+  const NoteRevisionsCompanion({
+    this.noteId = const Value.absent(),
+    this.version = const Value.absent(),
+    this.text = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+
+  NoteRevisionsCompanion.insert({
+    required String noteId,
+    required int version,
+    required String text,
+    required int updatedAt,
+  })  : noteId = Value(noteId),
+        version = Value(version),
+        text = Value(text),
+        updatedAt = Value(updatedAt);
+
+  final Value<String> noteId;
+  final Value<int> version;
+  final Value<String> text;
+  final Value<int> updatedAt;
+
+  NoteRevisionsCompanion copyWith({
+    Value<String>? noteId,
+    Value<int>? version,
+    Value<String>? text,
+    Value<int>? updatedAt,
+  }) {
+    return NoteRevisionsCompanion(
+      noteId: noteId ?? this.noteId,
+      version: version ?? this.version,
+      text: text ?? this.text,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
 class Message {
   const Message({
     required this.id,
