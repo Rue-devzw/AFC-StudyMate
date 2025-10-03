@@ -16,6 +16,7 @@ import 'data_sync_controller.dart';
 import 'lesson_sync_controller.dart';
 import 'privacy_policy_screen.dart';
 import '../accounts/profile_management_screen.dart';
+import '../theme/age_cohort_theme_profiles.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -23,6 +24,8 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeModeAsync = ref.watch(themeModeControllerProvider);
+    final themeProfileAsync = ref.watch(themeProfileControllerProvider);
+    final themeProfiles = ref.watch(themeProfilesProvider);
     final translationsAsync = ref.watch(translationsProvider);
     final syncState = ref.watch(lessonSyncControllerProvider);
     final dataSyncState = ref.watch(dataSyncControllerProvider);
@@ -86,8 +89,9 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-        children: [
+      body: FocusTraversalGroup(
+        child: ListView(
+          children: [
           activeAccountAsync.when(
             data: (account) => ListTile(
               leading: _ProfileAvatar(avatar: account?.avatarUrl, name: account?.displayName),
@@ -95,14 +99,17 @@ class SettingsScreen extends ConsumerWidget {
                   ? account!.displayName!
                   : 'No profile selected'),
               subtitle: const Text('Current profile'),
-              trailing: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfileManagementScreen()),
-                  );
-                },
-                child: const Text('Manage'),
+              trailing: Tooltip(
+                message: 'Manage profiles',
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileManagementScreen()),
+                    );
+                  },
+                  child: const Text('Manage'),
+                ),
               ),
             ),
             loading: () => const ListTile(
@@ -112,21 +119,42 @@ class SettingsScreen extends ConsumerWidget {
             error: (error, stack) => ListTile(
               leading: const Icon(Icons.error_outline),
               title: Text('Failed to load profile: $error'),
-              trailing: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ProfileManagementScreen()),
-                  );
-                },
-                child: const Text('Manage'),
+              trailing: Tooltip(
+                message: 'Manage profiles',
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileManagementScreen()),
+                    );
+                  },
+                  child: const Text('Manage'),
+                ),
               ),
+            ),
+          ),
+          const Divider(),
+          themeProfileAsync.when(
+            data: (selected) => _ThemeProfileSection(
+              profiles: themeProfiles,
+              selectedId: selected.id,
+              brightness: Theme.of(context).brightness,
+              onSelected: (value) =>
+                  ref.read(themeProfileControllerProvider.notifier).setProfile(value),
+            ),
+            loading: const _ThemeProfileLoadingPlaceholder(),
+            error: (error, stack) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text('Unable to load theme profiles: $error'),
             ),
           ),
           const Divider(),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text('Cloud sync'),
+            child: Semantics(
+              header: true,
+              child: Text('Cloud sync'),
+            ),
           ),
           cloudUserAsync.when(
             data: (user) {
@@ -461,7 +489,8 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   Future<void> _exportUserData(
@@ -588,6 +617,164 @@ class SettingsScreen extends ConsumerWidget {
         : state.errorMessage ?? 'Unable to sign out. Please try again.';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
+    );
+  }
+}
+
+class _ThemeProfileLoadingPlaceholder extends StatelessWidget {
+  const _ThemeProfileLoadingPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ListTile(
+      leading: CircularProgressIndicator.adaptive(),
+      title: Text('Loading theme profiles...'),
+    );
+  }
+}
+
+class _ThemeProfileSection extends StatelessWidget {
+  const _ThemeProfileSection({
+    required this.profiles,
+    required this.selectedId,
+    required this.brightness,
+    required this.onSelected,
+  });
+
+  final List<AgeCohortThemeProfile> profiles;
+  final String selectedId;
+  final Brightness brightness;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Semantics(
+            header: true,
+            child: Text(
+              'Theme & accessibility profiles',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+        ),
+        for (var index = 0; index < profiles.length; index++)
+          _ThemeProfileOption(
+            profile: profiles[index],
+            selectedId: selectedId,
+            brightness: brightness,
+            order: index.toDouble(),
+            onSelected: onSelected,
+          ),
+      ],
+    );
+  }
+}
+
+class _ThemeProfileOption extends StatelessWidget {
+  const _ThemeProfileOption({
+    required this.profile,
+    required this.selectedId,
+    required this.brightness,
+    required this.order,
+    required this.onSelected,
+  });
+
+  final AgeCohortThemeProfile profile;
+  final String selectedId;
+  final Brightness brightness;
+  final double order;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = selectedId == profile.id;
+    return FocusTraversalOrder(
+      order: NumericFocusOrder(order),
+      child: Semantics(
+        container: true,
+        selected: selected,
+        label: '${profile.label} theme profile',
+        hint: profile.description,
+        child: RadioListTile<String>(
+          value: profile.id,
+          groupValue: selectedId,
+          onChanged: (_) => onSelected(profile.id),
+          title: Text(profile.label),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(profile.description),
+              const SizedBox(height: 12),
+              _ThemeProfilePreview(
+                profile: profile,
+                brightness: brightness,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeProfilePreview extends StatelessWidget {
+  const _ThemeProfilePreview({
+    required this.profile,
+    required this.brightness,
+  });
+
+  final AgeCohortThemeProfile profile;
+  final Brightness brightness;
+
+  @override
+  Widget build(BuildContext context) {
+    final previewTheme = profile.toThemeData(brightness);
+    return Theme(
+      data: previewTheme,
+      child: Semantics(
+        container: true,
+        label: 'Preview of ${profile.label} typography and contrast',
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: previewTheme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: previewTheme.colorScheme.outlineVariant),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Heading preview',
+                style: previewTheme.textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Readable body copy adapts font, spacing, and contrast to match the profile.',
+                style: previewTheme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(Icons.menu_book_outlined, size: previewTheme.iconTheme.size),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Icon sizing preview',
+                      style: previewTheme.textTheme.labelLarge,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

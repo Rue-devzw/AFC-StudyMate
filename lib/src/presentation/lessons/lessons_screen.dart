@@ -66,21 +66,26 @@ class LessonsScreen extends ConsumerWidget {
                       if (lesson.quizzes.isNotEmpty)
                         '${lesson.quizzes.length} quiz${lesson.quizzes.length == 1 ? '' : 'zes'}',
                     ].join(' · ');
-                    return Card(
-                      margin:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        title: Text(lesson.title),
-                        subtitle: Text(secondary),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => LessonDetailScreen(lesson: lesson),
-                            ),
-                          );
-                        },
+                    return Semantics(
+                      container: true,
+                      label: 'Lesson ${lesson.title}',
+                      hint: 'Opens lesson details',
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        child: ListTile(
+                          title: Text(lesson.title),
+                          subtitle: Text(secondary),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => LessonDetailScreen(lesson: lesson),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     );
                   },
@@ -129,50 +134,61 @@ class _LessonFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Wrap(
-        spacing: 16,
-        runSpacing: 8,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          DropdownButton<String?>(
-            value: state.selectedClass,
-            hint: const Text('Class'),
-            onChanged: onClassChanged,
-            items: _classOptions
-                .map(
-                  (option) => DropdownMenuItem<String?>(
-                    value: option,
-                    child: Text(option ?? 'All classes'),
-                  ),
-                )
-                .toList(),
-          ),
-          DropdownButton<int?>(
-            value: state.age,
-            hint: const Text('Age'),
-            onChanged: onAgeChanged,
-            items: _ageOptions
-                .map(
-                  (option) => DropdownMenuItem<int?>(
-                    value: option,
-                    child: Text(option == null ? 'Any age' : '$option yrs'),
-                  ),
-                )
-                .toList(),
-          ),
-          DropdownButton<LessonCompletionFilter>(
-            value: state.completion,
-            onChanged: onCompletionChanged,
-            items: LessonCompletionFilter.values
-                .map(
-                  (value) => DropdownMenuItem<LessonCompletionFilter>(
-                    value: value,
-                    child: Text(_completionLabel(value)),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
+      child: FocusTraversalGroup(
+        child: Wrap(
+          spacing: 16,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Semantics(
+              label: 'Filter by class',
+              child: DropdownButton<String?>(
+                value: state.selectedClass,
+                hint: const Text('Class'),
+                onChanged: onClassChanged,
+                items: _classOptions
+                    .map(
+                      (option) => DropdownMenuItem<String?>(
+                        value: option,
+                        child: Text(option ?? 'All classes'),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            Semantics(
+              label: 'Filter by age',
+              child: DropdownButton<int?>(
+                value: state.age,
+                hint: const Text('Age'),
+                onChanged: onAgeChanged,
+                items: _ageOptions
+                    .map(
+                      (option) => DropdownMenuItem<int?>(
+                        value: option,
+                        child: Text(option == null ? 'Any age' : '$option yrs'),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+            Semantics(
+              label: 'Filter by completion status',
+              child: DropdownButton<LessonCompletionFilter>(
+                value: state.completion,
+                onChanged: onCompletionChanged,
+                items: LessonCompletionFilter.values
+                    .map(
+                      (value) => DropdownMenuItem<LessonCompletionFilter>(
+                        value: value,
+                        child: Text(_completionLabel(value)),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../../domain/accounts/entities.dart';
 import '../providers.dart';
 import '../home/home_screen.dart';
 import '../accounts/profile_onboarding_screen.dart';
+import '../theme/age_cohort_theme_profiles.dart';
 
 class StudyMateApp extends ConsumerWidget {
   const StudyMateApp({super.key});
@@ -12,133 +13,75 @@ class StudyMateApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeControllerProvider);
+    final themeProfileAsync = ref.watch(themeProfileControllerProvider);
     ref.watch(meetingReminderCoordinatorProvider);
-
-    const Color primarySeedColor = Color(0xFF3F51B5);
-
-    final TextTheme appTextTheme = TextTheme(
-      displayLarge: GoogleFonts.playfairDisplay(
-        fontSize: 57,
-        fontWeight: FontWeight.bold,
-      ),
-      titleLarge: GoogleFonts.playfairDisplay(
-        fontSize: 22,
-        fontWeight: FontWeight.w500,
-      ),
-      bodyMedium: GoogleFonts.ptSans(fontSize: 14),
-    );
-
-    final ThemeData lightTheme = ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primarySeedColor,
-        brightness: Brightness.light,
-        surface: const Color(0xFFE8EAF6),
-      ),
-      textTheme: appTextTheme,
-      appBarTheme: AppBarTheme(
-        backgroundColor: primarySeedColor,
-        foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.playfairDisplay(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: const Color(0xFFFFAB40),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          textStyle: GoogleFonts.ptSans(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-
-    final ThemeData darkTheme = ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primarySeedColor,
-        brightness: Brightness.dark,
-      ),
-      textTheme: appTextTheme,
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[900],
-        foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.playfairDisplay(
-          fontSize: 24,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.black,
-          backgroundColor: const Color(0xFFFFAB40),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          textStyle: GoogleFonts.ptSans(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ),
-    );
 
     final accountAsync = ref.watch(activeAccountProvider);
 
     return themeMode.when(
-      data: (mode) => accountAsync.when(
-        data: (account) => MaterialApp(
-          title: 'AFC StudyMate',
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: mode,
-          home: account == null
-              ? const ProfileOnboardingScreen()
-              : const HomeScreen(),
-        ),
-        loading: () => MaterialApp(
-          title: 'AFC StudyMate',
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          home: const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+      data: (mode) => themeProfileAsync.when(
+        data: (profile) => accountAsync.when(
+          data: (account) => _buildApp(
+            themeMode: mode,
+            profile: profile,
+            account: account,
           ),
+          loading: () => _buildLoadingApp(mode, profile),
+          error: (error, stack) => _buildErrorApp(mode, profile, error),
         ),
-        error: (error, stack) => MaterialApp(
-          title: 'AFC StudyMate',
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          home: Scaffold(
-            body: Center(
-              child: Text('Failed to load profiles: $error'),
-            ),
-          ),
-        ),
+        loading: () => _buildLoadingApp(mode, defaultThemeProfile()),
+        error: (error, stack) => _buildErrorApp(mode, defaultThemeProfile(), error),
       ),
-      loading: () => MaterialApp(
-        title: 'AFC StudyMate',
-        theme: lightTheme,
-        darkTheme: darkTheme,
-        home: const Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+      loading: () => _buildLoadingApp(ThemeMode.system, defaultThemeProfile()),
+      error: (error, stack) =>
+          _buildErrorApp(ThemeMode.system, defaultThemeProfile(), error),
+    );
+  }
+
+  Widget _buildApp({
+    required ThemeMode themeMode,
+    required AgeCohortThemeProfile profile,
+    required LocalAccount? account,
+  }) {
+    return MaterialApp(
+      title: 'AFC StudyMate',
+      theme: profile.toThemeData(Brightness.light),
+      darkTheme: profile.toThemeData(Brightness.dark),
+      themeMode: themeMode,
+      home: account == null
+          ? const ProfileOnboardingScreen()
+          : const HomeScreen(),
+    );
+  }
+
+  Widget _buildLoadingApp(
+    ThemeMode themeMode,
+    AgeCohortThemeProfile profile,
+  ) {
+    return MaterialApp(
+      title: 'AFC StudyMate',
+      theme: profile.toThemeData(Brightness.light),
+      darkTheme: profile.toThemeData(Brightness.dark),
+      themeMode: themeMode,
+      home: const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       ),
-      error: (error, stack) => MaterialApp(
-        title: 'AFC StudyMate',
-        theme: lightTheme,
-        darkTheme: darkTheme,
-        home: Scaffold(
-          body: Center(
-            child: Text('Failed to load theme: $error'),
-          ),
+    );
+  }
+
+  Widget _buildErrorApp(
+    ThemeMode themeMode,
+    AgeCohortThemeProfile profile,
+    Object error,
+  ) {
+    return MaterialApp(
+      title: 'AFC StudyMate',
+      theme: profile.toThemeData(Brightness.light),
+      darkTheme: profile.toThemeData(Brightness.dark),
+      themeMode: themeMode,
+      home: Scaffold(
+        body: Center(
+          child: Text('Failed to load theme: $error'),
         ),
       ),
     );

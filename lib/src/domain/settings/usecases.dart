@@ -19,6 +19,24 @@ class SaveThemeModeUseCase {
       _repository.saveThemeMode(userId, mode);
 }
 
+class GetThemeProfileUseCase {
+  final SettingsRepository _repository;
+
+  const GetThemeProfileUseCase(this._repository);
+
+  Future<String?> call(String userId) =>
+      _repository.getThemeProfileId(userId);
+}
+
+class SaveThemeProfileUseCase {
+  final SettingsRepository _repository;
+
+  const SaveThemeProfileUseCase(this._repository);
+
+  Future<void> call(String userId, String profileId) =>
+      _repository.saveThemeProfileId(userId, profileId);
+}
+
 class GetNotificationPreferencesUseCase {
   final SettingsRepository _repository;
 

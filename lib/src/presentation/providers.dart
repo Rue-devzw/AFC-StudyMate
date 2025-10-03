@@ -26,6 +26,7 @@ import '../data/lessons/roundtable_repository_impl.dart';
 import '../data/settings/settings_repository_impl.dart';
 import '../data/sync/sync_repository_impl.dart';
 import '../data/bible/verse_of_the_day_service.dart';
+import '../domain/accounts/entities.dart';
 import '../domain/accounts/repositories.dart';
 import '../domain/accounts/usecases.dart';
 import '../domain/annotations/entities.dart';
@@ -81,6 +82,7 @@ import 'settings/data_sync_controller.dart';
 import 'settings/lesson_sync_controller.dart';
 import 'settings/privacy_controller.dart';
 import 'accounts/cloud_auth_controller.dart';
+import 'theme/age_cohort_theme_profiles.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();
@@ -977,6 +979,14 @@ final saveThemeModeUseCaseProvider = Provider((ref) {
   return SaveThemeModeUseCase(ref.watch(settingsRepositoryProvider));
 });
 
+final getThemeProfileUseCaseProvider = Provider((ref) {
+  return GetThemeProfileUseCase(ref.watch(settingsRepositoryProvider));
+});
+
+final saveThemeProfileUseCaseProvider = Provider((ref) {
+  return SaveThemeProfileUseCase(ref.watch(settingsRepositoryProvider));
+});
+
 final getNotificationPreferencesUseCaseProvider = Provider((ref) {
   return GetNotificationPreferencesUseCase(ref.watch(settingsRepositoryProvider));
 });
@@ -1310,6 +1320,98 @@ final readingProgressProvider = StreamProvider<ReadingPosition?>((ref) {
   final useCase = ref.watch(watchReadingProgressUseCaseProvider);
   return useCase(userId);
 });
+
+final themeProfilesProvider =
+    Provider<List<AgeCohortThemeProfile>>((ref) => kAgeCohortThemeProfiles);
+
+final selectedThemeProfileProvider = Provider<AgeCohortThemeProfile?>((ref) {
+  final profileAsync = ref.watch(themeProfileControllerProvider);
+  return profileAsync.maybeWhen(data: (value) => value, orElse: () => null);
+});
+
+final themeProfileControllerProvider =
+    AsyncNotifierProvider<ThemeProfileController, AgeCohortThemeProfile>(
+        ThemeProfileController.new);
+
+class ThemeProfileController extends AsyncNotifier<AgeCohortThemeProfile> {
+  @override
+  Future<AgeCohortThemeProfile> build() async {
+    final profiles = ref.watch(themeProfilesProvider);
+    final fallbackProfile = defaultThemeProfile();
+    final account = ref.watch(activeAccountProvider).maybeWhen(
+          data: (value) => value,
+          orElse: () => null,
+        );
+    final inferredId = _inferProfileId(account, profiles);
+    final userId = ref.watch(activeUserIdProvider);
+    if (userId == null) {
+      return _resolveProfile(profiles, inferredId) ?? fallbackProfile;
+    }
+    final savedId = await ref.read(getThemeProfileUseCaseProvider)(userId);
+    final resolved = _resolveProfile(
+      profiles,
+      savedId ?? inferredId,
+    );
+    return resolved ?? fallbackProfile;
+  }
+
+  Future<void> setProfile(String id) async {
+    final profiles = ref.read(themeProfilesProvider);
+    final selected = _resolveProfile(profiles, id) ?? defaultThemeProfile();
+    final userId = ref.read(activeUserIdProvider);
+    if (userId != null) {
+      await ref.read(saveThemeProfileUseCaseProvider)(userId, selected.id);
+    }
+    state = AsyncValue.data(selected);
+  }
+
+  AgeCohortThemeProfile? _resolveProfile(
+    List<AgeCohortThemeProfile> profiles,
+    String? id,
+  ) {
+    if (id == null || id.isEmpty) {
+      return null;
+    }
+    final normalised = id.toLowerCase();
+    for (final profile in profiles) {
+      if (profile.id.toLowerCase() == normalised) {
+        return profile;
+      }
+    }
+    return null;
+  }
+
+  String? _inferProfileId(
+    LocalAccount? account,
+    List<AgeCohortThemeProfile> profiles,
+  ) {
+    if (account == null) {
+      return null;
+    }
+    final candidates = <String?>[
+      account.preferredLessonClass,
+      account.preferredCohortTitle,
+      account.preferredCohortId,
+    ];
+    for (final candidate in candidates) {
+      if (candidate == null || candidate.isEmpty) {
+        continue;
+      }
+      final normalised = candidate.toLowerCase();
+      for (final profile in profiles) {
+        if (profile.id.toLowerCase() == normalised) {
+          return profile.id;
+        }
+        for (final keyword in profile.cohortKeywords) {
+          if (normalised.contains(keyword.toLowerCase())) {
+            return profile.id;
+          }
+        }
+      }
+    }
+    return null;
+  }
+}
 
 class ThemeModeController extends AsyncNotifier<ThemeMode> {
   @override
