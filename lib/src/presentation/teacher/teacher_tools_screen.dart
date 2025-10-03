@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 // ignore: undefined_hidden_name
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
-import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
