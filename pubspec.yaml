@@ -64,6 +64,9 @@ dependencies:
   timezone: ^0.9.3
   jitsi_meet_flutter_sdk: ^0.2.1
   flutter_quill_extensions: ^11.0.0
+  cloud_firestore: ^5.6.12
+  firebase_messaging: ^15.2.10
+  flutter_local_notifications: ^18.0.1
 
 dev_dependencies:
   flutter_test:
