@@ -55,5 +55,5 @@ class LessonProgressDashboardData {
       completedCount + inProgressCount + notStartedCount;
 
   double get completionRate =>
-      totalLessons == 0 ? 0 : completedCount / totalLessons;
+      totalLessons == 0 ? 0.0 : completedCount / totalLessons;
 }

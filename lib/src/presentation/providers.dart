@@ -453,7 +453,7 @@ final lessonProgressDashboardProvider =
         }
 
         final averageScore = classScores.isEmpty
-            ? 0
+            ? 0.0
             : classScores.reduce((a, b) => a + b) / classScores.length;
 
         classSummaries.add(
@@ -474,7 +474,7 @@ final lessonProgressDashboardProvider =
       );
 
       final averageQuizScore = quizScores.isEmpty
-          ? 0
+          ? 0.0
           : quizScores.reduce((a, b) => a + b) / quizScores.length;
 
       return LessonProgressDashboardData(
