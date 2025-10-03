@@ -74,9 +74,19 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - AssetManifest.json
     - assets/images/
     - assets/lessons.json
-    - assets/bibles/
+    - assets/bibles/kjv.db
+    - assets/bibles/kjv.json
+    - assets/bibles/shona_bible.db
+    - assets/bibles/shona.json
+    - assets/bibles/amp.db
+    - assets/bibles/amp.json
+    - assets/bibles/ndebele.db
+    - assets/bibles/ndebele.json
+    - assets/bibles/por.db
+    - assets/bibles/por.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
