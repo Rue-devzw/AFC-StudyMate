@@ -30,7 +30,16 @@ class BibleScreen extends ConsumerWidget {
                     for (final translation in translations)
                       DropdownMenuItem(
                         value: translation.id,
-                        child: Text('${translation.name} (${translation.language.toUpperCase()})'),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(translation.name),
+                            Text(
+                              '${translation.languageName} · ${translation.language.toUpperCase()}',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
                       ),
                   ],
                   onChanged: (value) {

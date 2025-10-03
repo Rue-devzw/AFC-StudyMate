@@ -179,7 +179,16 @@ final translationsProvider = FutureProvider((ref) async {
 final selectedTranslationIdProvider = StateProvider<String>((ref) {
   final translationsAsync = ref.watch(translationsProvider);
   return translationsAsync.maybeWhen(
-    data: (data) => data.first.id,
+    data: (data) {
+      if (data.isEmpty) {
+        return 'kjv';
+      }
+      final preferred = data.firstWhere(
+        (translation) => translation.id == 'kjv',
+        orElse: () => data.first,
+      );
+      return preferred.id;
+    },
     orElse: () => 'kjv',
   );
 });

@@ -1,0 +1,12 @@
+{
+  "id": "por",
+  "abbreviation": "POR",
+  "name": "Bíblia Portuguesa Livre",
+  "language": {
+    "code": "pt",
+    "name": "Português"
+  },
+  "version": "2024",
+  "copyright": "© 2024 AFC StudyMate Team (CC BY 4.0)",
+  "bundle": "assets/bibles/por.db"
+}

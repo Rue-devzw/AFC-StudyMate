@@ -1,0 +1,12 @@
+{
+  "id": "kjv",
+  "abbreviation": "KJV",
+  "name": "King James Version",
+  "language": {
+    "code": "en",
+    "name": "English"
+  },
+  "version": "1769",
+  "copyright": "Public Domain",
+  "bundle": "assets/bibles/kjv.db"
+}

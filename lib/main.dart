@@ -5,6 +5,7 @@ import 'src/presentation/app/app.dart';
 import 'src/presentation/providers.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     const ProviderScope(
       child: _AppBootstrap(),

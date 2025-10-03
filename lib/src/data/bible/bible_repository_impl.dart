@@ -15,19 +15,32 @@ class BibleRepositoryImpl implements BibleRepository {
   Future<List<BibleTranslation>> getInstalledTranslations() async {
     await _ensureSeeded();
     final rows = await _dao.getTranslations();
-    return rows
+    final translations = rows
         .map(
           (row) => BibleTranslation(
             id: row.id,
             name: row.name,
             language: row.language,
+            languageName: row.languageName,
             version: row.version,
             source: row.source,
+            copyright: row.copyright,
             installedAt:
                 DateTime.fromMillisecondsSinceEpoch(row.installedAt),
           ),
         )
         .toList();
+
+    translations.sort((a, b) {
+      final languageCompare =
+          a.languageName.toLowerCase().compareTo(b.languageName.toLowerCase());
+      if (languageCompare != 0) {
+        return languageCompare;
+      }
+      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+    });
+
+    return translations;
   }
 
   @override
