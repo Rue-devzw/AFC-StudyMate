@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+// ignore: undefined_hidden_name
 import 'package:flutter_quill/flutter_quill.dart' hide Text;
+import 'package:flutter_quill_extensions/flutter_quill_extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -379,11 +381,10 @@ class _LessonEditorTabState extends ConsumerState<_LessonEditorTab> {
                             ),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: QuillEditor.basic(
-                            controller: _controller,
-                            configurations: const QuillEditorConfigurations(
-                              expands: true,
-                              padding: EdgeInsets.all(12),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: QuillEditor.basic(
+                              controller: _controller,
                             ),
                           ),
                         ),

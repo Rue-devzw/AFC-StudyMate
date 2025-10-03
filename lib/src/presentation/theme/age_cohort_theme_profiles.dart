@@ -79,7 +79,7 @@ class AgeCohortThemeProfile {
           borderRadius: BorderRadius.circular(16),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: colorScheme.surface,
         elevation: accessibility.highContrast ? 6 : 2,
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -256,7 +256,7 @@ TextTheme _adultTypography(
   final base = preferences.useDyslexiaFriendlyFonts
       ? GoogleFonts.atkinsonHyperlegibleTextTheme()
       : GoogleFonts.nunitoTextTheme();
-  final display = GoogleFonts.sourceSerifProTextTheme();
+  final display = GoogleFonts.sourceSerif4TextTheme();
   return _composeTextTheme(
     body: base,
     display: display,

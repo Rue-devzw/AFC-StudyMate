@@ -63,6 +63,7 @@ dependencies:
   flutter_quill: ^11.4.2
   timezone: ^0.9.3
   jitsi_meet_flutter_sdk: ^0.2.1
+  flutter_quill_extensions: ^11.0.0
 
 dev_dependencies:
   flutter_test:
