@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 
 import '../../domain/accounts/entities.dart';
@@ -59,6 +61,7 @@ class AccountRepositoryImpl implements AccountRepository {
       preferredCohortId: Value(account.preferredCohortId),
       preferredCohortTitle: Value(account.preferredCohortTitle),
       preferredLessonClass: Value(account.preferredLessonClass),
+      roles: Value(json.encode(account.roles)),
       isActive: Value(account.isActive),
     );
     return _dao.upsertAccount(companion);
@@ -95,7 +98,23 @@ class AccountRepositoryImpl implements AccountRepository {
       preferredCohortId: row.preferredCohortId,
       preferredCohortTitle: row.preferredCohortTitle,
       preferredLessonClass: row.preferredLessonClass,
+      roles: _decodeRoles(row.roles),
       isActive: row.isActive,
     );
+  }
+
+  List<String> _decodeRoles(String? roles) {
+    if (roles == null || roles.isEmpty) {
+      return const [];
+    }
+    try {
+      final decoded = json.decode(roles);
+      if (decoded is List) {
+        return decoded.map((e) => e.toString()).toList();
+      }
+    } catch (_) {
+      // ignore
+    }
+    return const [];
   }
 }

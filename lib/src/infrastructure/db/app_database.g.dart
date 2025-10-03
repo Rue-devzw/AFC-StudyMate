@@ -37,6 +37,14 @@ class _$AppDatabase extends GeneratedDatabase {
       'Run build_runner to generate table bindings for `lesson_feeds`.');
   late final TableInfo<Table, dynamic> lessonSources = throw UnimplementedError(
       'Run build_runner to generate table bindings for `lesson_sources`.');
+  late final TableInfo<Table, dynamic> lessonDrafts = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `lesson_drafts`.');
+  late final TableInfo<Table, dynamic> roundtableEvents = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `roundtable_events`.');
+  late final TableInfo<Table, dynamic> discussionThreads = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `discussion_threads`.');
+  late final TableInfo<Table, dynamic> discussionPosts = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `discussion_posts`.');
   late final TableInfo<Table, dynamic> progress = throw UnimplementedError(
       'Run build_runner to generate table bindings for `progress`.');
   late final TableInfo<Table, dynamic> localUsers = throw UnimplementedError(
@@ -69,7 +77,7 @@ class _$AppDatabase extends GeneratedDatabase {
       throw UnimplementedError('Run build_runner to generate table bindings.');
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 }
 
 /// A lightweight stand-in for the generated [LocalUser] data class.
@@ -87,6 +95,7 @@ class LocalUser {
     this.preferredCohortId,
     this.preferredCohortTitle,
     this.preferredLessonClass,
+    this.roles = const <String>[],
     this.isActive = false,
   });
 
@@ -96,6 +105,7 @@ class LocalUser {
   final String? preferredCohortId;
   final String? preferredCohortTitle;
   final String? preferredLessonClass;
+  final List<String> roles;
   final bool isActive;
 
   LocalUser copyWith({
@@ -105,6 +115,7 @@ class LocalUser {
     String? preferredCohortId,
     String? preferredCohortTitle,
     String? preferredLessonClass,
+    List<String>? roles,
     bool? isActive,
   }) {
     return LocalUser(
@@ -115,6 +126,7 @@ class LocalUser {
       preferredCohortTitle: preferredCohortTitle ?? this.preferredCohortTitle,
       preferredLessonClass:
           preferredLessonClass ?? this.preferredLessonClass,
+      roles: roles ?? this.roles,
       isActive: isActive ?? this.isActive,
     );
   }
@@ -129,6 +141,7 @@ class LocalUsersCompanion {
     this.preferredCohortId = const Value.absent(),
     this.preferredCohortTitle = const Value.absent(),
     this.preferredLessonClass = const Value.absent(),
+    this.roles = const Value.absent(),
     this.isActive = const Value.absent(),
   });
 
@@ -139,6 +152,7 @@ class LocalUsersCompanion {
     Value<String?> preferredCohortId = const Value.absent(),
     Value<String?> preferredCohortTitle = const Value.absent(),
     Value<String?> preferredLessonClass = const Value.absent(),
+    Value<String> roles = const Value.absent(),
     Value<bool> isActive = const Value.absent(),
   })  : id = Value(id),
         displayName = displayName,
@@ -146,6 +160,7 @@ class LocalUsersCompanion {
         preferredCohortId = preferredCohortId,
         preferredCohortTitle = preferredCohortTitle,
         preferredLessonClass = preferredLessonClass,
+        roles = roles,
         isActive = isActive;
 
   final Value<String> id;
@@ -154,6 +169,7 @@ class LocalUsersCompanion {
   final Value<String?> preferredCohortId;
   final Value<String?> preferredCohortTitle;
   final Value<String?> preferredLessonClass;
+  final Value<String> roles;
   final Value<bool> isActive;
 
   LocalUsersCompanion copyWith({
@@ -163,6 +179,7 @@ class LocalUsersCompanion {
     Value<String?>? preferredCohortId,
     Value<String?>? preferredCohortTitle,
     Value<String?>? preferredLessonClass,
+    Value<String>? roles,
     Value<bool>? isActive,
   }) {
     return LocalUsersCompanion(
@@ -174,6 +191,7 @@ class LocalUsersCompanion {
           preferredCohortTitle ?? this.preferredCohortTitle,
       preferredLessonClass:
           preferredLessonClass ?? this.preferredLessonClass,
+      roles: roles ?? this.roles,
       isActive: isActive ?? this.isActive,
     );
   }

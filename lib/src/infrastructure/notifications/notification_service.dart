@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../../domain/chat/entities.dart';
 import '../../domain/settings/entities.dart';
@@ -33,6 +35,7 @@ class NotificationService {
   );
 
   bool _initialised = false;
+  bool _timeZoneInitialised = false;
 
   Future<void> initialise() async {
     if (_initialised) {
@@ -63,6 +66,19 @@ class NotificationService {
     final androidPlugin =
         _localNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(_chatChannel);
+  }
+
+  Future<void> _ensureTimezoneInitialised() async {
+    if (_timeZoneInitialised) {
+      return;
+    }
+    tz.initializeTimeZones();
+    try {
+      tz.setLocalLocation(tz.getLocation(DateTime.now().timeZoneName));
+    } catch (_) {
+      tz.setLocalLocation(tz.getLocation('UTC'));
+    }
+    _timeZoneInitialised = true;
   }
 
   Future<void> handleIncomingMessage(
@@ -114,6 +130,49 @@ class NotificationService {
       await _localNotifications.cancelAll();
     }
   }
+
+  Future<void> scheduleRoundtableReminder(
+    String sessionId,
+    String title,
+    DateTime startTime,
+    int minutesBefore,
+  ) async {
+    if (!_initialised) {
+      await initialise();
+    }
+    await _ensureTimezoneInitialised();
+    final reminderTime = startTime.subtract(Duration(minutes: minutesBefore));
+    if (reminderTime.isBefore(DateTime.now())) {
+      return;
+    }
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'roundtable_reminders',
+        'Roundtable reminders',
+        channelDescription: 'Reminders for upcoming roundtable sessions.',
+        importance: Importance.high,
+        priority: Priority.high,
+      ),
+      iOS: const DarwinNotificationDetails(),
+    );
+    await _localNotifications.zonedSchedule(
+      _scheduleId(sessionId),
+      'Upcoming roundtable',
+      '$title starts at ${startTime.toLocal()}.',
+      tz.TZDateTime.from(reminderTime, tz.local),
+      notificationDetails,
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.dateAndTime,
+    );
+  }
+
+  Future<void> cancelRoundtableReminder(String sessionId) async {
+    await _localNotifications.cancel(_scheduleId(sessionId));
+  }
+
+  int _scheduleId(String id) => id.hashCode & 0x7fffffff;
 }
 
 class ChatNotificationObserver {
