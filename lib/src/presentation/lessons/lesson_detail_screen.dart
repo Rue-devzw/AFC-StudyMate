@@ -3,10 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
+import '../../domain/accounts/entities.dart';
 import '../../domain/lessons/entities.dart';
 import '../../domain/lessons/services/lesson_quiz_grader.dart';
 import '../../domain/lessons/services/lesson_timer_service.dart';
+import '../../domain/meetings/entities.dart';
 import '../providers.dart';
 import '../chat/chat_room_screen.dart';
 
@@ -16,8 +20,7 @@ class LessonDetailScreen extends ConsumerStatefulWidget {
   final Lesson lesson;
 
   @override
-  ConsumerState<LessonDetailScreen> createState() =>
-      _LessonDetailScreenState();
+  ConsumerState<LessonDetailScreen> createState() => _LessonDetailScreenState();
 }
 
 class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
@@ -30,12 +33,13 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
   bool _isPersisting = false;
   String? _userId;
   ProviderSubscription<AsyncValue<LessonProgress?>>? _progressSubscription;
+  List<LessonAttachment> _extraAttachments = const [];
+  bool _isUploadingRecording = false;
 
   @override
   void initState() {
     super.initState();
-    _timerService =
-        ref.read(lessonTimerServiceProvider(widget.lesson.id));
+    _timerService = ref.read(lessonTimerServiceProvider(widget.lesson.id));
     _timerSub = _timerService.ticks.listen((seconds) {
       if (!mounted) {
         return;
@@ -98,6 +102,16 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
     );
   }
 
+  bool _canHostLesson(LocalAccount? account) {
+    if (account == null) {
+      return false;
+    }
+    final roles = account.roles.map((role) => role.toLowerCase()).toSet();
+    return roles.contains('teacher') ||
+        roles.contains('facilitator') ||
+        roles.contains('admin');
+  }
+
   @override
   Widget build(BuildContext context) {
     final userId = ref.watch(activeUserIdProvider);
@@ -107,6 +121,27 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
       );
     }
     final theme = Theme.of(context);
+    final accountAsync = ref.watch(activeAccountProvider);
+    final account = accountAsync.maybeWhen(
+      data: (value) => value,
+      orElse: () => null,
+    );
+    final meetingLinksAsync = ref.watch(
+      meetingLinksProvider(
+        MeetingLinkQuery(
+          contextType: MeetingContextType.lesson,
+          contextId: widget.lesson.id,
+        ),
+      ),
+    );
+    final meetingLinks = meetingLinksAsync.maybeWhen(
+      data: (links) => links,
+      orElse: () => const <MeetingLink>[],
+    );
+    final hostLink = meetingLinks.latestForRole(MeetingRole.host);
+    final attendeeLink = meetingLinks.latestForRole(MeetingRole.participant);
+    final recordingLinks = meetingLinks.recordings().toList();
+    final canHostLesson = _canHostLesson(account);
     final chatClassId = normaliseClassId(widget.lesson.lessonClass);
     final ageLabel = widget.lesson.ageRange != null
         ? '${widget.lesson.ageRange!.min}-${widget.lesson.ageRange!.max} years'
@@ -127,6 +162,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
     final totalSeconds = (progress?.timeSpentSeconds ?? 0) +
         (_timerService.isRunning ? _sessionSeconds : 0);
     final quizScore = progress?.quizScore ?? _lastQuizScore;
+
+    final attachments = _composeAttachments(recordingLinks);
 
     return Scaffold(
       appBar: AppBar(
@@ -158,8 +195,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
               sessionSeconds: _sessionSeconds,
               onStart: _isPersisting || _timerService.isRunning
                   ? null
-                  : () =>
-                      _handleStart(clearCompletion: status == 'completed'),
+                  : () => _handleStart(clearCompletion: status == 'completed'),
               onPause: _isPersisting || !_timerService.isRunning
                   ? null
                   : _handlePause,
@@ -186,6 +222,59 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                 },
               ),
             ),
+            if (canHostLesson || hostLink != null || attendeeLink != null) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (canHostLesson)
+                    FilledButton.icon(
+                      onPressed: () => _startLessonMeeting(hostLink),
+                      icon: const Icon(Icons.video_call),
+                      label: Text(
+                        hostLink == null
+                            ? 'Start live lesson'
+                            : 'Resume live lesson',
+                      ),
+                    ),
+                  if (canHostLesson && hostLink != null)
+                    OutlinedButton.icon(
+                      onPressed: () =>
+                          _joinLessonMeeting(MeetingRole.host, hostLink),
+                      icon: const Icon(Icons.meeting_room_outlined),
+                      label: const Text('Join as host'),
+                    ),
+                  if (!canHostLesson &&
+                      (attendeeLink != null || hostLink != null))
+                    OutlinedButton.icon(
+                      onPressed: () => _joinLessonMeeting(
+                        MeetingRole.participant,
+                        attendeeLink ?? hostLink,
+                      ),
+                      icon: const Icon(Icons.meeting_room_outlined),
+                      label: const Text('Join live lesson'),
+                    ),
+                  if (canHostLesson)
+                    OutlinedButton.icon(
+                      onPressed:
+                          _isUploadingRecording ? null : _uploadRecording,
+                      icon: _isUploadingRecording
+                          ? SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.upload_file),
+                      label: Text(
+                        _isUploadingRecording
+                            ? 'Uploading...'
+                            : 'Upload recording',
+                      ),
+                    ),
+                ],
+              ),
+            ],
             if (widget.lesson.objectives.isNotEmpty) ...[
               const SizedBox(height: 24),
               Text('Objectives', style: theme.textTheme.titleMedium),
@@ -243,8 +332,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Teacher Notes',
-                          style: theme.textTheme.titleMedium),
+                      Text('Teacher Notes', style: theme.textTheme.titleMedium),
                       const SizedBox(height: 8),
                       Html(data: widget.lesson.teacherNotes),
                     ],
@@ -252,11 +340,11 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                 ),
               ),
             ],
-            if (widget.lesson.attachments.isNotEmpty) ...[
+            if (attachments.isNotEmpty) ...[
               const SizedBox(height: 24),
               Text('Attachments', style: theme.textTheme.titleMedium),
               const SizedBox(height: 8),
-              ...widget.lesson.attachments.map(
+              ...attachments.map(
                 (attachment) => Card(
                   child: ListTile(
                     leading: Icon(_iconForAttachment(attachment.type)),
@@ -283,16 +371,15 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
               ...widget.lesson.quizzes.map(
                 (quiz) => _InteractiveQuizCard(
                   quiz: quiz,
-                  submission: _responses[quiz.id] ??
-                      const LessonQuizSubmission(),
+                  submission:
+                      _responses[quiz.id] ?? const LessonQuizSubmission(),
                   onOptionsChanged: (options) {
                     setState(() {
                       _responses = {
                         ..._responses,
                         quiz.id: LessonQuizSubmission(
                           selectedOptions: options,
-                          shortAnswer:
-                              _responses[quiz.id]?.shortAnswer,
+                          shortAnswer: _responses[quiz.id]?.shortAnswer,
                         ),
                       };
                     });
@@ -337,6 +424,182 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
     );
   }
 
+  List<LessonAttachment> _composeAttachments(
+    List<MeetingLink> recordingLinks,
+  ) {
+    final attachments = <LessonAttachment>[];
+    final seen = <String>{};
+
+    void addAttachment(LessonAttachment attachment) {
+      if (seen.add(attachment.url)) {
+        attachments.add(attachment);
+      }
+    }
+
+    for (final attachment in widget.lesson.attachments) {
+      addAttachment(attachment);
+    }
+    for (final attachment in _extraAttachments) {
+      addAttachment(attachment);
+    }
+
+    var nextPosition = attachments.isEmpty
+        ? 0
+        : attachments.map((a) => a.position).fold<int>(
+                  0,
+                  (previousValue, element) =>
+                      element > previousValue ? element : previousValue,
+                ) +
+            1;
+
+    for (final link in recordingLinks) {
+      final url = link.recordingUrl?.toString();
+      if (url == null || seen.contains(url)) {
+        continue;
+      }
+      final label = link.recordingIndexedAt == null
+          ? '${link.title} recording'
+          : '${link.title} (${link.recordingIndexedAt!.toLocal()})';
+      addAttachment(
+        LessonAttachment(
+          type: LessonAttachmentType.recording,
+          url: url,
+          position: nextPosition++,
+          title: label,
+        ),
+      );
+    }
+    attachments.sort((a, b) => a.position.compareTo(b.position));
+    return attachments;
+  }
+
+  Future<void> _startLessonMeeting(MeetingLink? existingHostLink) async {
+    final launcher = ref.read(meetingLauncherProvider);
+    final account = ref.read(activeAccountProvider).asData?.value;
+    final result = await launcher.launch(
+      MeetingLaunchRequest(
+        contextType: MeetingContextType.lesson,
+        contextId: widget.lesson.id,
+        title: widget.lesson.title,
+        role: MeetingRole.host,
+        roomName: existingHostLink?.roomName,
+        displayName: account?.displayName,
+        scheduledStart: existingHostLink?.scheduledStart ?? DateTime.now(),
+        createParticipantLink: true,
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    final message = result.wasLaunched
+        ? 'Live lesson started.'
+        : 'Offline - meeting link saved for later.';
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _joinLessonMeeting(MeetingRole role, MeetingLink? link) async {
+    final launcher = ref.read(meetingLauncherProvider);
+    final account = ref.read(activeAccountProvider).asData?.value;
+    final result = await launcher.launch(
+      MeetingLaunchRequest(
+        contextType: MeetingContextType.lesson,
+        contextId: widget.lesson.id,
+        title: widget.lesson.title,
+        role: role,
+        roomName: link?.roomName,
+        displayName: account?.displayName,
+        scheduledStart: link?.scheduledStart ?? DateTime.now(),
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    final message = result.wasLaunched
+        ? (role == MeetingRole.host
+            ? 'Joined live lesson as host.'
+            : 'Joining live lesson.')
+        : 'Offline - meeting link saved for later.';
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _uploadRecording() async {
+    if (_isUploadingRecording) {
+      return;
+    }
+    final account = ref.read(activeAccountProvider).asData?.value;
+    if (!_canHostLesson(account)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Only hosts can upload recordings.')),
+      );
+      return;
+    }
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['mp4', 'mov', 'mkv', 'webm'],
+      withData: true,
+    );
+    if (result == null || result.files.isEmpty) {
+      return;
+    }
+    final picked = result.files.single;
+    setState(() {
+      _isUploadingRecording = true;
+    });
+    try {
+      final storage = ref.read(firebaseStorageProvider);
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final storagePath =
+          'lesson_recordings/${widget.lesson.id}/$timestamp-${picked.name}';
+      final bytes = picked.bytes;
+      if (bytes == null) {
+        throw Exception('No file data available for upload.');
+      }
+      final uploadTask = storage.ref(storagePath).putData(bytes);
+      final snapshot = await uploadTask;
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      final savedAttachment =
+          await ref.read(lessonRepositoryProvider).addAttachment(
+                widget.lesson.id,
+                LessonAttachment(
+                  type: LessonAttachmentType.recording,
+                  url: downloadUrl,
+                  position: 0,
+                  title: picked.name,
+                ),
+              );
+      setState(() {
+        _extraAttachments = [..._extraAttachments, savedAttachment];
+      });
+      await ref.read(meetingRepositoryProvider).saveRecording(
+            MeetingContextType.lesson,
+            widget.lesson.id,
+            recordingUrl: Uri.parse(downloadUrl),
+            storagePath: storagePath,
+            indexedAt: DateTime.now(),
+          );
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Recording uploaded and indexed.')),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload recording: $error')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingRecording = false;
+        });
+      }
+    }
+  }
+
   static IconData _iconForAttachment(LessonAttachmentType type) {
     switch (type) {
       case LessonAttachmentType.image:
@@ -349,8 +612,11 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         return Icons.videocam_outlined;
       case LessonAttachmentType.link:
         return Icons.link_outlined;
+      case LessonAttachmentType.recording:
+        return Icons.play_circle_outline;
     }
   }
+
   Future<void> _handleStart({required bool clearCompletion}) async {
     if (_timerService.isRunning) {
       return;
@@ -376,9 +642,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
   }
 
   Future<void> _handleComplete() async {
-    final score = _responses.isEmpty
-        ? _progress?.quizScore
-        : _computeQuizScore();
+    final score =
+        _responses.isEmpty ? _progress?.quizScore : _computeQuizScore();
     await _persistProgress(
       status: 'completed',
       consumeTimer: true,
@@ -450,20 +715,17 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
     final elapsedSeconds = consumeTimer ? _timerService.consume() : 0;
     final now = DateTime.now();
     final existing = _progress;
-    final startedAt = markStart
-        ? (existing?.startedAt ?? now)
-        : existing?.startedAt;
-    final completedAt = markCompletion
-        ? now
-        : (clearCompletion ? null : existing?.completedAt);
+    final startedAt =
+        markStart ? (existing?.startedAt ?? now) : existing?.startedAt;
+    final completedAt =
+        markCompletion ? now : (clearCompletion ? null : existing?.completedAt);
     final progress = LessonProgress(
       id: existing?.id ?? '${userId}_${widget.lesson.id}',
       userId: userId,
       lessonId: widget.lesson.id,
       status: status,
       quizScore: quizScore ?? existing?.quizScore,
-      timeSpentSeconds:
-          (existing?.timeSpentSeconds ?? 0) + elapsedSeconds,
+      timeSpentSeconds: (existing?.timeSpentSeconds ?? 0) + elapsedSeconds,
       updatedAt: now,
       startedAt: startedAt,
       completedAt: completedAt,
@@ -685,10 +947,9 @@ class _InteractiveQuizCard extends StatelessWidget {
                     title: Text(option),
                   );
                 }
-                final groupValue =
-                    submission.selectedOptions.isEmpty
-                        ? null
-                        : submission.selectedOptions.first;
+                final groupValue = submission.selectedOptions.isEmpty
+                    ? null
+                    : submission.selectedOptions.first;
                 return RadioListTile<String>(
                   value: option,
                   groupValue: groupValue,
@@ -701,8 +962,7 @@ class _InteractiveQuizCard extends StatelessWidget {
             else
               TextFormField(
                 initialValue: submission.shortAnswer,
-                decoration:
-                    const InputDecoration(labelText: 'Your answer'),
+                decoration: const InputDecoration(labelText: 'Your answer'),
                 onChanged: onShortAnswerChanged,
               ),
           ],

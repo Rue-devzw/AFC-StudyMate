@@ -16,11 +16,9 @@ class Translations extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
   TextColumn get language => text()();
-  TextColumn get languageName =>
-      text().withDefault(const Constant(''))();
+  TextColumn get languageName => text().withDefault(const Constant(''))();
   TextColumn get version => text()();
-  TextColumn get copyright =>
-      text().withDefault(const Constant(''))();
+  TextColumn get copyright => text().withDefault(const Constant(''))();
   TextColumn get source => text().nullable()();
   IntColumn get installedAt => integer()();
 
@@ -29,8 +27,8 @@ class Translations extends Table {
 }
 
 class Verses extends Table {
-  TextColumn get translationId => text()
-      .references(Translations, #id, onDelete: KeyAction.cascade)();
+  TextColumn get translationId =>
+      text().references(Translations, #id, onDelete: KeyAction.cascade)();
   IntColumn get bookId => integer()();
   IntColumn get chapter => integer()();
   IntColumn get verse => integer()();
@@ -59,8 +57,8 @@ class Bookmarks extends Table {
   TextColumn get userId => text()
       .references(LocalUsers, #id, onDelete: KeyAction.cascade)
       .withDefault(const Constant('local-user'))();
-  TextColumn get translationId => text()
-      .references(Translations, #id, onDelete: KeyAction.cascade)();
+  TextColumn get translationId =>
+      text().references(Translations, #id, onDelete: KeyAction.cascade)();
   IntColumn get bookId => integer()();
   IntColumn get chapter => integer()();
   IntColumn get verse => integer()();
@@ -75,8 +73,8 @@ class Highlights extends Table {
   TextColumn get userId => text()
       .references(LocalUsers, #id, onDelete: KeyAction.cascade)
       .withDefault(const Constant('local-user'))();
-  TextColumn get translationId => text()
-      .references(Translations, #id, onDelete: KeyAction.cascade)();
+  TextColumn get translationId =>
+      text().references(Translations, #id, onDelete: KeyAction.cascade)();
   IntColumn get bookId => integer()();
   IntColumn get chapter => integer()();
   IntColumn get verse => integer()();
@@ -92,8 +90,8 @@ class Notes extends Table {
   TextColumn get userId => text()
       .references(LocalUsers, #id, onDelete: KeyAction.cascade)
       .withDefault(const Constant('local-user'))();
-  TextColumn get translationId => text()
-      .references(Translations, #id, onDelete: KeyAction.cascade)();
+  TextColumn get translationId =>
+      text().references(Translations, #id, onDelete: KeyAction.cascade)();
   IntColumn get bookId => integer()();
   IntColumn get chapter => integer()();
   IntColumn get verse => integer()();
@@ -106,8 +104,8 @@ class Notes extends Table {
 }
 
 class NoteRevisions extends Table {
-  TextColumn get noteId => text()
-      .references(Notes, #id, onDelete: KeyAction.cascade)();
+  TextColumn get noteId =>
+      text().references(Notes, #id, onDelete: KeyAction.cascade)();
   IntColumn get version => integer()();
   TextColumn get text => text()();
   IntColumn get updatedAt => integer()();
@@ -140,8 +138,8 @@ class Lessons extends Table {
 
 @DataClassName('LessonObjectiveRow')
 class LessonObjectives extends Table {
-  TextColumn get lessonId => text()
-      .references(Lessons, #id, onDelete: KeyAction.cascade)();
+  TextColumn get lessonId =>
+      text().references(Lessons, #id, onDelete: KeyAction.cascade)();
   IntColumn get position => integer()();
   TextColumn get objective => text()();
 
@@ -151,8 +149,8 @@ class LessonObjectives extends Table {
 
 @DataClassName('LessonScriptureRow')
 class LessonScriptures extends Table {
-  TextColumn get lessonId => text()
-      .references(Lessons, #id, onDelete: KeyAction.cascade)();
+  TextColumn get lessonId =>
+      text().references(Lessons, #id, onDelete: KeyAction.cascade)();
   IntColumn get position => integer()();
   TextColumn get reference => text()();
   TextColumn get translationId => text().nullable()();
@@ -163,8 +161,8 @@ class LessonScriptures extends Table {
 
 @DataClassName('LessonAttachmentRow')
 class LessonAttachments extends Table {
-  TextColumn get lessonId => text()
-      .references(Lessons, #id, onDelete: KeyAction.cascade)();
+  TextColumn get lessonId =>
+      text().references(Lessons, #id, onDelete: KeyAction.cascade)();
   IntColumn get position => integer()();
   TextColumn get type => text()();
   TextColumn get title => text().nullable()();
@@ -180,8 +178,8 @@ class LessonAttachments extends Table {
 @DataClassName('LessonQuizRow')
 class LessonQuizzes extends Table {
   TextColumn get id => text()();
-  TextColumn get lessonId => text()
-      .references(Lessons, #id, onDelete: KeyAction.cascade)();
+  TextColumn get lessonId =>
+      text().references(Lessons, #id, onDelete: KeyAction.cascade)();
   IntColumn get position => integer()();
   TextColumn get type => text()();
   TextColumn get prompt => text()();
@@ -193,12 +191,11 @@ class LessonQuizzes extends Table {
 
 @DataClassName('LessonQuizOptionRow')
 class LessonQuizOptions extends Table {
-  TextColumn get quizId => text()
-      .references(LessonQuizzes, #id, onDelete: KeyAction.cascade)();
+  TextColumn get quizId =>
+      text().references(LessonQuizzes, #id, onDelete: KeyAction.cascade)();
   IntColumn get position => integer()();
   TextColumn get label => text()();
-  BoolColumn get isCorrect =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get isCorrect => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {quizId, position};
@@ -211,8 +208,7 @@ class LessonDrafts extends Table {
   TextColumn get authorId => text()();
   TextColumn get title => text()();
   TextColumn get deltaJson => text()();
-  TextColumn get status => text()
-      .withDefault(const Constant('draft'))();
+  TextColumn get status => text().withDefault(const Constant('draft'))();
   TextColumn get approverId => text().nullable()();
   TextColumn get reviewerComment => text().nullable()();
   IntColumn get createdAt => integer()();
@@ -273,10 +269,37 @@ class RoundtableEvents extends Table {
   IntColumn get startTime => integer()();
   IntColumn get endTime => integer()();
   TextColumn get conferencingUrl => text().nullable()();
+  TextColumn get hostConferencingUrl => text().nullable()();
+  TextColumn get meetingRoom => text().nullable()();
   IntColumn get reminderMinutesBefore =>
       integer().withDefault(const Constant(30))();
   TextColumn get createdBy => text()();
   IntColumn get updatedAt => integer()();
+  TextColumn get recordingStoragePath => text().nullable()();
+  TextColumn get recordingUrl => text().nullable()();
+  IntColumn get recordingIndexedAt => integer().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('MeetingLinkRow')
+class MeetingLinks extends Table {
+  TextColumn get id => text()();
+  TextColumn get contextType => text()();
+  TextColumn get contextId => text()();
+  TextColumn get roomName => text()();
+  TextColumn get role => text()();
+  TextColumn get url => text()();
+  TextColumn get title => text()();
+  IntColumn get createdAt => integer()();
+  IntColumn get scheduledStart => integer().nullable()();
+  IntColumn get reminderAt => integer().nullable()();
+  BoolColumn get reminderScheduled =>
+      boolean().withDefault(const Constant(false))();
+  TextColumn get recordingStoragePath => text().nullable()();
+  TextColumn get recordingUrl => text().nullable()();
+  IntColumn get recordingIndexedAt => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -288,8 +311,7 @@ class DiscussionThreads extends Table {
   TextColumn get classId => text()();
   TextColumn get title => text()();
   TextColumn get createdBy => text()();
-  TextColumn get status =>
-      text().withDefault(const Constant('open'))();
+  TextColumn get status => text().withDefault(const Constant('open'))();
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 
@@ -300,13 +322,12 @@ class DiscussionThreads extends Table {
 @DataClassName('DiscussionPostRow')
 class DiscussionPosts extends Table {
   TextColumn get id => text()();
-  TextColumn get threadId => text()
-      .references(DiscussionThreads, #id, onDelete: KeyAction.cascade)();
+  TextColumn get threadId =>
+      text().references(DiscussionThreads, #id, onDelete: KeyAction.cascade)();
   TextColumn get authorId => text()();
   TextColumn get role => text().nullable()();
   TextColumn get body => text()();
-  TextColumn get status =>
-      text().withDefault(const Constant('pending'))();
+  TextColumn get status => text().withDefault(const Constant('pending'))();
   IntColumn get createdAt => integer()();
   IntColumn get updatedAt => integer()();
 
@@ -317,8 +338,8 @@ class DiscussionPosts extends Table {
 class Progress extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()();
-  TextColumn get lessonId => text()
-      .references(Lessons, #id, onDelete: KeyAction.cascade)();
+  TextColumn get lessonId =>
+      text().references(Lessons, #id, onDelete: KeyAction.cascade)();
   TextColumn get status => text()();
   RealColumn get quizScore => real().nullable()();
   IntColumn get timeSpentSeconds => integer().withDefault(const Constant(0))();
@@ -349,12 +370,10 @@ class Messages extends Table {
   TextColumn get userId => text()();
   TextColumn get body => text()();
   IntColumn get createdAt => integer()();
-  IntColumn get updatedAt => integer()
-      .withDefault(const Constant(0))();
+  IntColumn get updatedAt => integer().withDefault(const Constant(0))();
   BoolColumn get deleted => boolean().withDefault(const Constant(false))();
   BoolColumn get flagged => boolean().withDefault(const Constant(false))();
-  TextColumn get attachments =>
-      text().withDefault(const Constant('[]'))();
+  TextColumn get attachments => text().withDefault(const Constant('[]'))();
   TextColumn get authorName => text().nullable()();
 
   @override
@@ -381,8 +400,7 @@ class ModerationActionsTable extends Table {
   TextColumn get type => text()();
   TextColumn get status => text()();
   TextColumn get reason => text().nullable()();
-  TextColumn get metadata =>
-      text().withDefault(const Constant('{}'))();
+  TextColumn get metadata => text().withDefault(const Constant('{}'))();
   IntColumn get createdAt => integer()();
   IntColumn get expiresAt => integer().nullable()();
 
@@ -408,8 +426,8 @@ class ModerationAppealsTable extends Table {
 }
 
 class NoteChangeTrackers extends Table {
-  TextColumn get noteId => text()
-      .references(Notes, #id, onDelete: KeyAction.noAction)();
+  TextColumn get noteId =>
+      text().references(Notes, #id, onDelete: KeyAction.noAction)();
   TextColumn get userId => text()();
   IntColumn get localUpdatedAt => integer().withDefault(const Constant(0))();
   IntColumn get remoteUpdatedAt => integer().withDefault(const Constant(0))();
@@ -426,8 +444,8 @@ class NoteChangeTrackers extends Table {
 }
 
 class ProgressChangeTrackers extends Table {
-  TextColumn get progressId => text()
-      .references(Progress, #id, onDelete: KeyAction.noAction)();
+  TextColumn get progressId =>
+      text().references(Progress, #id, onDelete: KeyAction.noAction)();
   TextColumn get userId => text()();
   IntColumn get localUpdatedAt => integer().withDefault(const Constant(0))();
   IntColumn get remoteUpdatedAt => integer().withDefault(const Constant(0))();
@@ -444,8 +462,8 @@ class ProgressChangeTrackers extends Table {
 }
 
 class MessageChangeTrackers extends Table {
-  TextColumn get messageId => text()
-      .references(Messages, #id, onDelete: KeyAction.cascade)();
+  TextColumn get messageId =>
+      text().references(Messages, #id, onDelete: KeyAction.cascade)();
   TextColumn get userId => text()();
   IntColumn get localUpdatedAt => integer().withDefault(const Constant(0))();
   IntColumn get remoteUpdatedAt => integer().withDefault(const Constant(0))();
@@ -494,8 +512,7 @@ class MessageChangeTrackers extends Table {
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase([QueryExecutor? executor])
-      : super(executor ?? _openConnection());
+  AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   Future<void>? _seedingFuture;
 
@@ -547,10 +564,8 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(lessonFeeds);
           }
           if (from < 5) {
-            await m.addColumn(
-                lessonAttachments, lessonAttachments.localPath);
-            await m.addColumn(
-                lessonAttachments, lessonAttachments.sizeBytes);
+            await m.addColumn(lessonAttachments, lessonAttachments.localPath);
+            await m.addColumn(lessonAttachments, lessonAttachments.sizeBytes);
             await m.addColumn(
                 lessonAttachments, lessonAttachments.downloadedAt);
             await m.createTable(lessonSources);
@@ -625,7 +640,8 @@ class AppDatabase extends _$AppDatabase {
       final existing = existingById[manifest.id];
 
       if (existing != null) {
-        await (update(translations)..where((tbl) => tbl.id.equals(manifest.id))).write(
+        await (update(translations)..where((tbl) => tbl.id.equals(manifest.id)))
+            .write(
           TranslationsCompanion(
             name: Value(manifest.name),
             language: Value(manifest.languageCode),

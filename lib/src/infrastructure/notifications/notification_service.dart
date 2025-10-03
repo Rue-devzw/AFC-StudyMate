@@ -8,6 +8,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../domain/chat/entities.dart';
+import '../../domain/meetings/entities.dart';
 import '../../domain/settings/entities.dart';
 import '../../domain/settings/repositories.dart';
 
@@ -27,10 +28,19 @@ class NotificationService {
   final SettingsRepository _settingsRepository;
   final Future<String?> Function() _userIdProvider;
 
-  static const AndroidNotificationChannel _chatChannel = AndroidNotificationChannel(
+  static const AndroidNotificationChannel _chatChannel =
+      AndroidNotificationChannel(
     'chat_messages',
     'Class chat messages',
     description: 'Notifications for new class chat messages.',
+    importance: Importance.high,
+  );
+
+  static const AndroidNotificationChannel _meetingChannel =
+      AndroidNotificationChannel(
+    'live_meeting_reminders',
+    'Live meeting reminders',
+    description: 'Reminders for upcoming live lessons and roundtables.',
     importance: Importance.high,
   );
 
@@ -58,14 +68,18 @@ class NotificationService {
   }
 
   Future<void> _configureLocalNotifications() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const darwinSettings = DarwinInitializationSettings();
     await _localNotifications.initialize(
-      const InitializationSettings(android: androidSettings, iOS: darwinSettings),
+      const InitializationSettings(
+          android: androidSettings, iOS: darwinSettings),
     );
     final androidPlugin =
-        _localNotifications.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+        _localNotifications.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
     await androidPlugin?.createNotificationChannel(_chatChannel);
+    await androidPlugin?.createNotificationChannel(_meetingChannel);
   }
 
   Future<void> _ensureTimezoneInitialised() async {
@@ -92,7 +106,8 @@ class NotificationService {
     if (userId == null || userId == message.userId) {
       return;
     }
-    final preferences = await _settingsRepository.getNotificationPreferences(userId);
+    final preferences =
+        await _settingsRepository.getNotificationPreferences(userId);
     final now = DateTime.now();
     if (!preferences.shouldNotify(message.classId, now)) {
       return;
@@ -159,6 +174,44 @@ class NotificationService {
       _scheduleId(sessionId),
       'Upcoming roundtable',
       '$title starts at ${startTime.toLocal()}.',
+      tz.TZDateTime.from(reminderTime, tz.local),
+      notificationDetails,
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.dateAndTime,
+    );
+  }
+
+  Future<void> scheduleMeetingReminder(
+    String linkId,
+    String title,
+    DateTime meetingTime, {
+    required MeetingRole role,
+  }) async {
+    if (!_initialised) {
+      await initialise();
+    }
+    await _ensureTimezoneInitialised();
+    final reminderTime = meetingTime.subtract(const Duration(minutes: 5));
+    if (reminderTime.isBefore(DateTime.now())) {
+      return;
+    }
+    final notificationDetails = NotificationDetails(
+      android: AndroidNotificationDetails(
+        _meetingChannel.id,
+        _meetingChannel.name,
+        channelDescription: _meetingChannel.description,
+        importance: Importance.high,
+        priority: Priority.high,
+      ),
+      iOS: const DarwinNotificationDetails(),
+    );
+    final roleLabel = role == MeetingRole.host ? 'as host' : 'as attendee';
+    await _localNotifications.zonedSchedule(
+      _scheduleId('meeting:$linkId:${role.storageValue}'),
+      'Upcoming meeting',
+      '$title starts soon $roleLabel.',
       tz.TZDateTime.from(reminderTime, tz.local),
       notificationDetails,
       androidAllowWhileIdle: true,

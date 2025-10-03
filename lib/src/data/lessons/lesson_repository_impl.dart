@@ -32,7 +32,8 @@ class LessonRepositoryImpl implements LessonRepository {
   }
 
   @override
-  Stream<List<domain.Lesson>> watchLessons({domain.LessonQuery? filter}) async* {
+  Stream<List<domain.Lesson>> watchLessons(
+      {domain.LessonQuery? filter}) async* {
     await _ensureSeeded();
     final daoFilter = _mapFilter(filter);
     yield* _dao.watchLessons(daoFilter).map(_mapLessons);
@@ -203,8 +204,27 @@ class LessonRepositoryImpl implements LessonRepository {
         return domain.LessonAttachmentType.pdf;
       case 'video':
         return domain.LessonAttachmentType.video;
+      case 'recording':
+        return domain.LessonAttachmentType.recording;
       default:
         return domain.LessonAttachmentType.link;
+    }
+  }
+
+  String _mapAttachmentTypeToString(domain.LessonAttachmentType type) {
+    switch (type) {
+      case domain.LessonAttachmentType.image:
+        return 'image';
+      case domain.LessonAttachmentType.audio:
+        return 'audio';
+      case domain.LessonAttachmentType.pdf:
+        return 'pdf';
+      case domain.LessonAttachmentType.video:
+        return 'video';
+      case domain.LessonAttachmentType.link:
+        return 'link';
+      case domain.LessonAttachmentType.recording:
+        return 'recording';
     }
   }
 
@@ -242,5 +262,36 @@ class LessonRepositoryImpl implements LessonRepository {
           ),
         )
         .toList();
+  }
+
+  @override
+  Future<domain.LessonAttachment> addAttachment(
+    String lessonId,
+    domain.LessonAttachment attachment,
+  ) async {
+    await _ensureSeeded();
+    final existing = await (_db.select(_db.lessonAttachments)
+          ..where((tbl) => tbl.lessonId.equals(lessonId))
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.position)])
+          ..limit(1))
+        .getSingleOrNull();
+    final nextPosition = (existing?.position ?? -1) + 1;
+    await _db.into(_db.lessonAttachments).insertOnConflictUpdate(
+          LessonAttachmentsCompanion(
+            lessonId: Value(lessonId),
+            position: Value(nextPosition),
+            type: Value(_mapAttachmentTypeToString(attachment.type)),
+            title: Value(attachment.title),
+            url: Value(attachment.url),
+            localPath: Value(attachment.localPath),
+          ),
+        );
+    return domain.LessonAttachment(
+      type: attachment.type,
+      url: attachment.url,
+      position: nextPosition,
+      title: attachment.title,
+      localPath: attachment.localPath,
+    );
   }
 }

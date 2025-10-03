@@ -17,7 +17,7 @@ class LessonScriptureReference {
   final String? translationId;
 }
 
-enum LessonAttachmentType { image, audio, pdf, video, link }
+enum LessonAttachmentType { image, audio, pdf, video, link, recording }
 
 class LessonAttachment {
   const LessonAttachment({
@@ -134,10 +134,8 @@ class LessonProgress {
       quizScore: removeQuizScore ? null : quizScore ?? this.quizScore,
       timeSpentSeconds: timeSpentSeconds ?? this.timeSpentSeconds,
       updatedAt: updatedAt ?? this.updatedAt,
-      startedAt:
-          removeStartedAt ? null : startedAt ?? this.startedAt,
-      completedAt:
-          removeCompletedAt ? null : completedAt ?? this.completedAt,
+      startedAt: removeStartedAt ? null : startedAt ?? this.startedAt,
+      completedAt: removeCompletedAt ? null : completedAt ?? this.completedAt,
     );
   }
 }
@@ -224,9 +222,14 @@ class RoundtableSession {
     required this.startTime,
     required this.endTime,
     this.conferencingUrl,
+    this.hostConferencingUrl,
+    this.meetingRoom,
     required this.reminderMinutesBefore,
     required this.createdBy,
     required this.updatedAt,
+    this.recordingUrl,
+    this.recordingStoragePath,
+    this.recordingIndexedAt,
   });
 
   final String id;
@@ -236,9 +239,14 @@ class RoundtableSession {
   final DateTime startTime;
   final DateTime endTime;
   final String? conferencingUrl;
+  final String? hostConferencingUrl;
+  final String? meetingRoom;
   final int reminderMinutesBefore;
   final String createdBy;
   final DateTime updatedAt;
+  final String? recordingUrl;
+  final String? recordingStoragePath;
+  final DateTime? recordingIndexedAt;
 }
 
 enum DiscussionPostStatus { pending, published, rejected }

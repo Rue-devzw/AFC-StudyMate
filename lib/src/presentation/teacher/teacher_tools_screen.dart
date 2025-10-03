@@ -6,7 +6,9 @@ import 'package:flutter_quill/flutter_quill.dart' hide Text;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../domain/accounts/entities.dart';
 import '../../domain/lessons/entities.dart';
+import '../../domain/meetings/entities.dart';
 import '../providers.dart';
 
 final _lessonDraftsProvider =
@@ -33,7 +35,8 @@ final _roundtableSessionsProvider =
   return ref.watch(watchRoundtablesUseCaseProvider)(classId);
 });
 
-final _forumThreadsProvider = StreamProvider.autoDispose<List<DiscussionThread>>((ref) {
+final _forumThreadsProvider =
+    StreamProvider.autoDispose<List<DiscussionThread>>((ref) {
   final account = ref.watch(activeAccountProvider);
   final classId = account.maybeWhen(
     data: (value) => value?.preferredCohortId,
@@ -127,8 +130,9 @@ class _LessonEditorTabState extends ConsumerState<_LessonEditorTab> {
     _controller.dispose();
     _selectedDraft = draft;
     _titleController.text = draft?.title ?? '';
-    final delta =
-        draft == null ? Document() : Document.fromJson(jsonDecode(draft.deltaJson) as List);
+    final delta = draft == null
+        ? Document()
+        : Document.fromJson(jsonDecode(draft.deltaJson) as List);
     _controller = QuillController(
       document: delta,
       selection: const TextSelection.collapsed(offset: 0),
@@ -147,7 +151,8 @@ class _LessonEditorTabState extends ConsumerState<_LessonEditorTab> {
     }
   }
 
-  Future<void> _saveDraft(BuildContext context, LessonDraftStatus status) async {
+  Future<void> _saveDraft(
+      BuildContext context, LessonDraftStatus status) async {
     final userId = ref.read(activeUserIdProvider);
     if (userId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -172,9 +177,8 @@ class _LessonEditorTabState extends ConsumerState<_LessonEditorTab> {
       title: title,
       deltaJson: deltaJson,
       status: status,
-      approverId: status == LessonDraftStatus.draft
-          ? _selectedDraft?.approverId
-          : null,
+      approverId:
+          status == LessonDraftStatus.draft ? _selectedDraft?.approverId : null,
       reviewerComment: status == LessonDraftStatus.draft
           ? _selectedDraft?.reviewerComment
           : null,
@@ -310,9 +314,8 @@ class _LessonEditorTabState extends ConsumerState<_LessonEditorTab> {
                                       icon: const Icon(Icons.check_circle,
                                           color: Colors.green),
                                       tooltip: 'Approve draft',
-                                      onPressed: () =>
-                                          _approveDraft(context, draft,
-                                              LessonDraftStatus.approved),
+                                      onPressed: () => _approveDraft(context,
+                                          draft, LessonDraftStatus.approved),
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.cancel,
@@ -393,8 +396,7 @@ class _LessonEditorTabState extends ConsumerState<_LessonEditorTab> {
                   children: [
                     ElevatedButton.icon(
                       onPressed: _dirty
-                          ? () =>
-                              _saveDraft(context, LessonDraftStatus.draft)
+                          ? () => _saveDraft(context, LessonDraftStatus.draft)
                           : null,
                       icon: const Icon(Icons.save_outlined),
                       label: const Text('Save Draft'),
@@ -450,6 +452,16 @@ class _RoundtableSchedulerTabState
     super.dispose();
   }
 
+  bool _canHost(LocalAccount? account) {
+    if (account == null) {
+      return false;
+    }
+    final roles = account.roles.map((role) => role.toLowerCase()).toSet();
+    return roles.contains('teacher') ||
+        roles.contains('facilitator') ||
+        roles.contains('admin');
+  }
+
   Future<void> _pickDateTime(BuildContext context, bool isStart) async {
     final initial = isStart ? _startTime : _endTime;
     final pickedDate = await showDatePicker(
@@ -503,6 +515,19 @@ class _RoundtableSchedulerTabState
       );
       return;
     }
+    final now = DateTime.now();
+    final trimmedUrl = _urlController.text.trim();
+    String? hostUrl;
+    String? attendeeUrl;
+    String? meetingRoom;
+    if (trimmedUrl.isNotEmpty) {
+      attendeeUrl = trimmedUrl;
+      hostUrl = trimmedUrl;
+      final uri = Uri.tryParse(trimmedUrl);
+      if (uri != null && uri.pathSegments.isNotEmpty) {
+        meetingRoom = uri.pathSegments.last;
+      }
+    }
     final session = RoundtableSession(
       id: const Uuid().v4(),
       title: title,
@@ -512,17 +537,15 @@ class _RoundtableSchedulerTabState
       classId: account.preferredCohortId,
       startTime: _startTime,
       endTime: _endTime,
-      conferencingUrl: _urlController.text.trim().isEmpty
-          ? null
-          : _urlController.text.trim(),
+      conferencingUrl: attendeeUrl,
+      hostConferencingUrl: hostUrl,
+      meetingRoom: meetingRoom,
       reminderMinutesBefore: _reminderMinutes,
       createdBy: userId,
-      updatedAt: DateTime.now(),
+      updatedAt: now,
     );
     await ref.read(saveRoundtableUseCaseProvider)(session);
-    await ref
-        .read(notificationServiceProvider)
-        .scheduleRoundtableReminder(
+    await ref.read(notificationServiceProvider).scheduleRoundtableReminder(
           session.id,
           session.title,
           session.startTime,
@@ -538,9 +561,43 @@ class _RoundtableSchedulerTabState
     }
   }
 
+  Future<void> _joinRoundtable(
+    BuildContext context,
+    RoundtableSession session,
+    MeetingRole role,
+  ) async {
+    final account = ref.read(activeAccountProvider).asData?.value;
+    final launcher = ref.read(meetingLauncherProvider);
+    final result = await launcher.launch(
+      MeetingLaunchRequest(
+        contextType: MeetingContextType.roundtable,
+        contextId: session.id,
+        title: session.title,
+        role: role,
+        roomName: session.meetingRoom,
+        displayName: account?.displayName,
+        scheduledStart: session.startTime,
+        createParticipantLink: role == MeetingRole.host,
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    final message = result.wasLaunched
+        ? 'Joining ${role == MeetingRole.host ? 'as host' : 'as attendee'}.'
+        : 'Offline - meeting link saved for later.';
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final sessionsAsync = ref.watch(_roundtableSessionsProvider);
+    final account = ref.watch(activeAccountProvider).maybeWhen(
+          data: (value) => value,
+          orElse: () => null,
+        );
+    final canHost = _canHost(account);
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -616,18 +673,47 @@ class _RoundtableSchedulerTabState
                       subtitle: Text(
                         '${session.startTime.toLocal()} — '
                         '${session.endTime.toLocal()}\n'
-                        'Reminder: ${session.reminderMinutesBefore} minutes before',
+                        'Reminder: ${session.reminderMinutesBefore} minutes before\n'
+                        'Meeting room: '
+                        '${session.meetingRoom ?? 'Assigned when host joins'}',
                       ),
                       isThreeLine: true,
-                      trailing: IconButton(
-                        icon: const Icon(Icons.cancel),
-                        onPressed: () async {
-                          await ref
-                              .read(cancelRoundtableUseCaseProvider)(session.id);
-                          await ref
-                              .read(notificationServiceProvider)
-                              .cancelRoundtableReminder(session.id);
-                        },
+                      trailing: Wrap(
+                        spacing: 4,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.video_call_outlined),
+                            tooltip: 'Host meeting',
+                            onPressed: canHost
+                                ? () => _joinRoundtable(
+                                      context,
+                                      session,
+                                      MeetingRole.host,
+                                    )
+                                : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.group_outlined),
+                            tooltip: 'Join meeting',
+                            onPressed: session.meetingRoom == null
+                                ? null
+                                : () => _joinRoundtable(
+                                      context,
+                                      session,
+                                      MeetingRole.participant,
+                                    ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.cancel),
+                            onPressed: () async {
+                              await ref.read(cancelRoundtableUseCaseProvider)(
+                                  session.id);
+                              await ref
+                                  .read(notificationServiceProvider)
+                                  .cancelRoundtableReminder(session.id);
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -666,7 +752,8 @@ class _DiscussionForumTabState extends ConsumerState<_DiscussionForumTab> {
   }
 
   Future<void> _createThread(BuildContext context) async {
-    final classId = ref.read(activeAccountProvider).asData?.value?.preferredCohortId;
+    final classId =
+        ref.read(activeAccountProvider).asData?.value?.preferredCohortId;
     final userId = ref.read(activeUserIdProvider);
     if (classId == null || userId == null) {
       return;
@@ -710,8 +797,9 @@ class _DiscussionForumTabState extends ConsumerState<_DiscussionForumTab> {
       authorId: userId,
       role: roles.isEmpty ? 'member' : roles.first,
       body: body,
-      status:
-          canPublish ? DiscussionPostStatus.published : DiscussionPostStatus.pending,
+      status: canPublish
+          ? DiscussionPostStatus.published
+          : DiscussionPostStatus.pending,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
@@ -733,8 +821,11 @@ class _DiscussionForumTabState extends ConsumerState<_DiscussionForumTab> {
     final postsAsync = _selectedThreadId == null
         ? const AsyncValue<List<DiscussionPost>>.data(<DiscussionPost>[])
         : ref.watch(_forumPostsProvider(_selectedThreadId!));
-    final canModerate = roles.contains('teacher') || roles.contains('moderator');
-    final canPost = roles.contains('teacher') || roles.contains('moderator') || roles.contains('student');
+    final canModerate =
+        roles.contains('teacher') || roles.contains('moderator');
+    final canPost = roles.contains('teacher') ||
+        roles.contains('moderator') ||
+        roles.contains('student');
 
     return Row(
       children: [
@@ -828,9 +919,8 @@ class _DiscussionForumTabState extends ConsumerState<_DiscussionForumTab> {
                                       createdAt: post.createdAt,
                                       updatedAt: DateTime.now(),
                                     );
-                                    ref
-                                        .read(upsertForumPostUseCaseProvider)(
-                                            updated);
+                                    ref.read(upsertForumPostUseCaseProvider)(
+                                        updated);
                                   },
                                   itemBuilder: (context) => const [
                                     PopupMenuItem(

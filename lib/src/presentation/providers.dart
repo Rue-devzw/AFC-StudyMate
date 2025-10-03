@@ -46,6 +46,9 @@ import '../domain/lessons/services/lesson_quiz_grader.dart';
 import '../domain/lessons/services/lesson_timer_service.dart';
 import '../domain/lessons/repositories.dart';
 import '../domain/lessons/usecases.dart';
+import '../domain/meetings/entities.dart';
+import '../domain/meetings/repositories.dart';
+import '../domain/meetings/services.dart';
 import '../domain/settings/repositories.dart';
 import '../domain/settings/usecases.dart';
 import '../domain/sync/repositories.dart';
@@ -61,11 +64,14 @@ import '../infrastructure/db/daos/lesson_dao.dart';
 import '../infrastructure/db/daos/lesson_draft_dao.dart';
 import '../infrastructure/db/daos/sync_dao.dart';
 import '../infrastructure/db/daos/roundtable_dao.dart';
+import '../infrastructure/db/daos/meeting_link_dao.dart';
 import '../infrastructure/lessons/lesson_attachment_cache.dart';
 import '../infrastructure/lessons/lesson_cache_invalidator.dart';
 import '../infrastructure/lessons/lesson_ingestion_pipeline.dart';
 import '../infrastructure/lessons/lesson_source_registry.dart';
 import '../infrastructure/lessons/lesson_sync_service.dart';
+import '../infrastructure/meetings/jitsi_meeting_launcher.dart';
+import '../infrastructure/meetings/meeting_reminder_coordinator.dart';
 import '../infrastructure/sync/sync_orchestrator.dart';
 import '../infrastructure/accounts/cloud_account_coordinator.dart';
 import '../infrastructure/accounts/firebase_auth_service.dart';
@@ -223,7 +229,73 @@ final roundtableRepositoryProvider = Provider<RoundtableRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final dao = ref.watch(roundtableDaoProvider);
   final syncRepository = ref.watch(syncRepositoryProvider);
-  return RoundtableRepositoryImpl(db, dao, syncRepository);
+  final meetingRepository = ref.watch(meetingRepositoryProvider);
+  return RoundtableRepositoryImpl(
+    db,
+    dao,
+    syncRepository,
+    meetingRepository,
+  );
+});
+
+final meetingLinkDaoProvider =
+    Provider((ref) => MeetingLinkDao(ref.watch(appDatabaseProvider)));
+
+final meetingRepositoryProvider = Provider<MeetingRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final dao = ref.watch(meetingLinkDaoProvider);
+  return MeetingRepositoryImpl(db, dao);
+});
+
+final meetingLauncherProvider = Provider<MeetingLauncher>((ref) {
+  return JitsiMeetingLauncher(
+    repository: ref.watch(meetingRepositoryProvider),
+    notificationService: ref.watch(notificationServiceProvider),
+  );
+});
+
+final meetingReminderCoordinatorProvider =
+    Provider<MeetingReminderCoordinator>((ref) {
+  final coordinator = MeetingReminderCoordinator(
+    ref.watch(meetingRepositoryProvider),
+    ref.watch(notificationServiceProvider),
+  );
+  ref.onDispose(coordinator.dispose);
+  return coordinator;
+});
+
+class MeetingLinkQuery {
+  const MeetingLinkQuery({
+    required this.contextType,
+    required this.contextId,
+    this.role,
+  });
+
+  final MeetingContextType contextType;
+  final String contextId;
+  final MeetingRole? role;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        other is MeetingLinkQuery &&
+            runtimeType == other.runtimeType &&
+            contextType == other.contextType &&
+            contextId == other.contextId &&
+            role == other.role;
+  }
+
+  @override
+  int get hashCode => Object.hash(contextType, contextId, role);
+}
+
+final meetingLinksProvider =
+    StreamProvider.family<List<MeetingLink>, MeetingLinkQuery>((ref, query) {
+  return ref.watch(meetingRepositoryProvider).watchLinks(
+        query.contextType,
+        query.contextId,
+        role: query.role,
+      );
 });
 
 final discussionForumRepositoryProvider =

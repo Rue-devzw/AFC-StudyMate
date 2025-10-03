@@ -12,6 +12,7 @@ class StudyMateApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeControllerProvider);
+    ref.watch(meetingReminderCoordinatorProvider);
 
     const Color primarySeedColor = Color(0xFF3F51B5);
 
