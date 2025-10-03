@@ -9,6 +9,7 @@ import '../lessons/lessons_screen.dart';
 import '../teacher/teacher_tools_screen.dart';
 import '../settings/settings_screen.dart';
 import '../providers.dart';
+import '../l10n/l10n.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -30,11 +31,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AFC StudyMate'),
+        title: Text(context.l10n.appTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Open settings',
+            tooltip: context.l10n.homeOpenSettingsTooltip,
             onPressed: () {
               Navigator.push(
                 context,
@@ -48,10 +49,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Lessons'),
-          BottomNavigationBarItem(icon: Icon(Icons.manage_accounts), label: 'Teacher'),
+        items: [
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.home),
+            label: context.l10n.homeNavHome,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.school),
+            label: context.l10n.homeNavLessons,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.manage_accounts),
+            label: context.l10n.homeNavTeacher,
+          ),
         ],
       ),
     );
@@ -79,12 +89,12 @@ class _HomeDashboard extends ConsumerWidget {
               Image.asset(
                 'assets/images/logo.png',
                 height: 120,
-                semanticLabel: 'AFC StudyMate logo',
+                semanticLabel: context.l10n.homeLogoSemanticLabel,
               ),
               const SizedBox(height: 30),
               Semantics(
                 container: true,
-                label: 'Verse of the day card',
+                label: context.l10n.homeVerseCardSemanticLabel,
                 child: Card(
                   elevation: 4.0,
                   shape: RoundedRectangleBorder(
@@ -99,7 +109,7 @@ class _HomeDashboard extends ConsumerWidget {
                       error: (error, stack) => Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('Failed to load verse of the day'),
+                          Text(context.l10n.homeVerseLoadError),
                           const SizedBox(height: 8),
                           Text(error.toString()),
                         ],
@@ -108,7 +118,7 @@ class _HomeDashboard extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            'Verse of the Day',
+                            context.l10n.homeVerseOfTheDayTitle,
                             style: Theme.of(context)
                                 .textTheme
                                 .headlineSmall
@@ -141,11 +151,12 @@ class _HomeDashboard extends ConsumerWidget {
                             icon: const Icon(Icons.share_outlined),
                             onPressed: () {
                               Share.share(
-                                '"${verse.text}" - ${verse.reference}',
-                                subject: 'Verse of the Day',
+                                context.l10n
+                                    .homeVerseShareText(verse.text, verse.reference),
+                                subject: context.l10n.homeVerseShareSubject,
                               );
                             },
-                            tooltip: 'Share Verse',
+                            tooltip: context.l10n.homeVerseShareTooltip,
                           ),
                         ],
                       ),
@@ -162,7 +173,7 @@ class _HomeDashboard extends ConsumerWidget {
                   children: [
                     ElevatedButton.icon(
                       icon: const Icon(Icons.menu_book_outlined),
-                      label: const Text('Read Bible'),
+                      label: Text(context.l10n.homeReadBible),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -175,7 +186,7 @@ class _HomeDashboard extends ConsumerWidget {
                   if (readingPosition != null)
                     ElevatedButton.icon(
                       icon: const Icon(Icons.play_arrow),
-                      label: const Text('Continue Reading'),
+                      label: Text(context.l10n.homeContinueReading),
                       onPressed: () async {
                         final position = readingPosition;
                         ref
@@ -192,8 +203,10 @@ class _HomeDashboard extends ConsumerWidget {
                         if (!context.mounted) return;
                         if (book == null) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Saved reading location is unavailable.'),
+                            SnackBar(
+                              content: Text(
+                                context.l10n.homeSavedReadingUnavailable,
+                              ),
                             ),
                           );
                           return;
@@ -211,7 +224,7 @@ class _HomeDashboard extends ConsumerWidget {
                     ),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.school_outlined),
-                    label: const Text('Browse Lessons'),
+                    label: Text(context.l10n.homeBrowseLessons),
                     onPressed: () {
                       Navigator.push(
                         context,

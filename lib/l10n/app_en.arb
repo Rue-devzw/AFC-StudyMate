@@ -1,0 +1,102 @@
+{
+  "@@locale": "en",
+  "appTitle": "AFC StudyMate",
+  "homeOpenSettingsTooltip": "Open settings",
+  "homeNavHome": "Home",
+  "homeNavLessons": "Lessons",
+  "homeNavTeacher": "Teacher",
+  "homeLogoSemanticLabel": "AFC StudyMate logo",
+  "homeVerseCardSemanticLabel": "Verse of the day card",
+  "homeVerseLoadError": "Failed to load verse of the day",
+  "homeVerseOfTheDayTitle": "Verse of the Day",
+  "homeVerseShareTooltip": "Share Verse",
+  "homeReadBible": "Read Bible",
+  "homeContinueReading": "Continue Reading",
+  "homeSavedReadingUnavailable": "Saved reading location is unavailable.",
+  "homeBrowseLessons": "Browse Lessons",
+  "homeVerseShareSubject": "Verse of the Day",
+  "homeVerseShareText": "\u201c{verse}\u201d – {reference}",
+  "@homeVerseShareText": {
+    "description": "Share message for the verse of the day.",
+    "placeholders": {
+      "verse": {},
+      "reference": {}
+    }
+  },
+  "onboardingWelcomeTitle": "Welcome to AFC StudyMate",
+  "onboardingWelcomeDescription": "Create or choose a local profile to personalise your study experience.",
+  "onboardingDefaultProfileName": "Profile {index}",
+  "@onboardingDefaultProfileName": {
+    "description": "Fallback profile name when a profile has no display name.",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "onboardingNoCohortPreference": "No cohort preference",
+  "onboardingUseProfile": "Use profile",
+  "onboardingProfilesLoadError": "Failed to load profiles: {error}",
+  "@onboardingProfilesLoadError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "onboardingConnectCloudAccount": "Connect a cloud account",
+  "onboardingConnectCloudDescription": "Sign in with email, Google or Apple to sync progress across devices.",
+  "actionSignIn": "Sign in",
+  "onboardingCloudSyncActive": "Cloud sync is active.",
+  "onboardingCloudSyncVia": "Cloud sync via {providers}",
+  "@onboardingCloudSyncVia": {
+    "placeholders": {
+      "providers": {}
+    }
+  },
+  "onboardingSignedInFallback": "Signed in",
+  "actionSignOut": "Sign out",
+  "onboardingCloudUnavailable": "Cloud sync unavailable",
+  "onboardingCloudStatusError": "Failed to load status: {error}",
+  "@onboardingCloudStatusError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "actionTryAgain": "Try again",
+  "onboardingCreateProfile": "Create profile",
+  "onboardingManageProfiles": "Manage existing profiles",
+  "snackbarProfileCreated": "Profile created.",
+  "snackbarProfileCreateFailed": "Failed to create profile: {error}",
+  "@snackbarProfileCreateFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "snackbarProfileSelected": "Profile selected.",
+  "snackbarProfileSelectFailed": "Failed to select profile: {error}",
+  "@snackbarProfileSelectFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "snackbarCloudSignedOut": "Signed out of cloud account.",
+  "snackbarCloudSignOutFailed": "Unable to sign out. Please try again.",
+  "emptyProfilesTitle": "No profiles yet",
+  "emptyProfilesDescription": "Create your first profile to get started.",
+  "emptyProfilesCreate": "Create profile",
+  "dialogCreateProfileTitle": "Create profile",
+  "dialogEditProfileTitle": "Edit profile",
+  "formDisplayNameLabel": "Display name",
+  "formDisplayNameValidation": "Please enter a name",
+  "formChooseAvatar": "Choose an avatar",
+  "formAvatarNone": "None",
+  "formPreferredCohort": "Preferred cohort",
+  "formPreferredCohortNone": "No preference",
+  "actionCancel": "Cancel",
+  "actionSave": "Save",
+  "appThemeLoadError": "Failed to load theme: {error}",
+  "@appThemeLoadError": {
+    "placeholders": {
+      "error": {}
+    }
+  }
+}
