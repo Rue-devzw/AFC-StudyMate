@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -14,6 +17,7 @@ import '../data/accounts/account_repository_impl.dart';
 import '../data/bible/annotation_repository_impl.dart';
 import '../data/bible/bible_repository_impl.dart';
 import '../data/bible/reading_progress_repository_impl.dart';
+import '../data/chat/chat_remote_data_source.dart';
 import '../data/chat/chat_repository_impl.dart';
 import '../data/lessons/lesson_repository_impl.dart';
 import '../data/settings/settings_repository_impl.dart';
@@ -59,9 +63,6 @@ import '../infrastructure/lessons/lesson_sync_service.dart';
 import '../infrastructure/sync/sync_orchestrator.dart';
 import '../infrastructure/accounts/cloud_account_coordinator.dart';
 import '../infrastructure/accounts/firebase_auth_service.dart';
-import '../infrastructure/privacy/privacy_remote_data_source.dart';
-import '../infrastructure/privacy/privacy_service.dart';
-import '../infrastructure/security/secure_storage_service.dart';
 import '../utils/iterable_extensions.dart';
 import 'settings/bible_import_controller.dart';
 import 'settings/data_sync_controller.dart';
@@ -83,8 +84,7 @@ final firebaseStorageProvider = Provider<FirebaseStorage>((ref) {
   return FirebaseStorage.instance;
 });
 
-final secureStorageProvider = Provider<SecureStorageService>((ref) {
-  return SecureStorageService();
+
 });
 
 final googleSignInProvider = Provider<GoogleSignIn>((ref) {
@@ -130,6 +130,13 @@ final lessonDaoProvider = Provider((ref) => LessonDao(ref.watch(appDatabaseProvi
 final accountDaoProvider = Provider((ref) => AccountDao(ref.watch(appDatabaseProvider)));
 final syncDaoProvider = Provider((ref) => SyncDao(ref.watch(appDatabaseProvider)));
 final chatDaoProvider = Provider((ref) => ChatDao(ref.watch(appDatabaseProvider)));
+final chatRemoteDataSourceProvider =
+    Provider<ChatRemoteDataSource>((ref) {
+  return ChatRemoteDataSource(
+    ref.watch(firebaseFirestoreProvider),
+    ref.watch(firebaseStorageProvider),
+  );
+});
 final annotationDaoProvider =
     Provider((ref) => AnnotationDao(ref.watch(appDatabaseProvider)));
 
@@ -340,7 +347,11 @@ final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   final dao = ref.watch(chatDaoProvider);
   final syncDao = ref.watch(syncDaoProvider);
   final syncRepository = ref.watch(syncRepositoryProvider);
-  return ChatRepositoryImpl(db, dao, syncDao, syncRepository);
+  final remote = ref.watch(chatRemoteDataSourceProvider);
+  final repository =
+      ChatRepositoryImpl(db, dao, syncDao, syncRepository, remote);
+  ref.onDispose(repository.dispose);
+  return repository;
 });
 final annotationRepositoryProvider = Provider<AnnotationRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
@@ -360,6 +371,18 @@ final readingProgressRepositoryProvider =
 
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   return SettingsRepositoryImpl(ref.watch(secureStorageProvider));
+});
+
+final notificationServiceProvider = Provider<NotificationService>((ref) {
+  final service = NotificationService(
+    messaging: ref.watch(firebaseMessagingProvider),
+    localNotifications: ref.watch(flutterLocalNotificationsProvider),
+    settingsRepository: ref.watch(settingsRepositoryProvider),
+    userIdProvider: () async => ref.read(activeUserIdProvider),
+  );
+  unawaited(service.initialise());
+  ref.onDispose(service.dispose);
+  return service;
 });
 
 final getTranslationsUseCaseProvider = Provider((ref) {
@@ -707,12 +730,96 @@ final deleteChatMessageUseCaseProvider = Provider((ref) {
   return DeleteChatMessageUseCase(ref.watch(chatRepositoryProvider));
 });
 
+final chatNotificationObserverProvider = Provider<ChatNotificationObserver>((ref) {
+  final watchMessages = ref.watch(watchChatMessagesUseCaseProvider);
+  final observer = ChatNotificationObserver(
+    (classId) => watchMessages(classId),
+    ref.watch(notificationServiceProvider),
+  );
+  ref.onDispose(observer.dispose);
+  ref.listen(lessonsProvider, (previous, next) {
+    next.whenData((lessons) {
+      final targets = <String, String>{};
+      for (final lesson in lessons) {
+        final classId = _normaliseClassId(lesson.lessonClass);
+        targets[classId] = lesson.lessonClass;
+      }
+      final current = observer.attachedClassIds.toSet();
+      for (final entry in targets.entries) {
+        observer.attach(entry.key, entry.value);
+      }
+      for (final id in current) {
+        if (!targets.containsKey(id)) {
+          unawaited(observer.detach(id));
+        }
+      }
+    });
+  });
+  return observer;
+});
+
+final watchTypingStatusUseCaseProvider = Provider((ref) {
+  return WatchTypingStatusUseCase(ref.watch(chatRepositoryProvider));
+});
+
+final watchModerationActionsUseCaseProvider = Provider((ref) {
+  return WatchModerationActionsUseCase(ref.watch(chatRepositoryProvider));
+});
+
+final muteUserUseCaseProvider = Provider((ref) {
+  return MuteUserUseCase(ref.watch(chatRepositoryProvider));
+});
+
+final banUserUseCaseProvider = Provider((ref) {
+  return BanUserUseCase(ref.watch(chatRepositoryProvider));
+});
+
+final resolveModerationActionUseCaseProvider = Provider((ref) {
+  return ResolveModerationActionUseCase(ref.watch(chatRepositoryProvider));
+});
+
+final submitModerationAppealUseCaseProvider = Provider((ref) {
+  return SubmitModerationAppealUseCase(ref.watch(chatRepositoryProvider));
+});
+
+final updateTypingStatusUseCaseProvider = Provider((ref) {
+  return UpdateTypingStatusUseCase(ref.watch(chatRepositoryProvider));
+});
+
+String normaliseClassId(String value) {
+  var classId = value.toLowerCase();
+  classId = classId
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+      .replaceAll(RegExp(r'-+'), '-')
+      .trim();
+  if (classId.startsWith('-')) {
+    classId = classId.substring(1);
+  }
+  if (classId.endsWith('-')) {
+    classId = classId.substring(0, classId.length - 1);
+  }
+  if (classId.isEmpty) {
+    classId = 'general';
+  }
+  return classId;
+}
+
+String _normaliseClassId(String value) => normaliseClassId(value);
+
 final getThemeModeUseCaseProvider = Provider((ref) {
   return GetThemeModeUseCase(ref.watch(settingsRepositoryProvider));
 });
 
 final saveThemeModeUseCaseProvider = Provider((ref) {
   return SaveThemeModeUseCase(ref.watch(settingsRepositoryProvider));
+});
+
+final getNotificationPreferencesUseCaseProvider = Provider((ref) {
+  return GetNotificationPreferencesUseCase(ref.watch(settingsRepositoryProvider));
+});
+
+final saveNotificationPreferencesUseCaseProvider = Provider((ref) {
+  return SaveNotificationPreferencesUseCase(ref.watch(settingsRepositoryProvider));
 });
 
 final translationsProvider = FutureProvider((ref) async {

@@ -1,3 +1,4 @@
+
 import '../../domain/settings/entities.dart';
 import '../../domain/settings/repositories.dart';
 import '../../infrastructure/security/secure_storage_service.dart';
@@ -7,8 +8,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
   final SecureStorageService _storage;
   static const _themeKey = 'app_theme_mode';
+  static const _notificationKey = 'notification_preferences';
 
   String _keyFor(String userId) => '${_themeKey}_$userId';
+  String _notificationPrefsKeyFor(String userId) =>
+      '${_notificationKey}_$userId';
 
   @override
   Future<AppThemeMode> getThemeMode(String userId) async {
@@ -40,7 +44,5 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<void> clearThemeMode(String userId) {
-    return _storage.delete(_keyFor(userId));
   }
 }

@@ -8,6 +8,7 @@ import '../../domain/lessons/entities.dart';
 import '../../domain/lessons/services/lesson_quiz_grader.dart';
 import '../../domain/lessons/services/lesson_timer_service.dart';
 import '../providers.dart';
+import '../chat/chat_room_screen.dart';
 
 class LessonDetailScreen extends ConsumerStatefulWidget {
   const LessonDetailScreen({super.key, required this.lesson});
@@ -106,6 +107,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
       );
     }
     final theme = Theme.of(context);
+    final chatClassId = normaliseClassId(widget.lesson.lessonClass);
     final ageLabel = widget.lesson.ageRange != null
         ? '${widget.lesson.ageRange!.min}-${widget.lesson.ageRange!.max} years'
         : 'All ages';
@@ -164,6 +166,25 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
               onComplete: _isPersisting || status == 'completed'
                   ? null
                   : _handleComplete,
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.forum_outlined),
+                label: const Text('Open class chat'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ChatRoomScreen(
+                        classId: chatClassId,
+                        className: widget.lesson.lessonClass,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
             if (widget.lesson.objectives.isNotEmpty) ...[
               const SizedBox(height: 24),
