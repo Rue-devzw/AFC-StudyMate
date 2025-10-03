@@ -1,11 +1,12 @@
-import 'dart:convert';
-
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../domain/settings/entities.dart';
 import '../../domain/settings/repositories.dart';
+import '../../infrastructure/security/secure_storage_service.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
+  SettingsRepositoryImpl(this._storage);
+
+  final SecureStorageService _storage;
   static const _themeKey = 'app_theme_mode';
   static const _notificationKey = 'notification_preferences';
 
@@ -15,8 +16,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
   @override
   Future<AppThemeMode> getThemeMode(String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final value = prefs.getString(_keyFor(userId));
+    final value = await _storage.read(_keyFor(userId));
     switch (value) {
       case 'light':
         return AppThemeMode.light;
@@ -29,45 +29,20 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
   @override
   Future<void> saveThemeMode(String userId, AppThemeMode mode) async {
-    final prefs = await SharedPreferences.getInstance();
     final key = _keyFor(userId);
     switch (mode) {
       case AppThemeMode.system:
-        await prefs.remove(key);
+        await _storage.delete(key);
         break;
       case AppThemeMode.light:
-        await prefs.setString(key, 'light');
+        await _storage.write(key, 'light');
         break;
       case AppThemeMode.dark:
-        await prefs.setString(key, 'dark');
+        await _storage.write(key, 'dark');
         break;
     }
   }
 
   @override
-  Future<NotificationPreferences> getNotificationPreferences(
-      String userId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = _notificationPrefsKeyFor(userId);
-    final raw = prefs.getString(key);
-    if (raw == null) {
-      return const NotificationPreferences();
-    }
-    try {
-      final json = jsonDecode(raw) as Map<String, Object?>;
-      return NotificationPreferences.fromJson(json);
-    } catch (_) {
-      return const NotificationPreferences();
-    }
-  }
-
-  @override
-  Future<void> saveNotificationPreferences(
-    String userId,
-    NotificationPreferences preferences,
-  ) async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = _notificationPrefsKeyFor(userId);
-    await prefs.setString(key, jsonEncode(preferences.toJson()));
   }
 }

@@ -63,11 +63,11 @@ import '../infrastructure/lessons/lesson_sync_service.dart';
 import '../infrastructure/sync/sync_orchestrator.dart';
 import '../infrastructure/accounts/cloud_account_coordinator.dart';
 import '../infrastructure/accounts/firebase_auth_service.dart';
-import '../infrastructure/notifications/notification_service.dart';
 import '../utils/iterable_extensions.dart';
 import 'settings/bible_import_controller.dart';
 import 'settings/data_sync_controller.dart';
 import 'settings/lesson_sync_controller.dart';
+import 'settings/privacy_controller.dart';
 import 'accounts/cloud_auth_controller.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
@@ -84,17 +84,7 @@ final firebaseStorageProvider = Provider<FirebaseStorage>((ref) {
   return FirebaseStorage.instance;
 });
 
-final firebaseFirestoreProvider = Provider<FirebaseFirestore>((ref) {
-  return FirebaseFirestore.instance;
-});
 
-final firebaseMessagingProvider = Provider<FirebaseMessaging>((ref) {
-  return FirebaseMessaging.instance;
-});
-
-final flutterLocalNotificationsProvider =
-    Provider<FlutterLocalNotificationsPlugin>((ref) {
-  return FlutterLocalNotificationsPlugin();
 });
 
 final googleSignInProvider = Provider<GoogleSignIn>((ref) {
@@ -286,6 +276,18 @@ final syncRepositoryProvider = Provider<SyncRepository>((ref) {
 final syncRemoteDataSourceProvider =
     Provider<SyncRemoteDataSource>((ref) => const NoopSyncRemoteDataSource());
 
+final privacyRemoteDataSourceProvider =
+    Provider<PrivacyRemoteDataSource>((ref) {
+  try {
+    if (Firebase.apps.isNotEmpty) {
+      return FunctionsPrivacyRemoteDataSource();
+    }
+  } catch (_) {
+    // Firebase may not be initialised in unit tests; fall back to noop.
+  }
+  return const NoopPrivacyRemoteDataSource();
+});
+
 final syncOrchestratorProvider = Provider<SyncOrchestrator>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final syncRepository = ref.watch(syncRepositoryProvider);
@@ -301,6 +303,26 @@ final syncOrchestratorProvider = Provider<SyncOrchestrator>((ref) {
   );
   ref.onDispose(orchestrator.dispose);
   return orchestrator;
+});
+
+final privacyServiceProvider = Provider<PrivacyService>((ref) {
+  return PrivacyService(
+    db: ref.watch(appDatabaseProvider),
+    syncDao: ref.watch(syncDaoProvider),
+    syncRepository: ref.watch(syncRepositoryProvider),
+    readingProgressRepository: ref.watch(readingProgressRepositoryProvider),
+    settingsRepository: ref.watch(settingsRepositoryProvider),
+    remoteDataSource: ref.watch(privacyRemoteDataSourceProvider),
+  );
+});
+
+final privacyControllerProvider =
+    StateNotifierProvider<PrivacyController, PrivacyState>((ref) {
+  return PrivacyController(
+    ref.watch(privacyServiceProvider),
+    ref.watch(readingProgressRepositoryProvider),
+    ref.watch(settingsRepositoryProvider),
+  );
 });
 
 final cloudAccountCoordinatorProvider =
@@ -340,13 +362,15 @@ final annotationRepositoryProvider = Provider<AnnotationRepository>((ref) {
 });
 final readingProgressRepositoryProvider =
     Provider<ReadingProgressRepository>((ref) {
-  final repository = ReadingProgressRepositoryImpl();
+  final repository = ReadingProgressRepositoryImpl(
+    ref.watch(secureStorageProvider),
+  );
   ref.onDispose(repository.dispose);
   return repository;
 });
 
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
-  return SettingsRepositoryImpl();
+  return SettingsRepositoryImpl(ref.watch(secureStorageProvider));
 });
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {

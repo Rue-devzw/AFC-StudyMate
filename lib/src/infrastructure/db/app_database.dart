@@ -7,6 +7,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../bible/database_service.dart';
+import '../security/database_key_manager.dart';
+import '../security/secure_storage_service.dart';
 
 part 'app_database.g.dart';
 
@@ -425,10 +427,23 @@ class AppDatabase extends _$AppDatabase {
   Future<void>? _seedingFuture;
 
   static QueryExecutor _openConnection() {
+    final secureStorage = SecureStorageService();
+    final keyManager = DatabaseKeyManager(secureStorage);
     return LazyDatabase(() async {
       final dir = await getApplicationDocumentsDirectory();
       final file = File(p.join(dir.path, 'afc_studymate.sqlite'));
-      return NativeDatabase.createInBackground(file);
+      final key = await keyManager.obtainKey();
+      await keyManager.ensureEncrypted(file, key);
+      final escapedKey = key.replaceAll("'", "''");
+      return NativeDatabase.createInBackground(
+        file,
+        setup: (rawDb) {
+          rawDb.execute("PRAGMA key = '$escapedKey';");
+          rawDb.execute('PRAGMA cipher_memory_security = ON;');
+          rawDb.execute('PRAGMA cipher_page_size = 4096;');
+          rawDb.execute('PRAGMA kdf_iter = 256000;');
+        },
+      );
     });
   }
 
