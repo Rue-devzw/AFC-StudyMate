@@ -102,7 +102,7 @@ class LocalUser {
     this.preferredCohortId,
     this.preferredCohortTitle,
     this.preferredLessonClass,
-    this.roles = const <String>[],
+    this.roles = '[]',
     this.isActive = false,
   });
 
@@ -112,7 +112,7 @@ class LocalUser {
   final String? preferredCohortId;
   final String? preferredCohortTitle;
   final String? preferredLessonClass;
-  final List<String> roles;
+  final String roles;
   final bool isActive;
 
   LocalUser copyWith({
@@ -122,7 +122,7 @@ class LocalUser {
     String? preferredCohortId,
     String? preferredCohortTitle,
     String? preferredLessonClass,
-    List<String>? roles,
+    String? roles,
     bool? isActive,
   }) {
     return LocalUser(
