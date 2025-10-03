@@ -30,6 +30,8 @@ class SettingsScreen extends ConsumerWidget {
     final activeAccountAsync = ref.watch(activeAccountProvider);
     final cloudUserAsync = ref.watch(firebaseAuthUserProvider);
     final authState = ref.watch(cloudAuthControllerProvider);
+    final privacyState = ref.watch(privacyControllerProvider);
+    final userId = ref.watch(activeUserIdProvider) ?? 'local-user';
 
     ref.listen<BibleImportState>(bibleImportControllerProvider,
         (previous, next) {
@@ -67,6 +69,17 @@ class SettingsScreen extends ConsumerWidget {
             SnackBar(content: Text(next.error!)),
           );
           ref.read(bibleImportControllerProvider.notifier).clearOutcome();
+        });
+      }
+    });
+
+    ref.listen<PrivacyState>(privacyControllerProvider, (previous, next) {
+      if (previous?.lastError != next.lastError && next.lastError != null) {
+        Future.microtask(() {
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(next.lastError!)),
+          );
         });
       }
     });
@@ -355,6 +368,43 @@ class SettingsScreen extends ConsumerWidget {
           const Divider(),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Privacy & Data'),
+          ),
+          ListTile(
+            leading: privacyState.isExporting
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.download_outlined),
+            title: const Text('Export my data'),
+            subtitle: const Text(
+              'Download your notes, highlights, messages and lesson progress as JSON.',
+            ),
+            onTap: privacyState.isExporting
+                ? null
+                : () => _exportUserData(context, ref, userId),
+          ),
+          ListTile(
+            leading: privacyState.isDeleting
+                ? const SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.delete_forever_outlined),
+            title: const Text('Delete my data'),
+            subtitle: const Text(
+              'Erase local data and request deletion from connected cloud services.',
+            ),
+            onTap: privacyState.isDeleting
+                ? null
+                : () => _confirmDeleteData(context, ref, userId),
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Text('Theme Mode'),
           ),
           themeModeAsync.when(
@@ -410,6 +460,73 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _exportUserData(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) async {
+    final controller = ref.read(privacyControllerProvider.notifier);
+    final file = await controller.exportUserData(userId);
+    if (!context.mounted || file == null) {
+      return;
+    }
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      subject: 'AFC StudyMate data export',
+      text: 'Personal export generated on ${DateTime.now().toIso8601String()}.',
+    );
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Data export ready to share.')),
+    );
+  }
+
+  Future<void> _confirmDeleteData(
+    BuildContext context,
+    WidgetRef ref,
+    String userId,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete all personal data?'),
+          content: const Text(
+            'This will remove your notes, highlights, progress and messages from this device. '
+            'A deletion request will also be sent to connected cloud services.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) {
+      return;
+    }
+    final success = await ref
+        .read(privacyControllerProvider.notifier)
+        .deleteUserData(userId);
+    if (!context.mounted || !success) {
+      return;
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Personal data removed locally and queued for remote deletion.'),
       ),
     );
   }

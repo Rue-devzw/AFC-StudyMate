@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userId() {
+      return request.auth.uid;
+    }
+
+    function hasRole(role) {
+      return request.auth.token.roles != null &&
+        role in request.auth.token.roles;
+    }
+
+    function isOwner(resourceData) {
+      return resourceData.userId == userId() ||
+        resourceData.ownerId == userId();
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn() && uid == userId();
+      allow write: if isSignedIn() && uid == userId();
+    }
+
+    match /notes/{noteId} {
+      allow read: if isSignedIn() && isOwner(resource.data);
+      allow create: if isSignedIn() && isOwner(request.resource.data);
+      allow update, delete: if isSignedIn() &&
+        (isOwner(resource.data) || hasRole('admin'));
+    }
+
+    match /progress/{progressId} {
+      allow read: if isSignedIn() && isOwner(resource.data);
+      allow create: if isSignedIn() && isOwner(request.resource.data);
+      allow update, delete: if isSignedIn() &&
+        (isOwner(resource.data) || hasRole('mentor') || hasRole('admin'));
+    }
+
+    match /classes/{classId}/messages/{messageId} {
+      allow read: if isSignedIn() && (
+        hasRole('admin') ||
+        hasRole('mentor') ||
+        resource.data.userId == userId()
+      );
+
+      allow create: if isSignedIn() && (
+        hasRole('admin') ||
+        hasRole('mentor') ||
+        request.resource.data.userId == userId()
+      );
+
+      allow update, delete: if isSignedIn() && (
+        hasRole('admin') ||
+        resource.data.userId == userId()
+      );
+    }
+
+    match /cohorts/{cohortId} {
+      allow read: if isSignedIn() && (
+        hasRole('admin') ||
+        hasRole('mentor') ||
+        userId() in resource.data.memberIds
+      );
+
+      allow write: if isSignedIn() && (
+        hasRole('admin') ||
+        (hasRole('mentor') && userId() in resource.data.mentorIds)
+      );
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
