@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -25,6 +26,7 @@ import '../domain/bible/usecases.dart';
 import '../domain/bible/import/import_bible_package_usecase.dart';
 import '../domain/chat/repositories.dart';
 import '../domain/chat/usecases.dart';
+import '../domain/lessons/entities.dart';
 import '../domain/lessons/repositories.dart';
 import '../domain/lessons/usecases.dart';
 import '../domain/settings/repositories.dart';
@@ -39,6 +41,8 @@ import '../infrastructure/db/daos/bible_dao.dart';
 import '../infrastructure/db/daos/chat_dao.dart';
 import '../infrastructure/db/daos/lesson_dao.dart';
 import '../infrastructure/db/daos/sync_dao.dart';
+import '../infrastructure/lessons/lesson_cache_invalidator.dart';
+import '../infrastructure/lessons/lesson_ingestion_pipeline.dart';
 import 'settings/bible_import_controller.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
@@ -55,6 +59,13 @@ final chatDaoProvider = Provider((ref) => ChatDao(ref.watch(appDatabaseProvider)
 final annotationDaoProvider =
     Provider((ref) => AnnotationDao(ref.watch(appDatabaseProvider)));
 
+final lessonIngestionPipelineProvider = Provider<LessonIngestionPipeline>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final pipeline = LessonIngestionPipeline(db, rootBundle);
+  ref.onDispose(pipeline.dispose);
+  return pipeline;
+});
+
 final bibleRepositoryProvider = Provider<BibleRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final dao = ref.watch(bibleDaoProvider);
@@ -64,7 +75,17 @@ final bibleRepositoryProvider = Provider<BibleRepository>((ref) {
 final lessonRepositoryProvider = Provider<LessonRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final dao = ref.watch(lessonDaoProvider);
-  return LessonRepositoryImpl(db, dao);
+  final pipeline = ref.watch(lessonIngestionPipelineProvider);
+  return LessonRepositoryImpl(db, dao, pipeline);
+});
+
+final lessonCacheInvalidatorProvider = Provider<LessonCacheInvalidator>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final pipeline = ref.watch(lessonIngestionPipelineProvider);
+  final invalidator = LessonCacheInvalidator(db, pipeline);
+  invalidator.start();
+  ref.onDispose(invalidator.dispose);
+  return invalidator;
 });
 
 final accountRepositoryProvider = Provider<AccountRepository>((ref) {
@@ -315,6 +336,67 @@ final selectedTranslationIdProvider = Provider<String>((ref) {
   return ids.first;
 });
 
+class LessonFilterState {
+  const LessonFilterState({
+    this.selectedClass,
+    this.age,
+    this.completion = LessonCompletionFilter.all,
+    this.userId = 'local-user',
+  });
+
+  final String? selectedClass;
+  final int? age;
+  final LessonCompletionFilter completion;
+  final String userId;
+
+  LessonFilterState copyWith({
+    String? selectedClass,
+    bool resetClass = false,
+    int? age,
+    bool resetAge = false,
+    LessonCompletionFilter? completion,
+    String? userId,
+  }) {
+    return LessonFilterState(
+      selectedClass:
+          resetClass ? null : selectedClass ?? this.selectedClass,
+      age: resetAge ? null : age ?? this.age,
+      completion: completion ?? this.completion,
+      userId: userId ?? this.userId,
+    );
+  }
+
+  LessonQuery toQuery() {
+    return LessonQuery(
+      classes: selectedClass == null ? null : {selectedClass!},
+      age: age,
+      completion: completion,
+      userId: userId,
+    );
+  }
+}
+
+class LessonFiltersNotifier extends StateNotifier<LessonFilterState> {
+  LessonFiltersNotifier() : super(const LessonFilterState());
+
+  void setClass(String? lessonClass) {
+    state = state.copyWith(selectedClass: lessonClass, resetClass: lessonClass == null);
+  }
+
+  void setAge(int? age) {
+    state = state.copyWith(age: age, resetAge: age == null);
+  }
+
+  void setCompletion(LessonCompletionFilter completion) {
+    state = state.copyWith(completion: completion);
+  }
+}
+
+final lessonFiltersProvider =
+    StateNotifierProvider<LessonFiltersNotifier, LessonFilterState>((ref) {
+  return LessonFiltersNotifier();
+});
+
 final booksProvider = FutureProvider((ref) async {
   final translationId = ref.watch(selectedTranslationIdProvider);
   final useCase = ref.watch(getBooksUseCaseProvider);
@@ -328,13 +410,16 @@ final booksForTranslationProvider = FutureProvider.autoDispose
 });
 
 final lessonsProvider = StreamProvider((ref) {
+  ref.watch(lessonCacheInvalidatorProvider);
+  final filters = ref.watch(lessonFiltersProvider);
   final useCase = ref.watch(watchLessonsUseCaseProvider);
-  return useCase();
+  return useCase(filter: filters.toQuery());
 });
 
 final lessonListProvider = FutureProvider((ref) async {
+  final filters = ref.watch(lessonFiltersProvider);
   final useCase = ref.watch(getLessonsUseCaseProvider);
-  return useCase();
+  return useCase(filter: filters.toQuery());
 });
 
 class VerseSearchRequest {

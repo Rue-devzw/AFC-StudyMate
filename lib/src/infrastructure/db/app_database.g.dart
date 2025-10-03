@@ -23,6 +23,18 @@ class _$AppDatabase extends GeneratedDatabase {
       'Run build_runner to generate table bindings for `note_revisions`.');
   late final TableInfo<Table, dynamic> lessons = throw UnimplementedError(
       'Run build_runner to generate table bindings for `lessons`.');
+  late final TableInfo<Table, dynamic> lessonObjectives = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `lesson_objectives`.');
+  late final TableInfo<Table, dynamic> lessonScriptures = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `lesson_scriptures`.');
+  late final TableInfo<Table, dynamic> lessonAttachments = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `lesson_attachments`.');
+  late final TableInfo<Table, dynamic> lessonQuizzes = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `lesson_quizzes`.');
+  late final TableInfo<Table, dynamic> lessonQuizOptions = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `lesson_quiz_options`.');
+  late final TableInfo<Table, dynamic> lessonFeeds = throw UnimplementedError(
+      'Run build_runner to generate table bindings for `lesson_feeds`.');
   late final TableInfo<Table, dynamic> progress = throw UnimplementedError(
       'Run build_runner to generate table bindings for `progress`.');
   late final TableInfo<Table, dynamic> localUsers = throw UnimplementedError(
@@ -37,5 +49,5 @@ class _$AppDatabase extends GeneratedDatabase {
       throw UnimplementedError('Run build_runner to generate table bindings.');
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 }

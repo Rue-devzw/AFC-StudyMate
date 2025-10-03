@@ -6,7 +6,8 @@ class WatchLessonsUseCase {
 
   const WatchLessonsUseCase(this._repository);
 
-  Stream<List<Lesson>> call() => _repository.watchLessons();
+  Stream<List<Lesson>> call({LessonQuery? filter}) =>
+      _repository.watchLessons(filter: filter);
 }
 
 class GetLessonsUseCase {
@@ -14,7 +15,8 @@ class GetLessonsUseCase {
 
   const GetLessonsUseCase(this._repository);
 
-  Future<List<Lesson>> call() => _repository.getLessons();
+  Future<List<Lesson>> call({LessonQuery? filter}) =>
+      _repository.getLessons(filter: filter);
 }
 
 class GetLessonUseCase {
