@@ -371,7 +371,7 @@ class _LessonEditorTabState extends ConsumerState<_LessonEditorTab> {
                 Expanded(
                   child: Column(
                     children: [
-                      QuillToolbar.simple(controller: _controller),
+                      QuillSimpleToolbar(controller: _controller),
                       const SizedBox(height: 12),
                       Expanded(
                         child: Container(
