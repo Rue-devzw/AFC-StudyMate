@@ -14,6 +14,7 @@ import 'bible_import_controller.dart';
 import 'about_screen.dart';
 import 'data_sync_controller.dart';
 import 'lesson_sync_controller.dart';
+import 'privacy_controller.dart';
 import 'privacy_policy_screen.dart';
 import '../accounts/profile_management_screen.dart';
 import '../theme/age_cohort_theme_profiles.dart';
