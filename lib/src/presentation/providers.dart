@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../data/accounts/account_repository_impl.dart';
+import '../data/bible/annotation_repository_impl.dart';
 import '../data/bible/bible_repository_impl.dart';
+import '../data/bible/reading_progress_repository_impl.dart';
 import '../data/chat/chat_repository_impl.dart';
 import '../data/lessons/lesson_repository_impl.dart';
 import '../data/settings/settings_repository_impl.dart';
@@ -10,7 +13,13 @@ import '../data/sync/sync_repository_impl.dart';
 import '../data/bible/verse_of_the_day_service.dart';
 import '../domain/accounts/repositories.dart';
 import '../domain/accounts/usecases.dart';
+import '../domain/annotations/entities.dart';
+import '../domain/annotations/repositories.dart';
+import '../domain/annotations/usecases.dart';
 import '../domain/bible/entities.dart';
+import '../domain/bible/reading_progress/entities.dart';
+import '../domain/bible/reading_progress/repositories.dart';
+import '../domain/bible/reading_progress/usecases.dart';
 import '../domain/bible/repositories.dart';
 import '../domain/bible/usecases.dart';
 import '../domain/bible/import/import_bible_package_usecase.dart';
@@ -25,6 +34,7 @@ import '../domain/sync/usecases.dart';
 import '../domain/settings/entities.dart';
 import '../infrastructure/db/app_database.dart';
 import '../infrastructure/db/daos/account_dao.dart';
+import '../infrastructure/db/daos/annotation_dao.dart';
 import '../infrastructure/db/daos/bible_dao.dart';
 import '../infrastructure/db/daos/chat_dao.dart';
 import '../infrastructure/db/daos/lesson_dao.dart';
@@ -42,6 +52,8 @@ final lessonDaoProvider = Provider((ref) => LessonDao(ref.watch(appDatabaseProvi
 final accountDaoProvider = Provider((ref) => AccountDao(ref.watch(appDatabaseProvider)));
 final syncDaoProvider = Provider((ref) => SyncDao(ref.watch(appDatabaseProvider)));
 final chatDaoProvider = Provider((ref) => ChatDao(ref.watch(appDatabaseProvider)));
+final annotationDaoProvider =
+    Provider((ref) => AnnotationDao(ref.watch(appDatabaseProvider)));
 
 final bibleRepositoryProvider = Provider<BibleRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
@@ -72,6 +84,17 @@ final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   final dao = ref.watch(chatDaoProvider);
   return ChatRepositoryImpl(db, dao);
 });
+final annotationRepositoryProvider = Provider<AnnotationRepository>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final dao = ref.watch(annotationDaoProvider);
+  return AnnotationRepositoryImpl(db, dao);
+});
+final readingProgressRepositoryProvider =
+    Provider<ReadingProgressRepository>((ref) {
+  final repository = ReadingProgressRepositoryImpl();
+  ref.onDispose(repository.dispose);
+  return repository;
+});
 
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   return SettingsRepositoryImpl();
@@ -89,12 +112,78 @@ final getChapterUseCaseProvider = Provider((ref) {
   return GetChapterUseCase(ref.watch(bibleRepositoryProvider));
 });
 
+final watchChapterUseCaseProvider = Provider((ref) {
+  return WatchChapterUseCase(ref.watch(bibleRepositoryProvider));
+});
+
 final searchVersesUseCaseProvider = Provider((ref) {
   return SearchVersesUseCase(ref.watch(bibleRepositoryProvider));
 });
 
 final importBiblePackageUseCaseProvider = Provider((ref) {
   return ImportBiblePackageUseCase(ref.watch(bibleRepositoryProvider));
+});
+
+final watchBookmarksForChapterUseCaseProvider = Provider((ref) {
+  return WatchBookmarksForChapterUseCase(
+    ref.watch(annotationRepositoryProvider),
+  );
+});
+
+final toggleBookmarkUseCaseProvider = Provider((ref) {
+  return ToggleBookmarkUseCase(ref.watch(annotationRepositoryProvider));
+});
+
+final watchHighlightsForChapterUseCaseProvider = Provider((ref) {
+  return WatchHighlightsForChapterUseCase(
+    ref.watch(annotationRepositoryProvider),
+  );
+});
+
+final saveHighlightUseCaseProvider = Provider((ref) {
+  return SaveHighlightUseCase(ref.watch(annotationRepositoryProvider));
+});
+
+final removeHighlightUseCaseProvider = Provider((ref) {
+  return RemoveHighlightUseCase(ref.watch(annotationRepositoryProvider));
+});
+
+final watchNotesForChapterUseCaseProvider = Provider((ref) {
+  return WatchNotesForChapterUseCase(ref.watch(annotationRepositoryProvider));
+});
+
+final saveNoteUseCaseProvider = Provider((ref) {
+  return SaveNoteUseCase(ref.watch(annotationRepositoryProvider));
+});
+
+final deleteNoteUseCaseProvider = Provider((ref) {
+  return DeleteNoteUseCase(ref.watch(annotationRepositoryProvider));
+});
+
+final undoNoteUseCaseProvider = Provider((ref) {
+  return UndoNoteUseCase(ref.watch(annotationRepositoryProvider));
+});
+
+final getNoteHistoryUseCaseProvider = Provider((ref) {
+  return GetNoteHistoryUseCase(ref.watch(annotationRepositoryProvider));
+});
+
+final watchReadingProgressUseCaseProvider = Provider((ref) {
+  return WatchReadingProgressUseCase(
+    ref.watch(readingProgressRepositoryProvider),
+  );
+});
+
+final getLastReadingPositionUseCaseProvider = Provider((ref) {
+  return GetLastReadingPositionUseCase(
+    ref.watch(readingProgressRepositoryProvider),
+  );
+});
+
+final saveReadingProgressUseCaseProvider = Provider((ref) {
+  return SaveReadingProgressUseCase(
+    ref.watch(readingProgressRepositoryProvider),
+  );
 });
 
 final watchLessonsUseCaseProvider = Provider((ref) {
@@ -182,21 +271,48 @@ final translationsProvider = FutureProvider((ref) async {
   return translations;
 });
 
-final selectedTranslationIdProvider = StateProvider<String>((ref) {
-  final translationsAsync = ref.watch(translationsProvider);
-  return translationsAsync.maybeWhen(
-    data: (data) {
-      if (data.isEmpty) {
-        return 'kjv';
+class SelectedTranslationsNotifier extends StateNotifier<List<String>> {
+  SelectedTranslationsNotifier() : super(const ['kjv']);
+
+  void setPrimary(String translationId) {
+    final current = state.toList();
+    current.remove(translationId);
+    current.insert(0, translationId);
+    state = List.unmodifiable(current);
+  }
+
+  void toggle(String translationId) {
+    final current = state.toList();
+    if (current.contains(translationId)) {
+      if (current.length == 1) {
+        return;
       }
-      final preferred = data.firstWhere(
-        (translation) => translation.id == 'kjv',
-        orElse: () => data.first,
-      );
-      return preferred.id;
-    },
-    orElse: () => 'kjv',
-  );
+      current.remove(translationId);
+    } else {
+      current.add(translationId);
+    }
+    state = List.unmodifiable(current);
+  }
+
+  void setAll(Iterable<String> translationIds) {
+    final list = translationIds.isEmpty
+        ? const ['kjv']
+        : translationIds.toSet().toList();
+    state = List.unmodifiable(list);
+  }
+}
+
+final selectedTranslationIdsProvider =
+    StateNotifierProvider<SelectedTranslationsNotifier, List<String>>(
+  (ref) => SelectedTranslationsNotifier(),
+);
+
+final selectedTranslationIdProvider = Provider<String>((ref) {
+  final ids = ref.watch(selectedTranslationIdsProvider);
+  if (ids.isEmpty) {
+    return 'kjv';
+  }
+  return ids.first;
 });
 
 final booksProvider = FutureProvider((ref) async {
@@ -276,6 +392,103 @@ final chapterProvider =
     FutureProvider.family.autoDispose<List<BibleVerse>, ChapterRequest>((ref, request) async {
   final useCase = ref.watch(getChapterUseCaseProvider);
   return useCase(request.translationId, request.bookId, request.chapter);
+});
+
+class ParallelChapterRequest {
+  const ParallelChapterRequest({
+    required this.translationIds,
+    required this.bookId,
+    required this.chapter,
+  });
+
+  final List<String> translationIds;
+  final int bookId;
+  final int chapter;
+}
+
+class ParallelVerseRow {
+  ParallelVerseRow({
+    required this.verseNumber,
+    required Map<String, BibleVerse> versesByTranslation,
+  }) : versesByTranslation = Map.unmodifiable(versesByTranslation);
+
+  final int verseNumber;
+  final Map<String, BibleVerse> versesByTranslation;
+}
+
+final parallelChapterProvider = StreamProvider.autoDispose
+    .family<List<ParallelVerseRow>, ParallelChapterRequest>((ref, request) {
+  final watchChapter = ref.watch(watchChapterUseCaseProvider);
+  final translationIds = request.translationIds.isEmpty
+      ? [ref.watch(selectedTranslationIdProvider)]
+      : request.translationIds;
+  if (translationIds.isEmpty) {
+    return Stream.value(const []);
+  }
+  final streams = translationIds
+      .map((id) => watchChapter(id, request.bookId, request.chapter))
+      .toList();
+  return Rx.combineLatestList<List<BibleVerse>>(streams).map(
+    (chapters) => _mergeParallelVerses(translationIds, chapters),
+  );
+});
+
+List<ParallelVerseRow> _mergeParallelVerses(
+  List<String> translationIds,
+  List<List<BibleVerse>> chapters,
+) {
+  final verseMap = <int, Map<String, BibleVerse>>{};
+  for (var i = 0; i < translationIds.length; i++) {
+    final translationId = translationIds[i];
+    final verses = chapters.length > i ? chapters[i] : const <BibleVerse>[];
+    for (final verse in verses) {
+      final bucket = verseMap.putIfAbsent(verse.verse, () => {});
+      bucket[translationId] = verse;
+    }
+  }
+  final keys = verseMap.keys.toList()..sort();
+  return [
+    for (final key in keys)
+      ParallelVerseRow(
+        verseNumber: key,
+        versesByTranslation: verseMap[key]!,
+      ),
+  ];
+}
+
+class AnnotationRequest {
+  const AnnotationRequest({
+    required this.translationId,
+    required this.bookId,
+    required this.chapter,
+  });
+
+  final String translationId;
+  final int bookId;
+  final int chapter;
+}
+
+final chapterBookmarksProvider = StreamProvider.autoDispose
+    .family<List<Bookmark>, AnnotationRequest>((ref, request) {
+  final useCase = ref.watch(watchBookmarksForChapterUseCaseProvider);
+  return useCase(request.translationId, request.bookId, request.chapter);
+});
+
+final chapterHighlightsProvider = StreamProvider.autoDispose
+    .family<List<Highlight>, AnnotationRequest>((ref, request) {
+  final useCase = ref.watch(watchHighlightsForChapterUseCaseProvider);
+  return useCase(request.translationId, request.bookId, request.chapter);
+});
+
+final chapterNotesProvider = StreamProvider.autoDispose
+    .family<List<Note>, AnnotationRequest>((ref, request) {
+  final useCase = ref.watch(watchNotesForChapterUseCaseProvider);
+  return useCase(request.translationId, request.bookId, request.chapter);
+});
+
+final readingProgressProvider = StreamProvider<ReadingPosition?>((ref) {
+  final useCase = ref.watch(watchReadingProgressUseCaseProvider);
+  return useCase();
 });
 
 class ThemeModeController extends AsyncNotifier<ThemeMode> {

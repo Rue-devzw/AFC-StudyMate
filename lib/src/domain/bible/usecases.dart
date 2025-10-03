@@ -35,6 +35,20 @@ class GetChapterUseCase {
   }
 }
 
+class WatchChapterUseCase {
+  const WatchChapterUseCase(this._repository);
+
+  final BibleRepository _repository;
+
+  Stream<List<BibleVerse>> call(
+    String translationId,
+    int bookId,
+    int chapter,
+  ) {
+    return _repository.watchChapter(translationId, bookId, chapter);
+  }
+}
+
 class SearchVersesUseCase {
   final BibleRepository _repository;
 

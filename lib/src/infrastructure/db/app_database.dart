@@ -80,6 +80,17 @@ class Notes extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+class NoteRevisions extends Table {
+  TextColumn get noteId => text()
+      .references(Notes, #id, onDelete: KeyAction.cascade)();
+  IntColumn get version => integer()();
+  TextColumn get text => text()();
+  IntColumn get updatedAt => integer()();
+
+  @override
+  Set<Column> get primaryKey => {noteId, version};
+}
+
 class Lessons extends Table {
   TextColumn get id => text()();
   TextColumn get title => text()();
@@ -155,6 +166,7 @@ class Messages extends Table {
     Bookmarks,
     Highlights,
     Notes,
+    NoteRevisions,
     Lessons,
     Progress,
     LocalUsers,
@@ -177,7 +189,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -188,6 +200,9 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             await m.addColumn(translations, translations.languageName);
             await m.addColumn(translations, translations.copyright);
+          }
+          if (from < 3) {
+            await m.createTable(noteRevisions);
           }
         },
       );

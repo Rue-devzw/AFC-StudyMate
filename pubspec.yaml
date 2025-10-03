@@ -50,6 +50,7 @@ dependencies:
   flutter_archive: ^6.0.3
   file_picker: ^8.1.2
   crypto: ^3.0.3
+  rxdart: ^0.28.0
 
 
 dev_dependencies:

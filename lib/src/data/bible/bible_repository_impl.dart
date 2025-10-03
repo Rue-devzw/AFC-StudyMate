@@ -83,6 +83,28 @@ class BibleRepositoryImpl implements BibleRepository {
   }
 
   @override
+  Stream<List<BibleVerse>> watchChapter(
+    String translationId,
+    int bookId,
+    int chapter,
+  ) async* {
+    await _ensureSeeded();
+    yield* _dao.watchChapter(translationId, bookId, chapter).map(
+      (rows) => rows
+          .map(
+            (row) => BibleVerse(
+              translationId: row.translationId,
+              bookId: row.bookId,
+              chapter: row.chapter,
+              verse: row.verse,
+              text: row.text,
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  @override
   Future<List<BibleSearchResult>> searchVerses(
     String translationId,
     String query, {
