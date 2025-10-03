@@ -91,6 +91,7 @@ class NoteRevisions extends Table {
   Set<Column> get primaryKey => {noteId, version};
 }
 
+@DataClassName('LessonRow')
 class Lessons extends Table {
   TextColumn get id => text()();
   TextColumn get title => text()();
@@ -105,6 +106,87 @@ class Lessons extends Table {
   TextColumn get quizzes => text().nullable()();
   TextColumn get sourceUrl => text().nullable()();
   IntColumn get lastFetchedAt => integer().nullable()();
+  TextColumn get feedId => text().nullable()();
+  TextColumn get cohortId => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('LessonObjectiveRow')
+class LessonObjectives extends Table {
+  TextColumn get lessonId => text()
+      .references(Lessons, #id, onDelete: KeyAction.cascade)();
+  IntColumn get position => integer()();
+  TextColumn get objective => text()();
+
+  @override
+  Set<Column> get primaryKey => {lessonId, position};
+}
+
+@DataClassName('LessonScriptureRow')
+class LessonScriptures extends Table {
+  TextColumn get lessonId => text()
+      .references(Lessons, #id, onDelete: KeyAction.cascade)();
+  IntColumn get position => integer()();
+  TextColumn get reference => text()();
+  TextColumn get translationId => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {lessonId, position};
+}
+
+@DataClassName('LessonAttachmentRow')
+class LessonAttachments extends Table {
+  TextColumn get lessonId => text()
+      .references(Lessons, #id, onDelete: KeyAction.cascade)();
+  IntColumn get position => integer()();
+  TextColumn get type => text()();
+  TextColumn get title => text().nullable()();
+  TextColumn get url => text()();
+
+  @override
+  Set<Column> get primaryKey => {lessonId, position};
+}
+
+@DataClassName('LessonQuizRow')
+class LessonQuizzes extends Table {
+  TextColumn get id => text()();
+  TextColumn get lessonId => text()
+      .references(Lessons, #id, onDelete: KeyAction.cascade)();
+  IntColumn get position => integer()();
+  TextColumn get type => text()();
+  TextColumn get prompt => text()();
+  TextColumn get answer => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DataClassName('LessonQuizOptionRow')
+class LessonQuizOptions extends Table {
+  TextColumn get quizId => text()
+      .references(LessonQuizzes, #id, onDelete: KeyAction.cascade)();
+  IntColumn get position => integer()();
+  TextColumn get label => text()();
+  BoolColumn get isCorrect =>
+      boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {quizId, position};
+}
+
+@DataClassName('LessonFeedRow')
+class LessonFeeds extends Table {
+  TextColumn get id => text()();
+  TextColumn get source => text()();
+  TextColumn get cohort => text().nullable()();
+  TextColumn get lessonClass => text().nullable()();
+  TextColumn get checksum => text().nullable()();
+  TextColumn get etag => text().nullable()();
+  IntColumn get lastModified => integer().nullable()();
+  IntColumn get lastFetchedAt => integer().nullable()();
+  IntColumn get lastCheckedAt => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -168,6 +250,12 @@ class Messages extends Table {
     Notes,
     NoteRevisions,
     Lessons,
+    LessonObjectives,
+    LessonScriptures,
+    LessonAttachments,
+    LessonQuizzes,
+    LessonQuizOptions,
+    LessonFeeds,
     Progress,
     LocalUsers,
     SyncQueue,
@@ -189,7 +277,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -203,6 +291,16 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await m.createTable(noteRevisions);
+          }
+          if (from < 4) {
+            await m.addColumn(lessons, lessons.feedId);
+            await m.addColumn(lessons, lessons.cohortId);
+            await m.createTable(lessonObjectives);
+            await m.createTable(lessonScriptures);
+            await m.createTable(lessonAttachments);
+            await m.createTable(lessonQuizzes);
+            await m.createTable(lessonQuizOptions);
+            await m.createTable(lessonFeeds);
           }
         },
       );
@@ -288,23 +386,6 @@ class AppDatabase extends _$AppDatabase {
     }
 
     await batch((batch) {
-      batch.insert(
-        lessons,
-        LessonsCompanion.insert(
-          id: 'sample-lesson',
-          title: 'Welcome to StudyMate',
-          lessonClass: 'General',
-          objectives: const Value('["Explore the sample lesson"]'),
-          scriptures: const Value('[{"ref":"Genesis 1","tId":"kjv"}]'),
-          contentHtml: const Value('<p>This is placeholder content for the pilot lesson.</p>'),
-          teacherNotes: const Value('<p>Guide learners through the creation story.</p>'),
-          attachments: const Value('[]'),
-          quizzes: const Value('[]'),
-          sourceUrl: const Value(null),
-          lastFetchedAt: Value(DateTime.now().millisecondsSinceEpoch),
-        ),
-        mode: InsertMode.insertOrReplace,
-      );
       batch.insert(
         localUsers,
         LocalUsersCompanion.insert(

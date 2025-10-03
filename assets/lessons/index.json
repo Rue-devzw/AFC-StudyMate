@@ -1,0 +1,16 @@
+{
+  "feeds": [
+    {
+      "id": "beginners-q1",
+      "title": "Beginners Quarter 1",
+      "class": "Beginners",
+      "assetPath": "assets/lessons/beginners_q1.json"
+    },
+    {
+      "id": "discovery-q1",
+      "title": "Discovery Quarter 1",
+      "class": "Discovery",
+      "assetPath": "assets/lessons/discovery_q1.json"
+    }
+  ]
+}

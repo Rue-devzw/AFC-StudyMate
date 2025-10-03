@@ -1,0 +1,69 @@
+{
+  "cohortId": "beginners-q1",
+  "title": "Beginners Quarter 1",
+  "class": "Beginners",
+  "lessons": [
+    {
+      "id": "B-Q1-L1",
+      "title": "Creation",
+      "class": "Beginners",
+      "ageRange": {"min": 2, "max": 5},
+      "objectives": [
+        "Understand that God created the world.",
+        "Identify key elements of creation."
+      ],
+      "scriptures": [
+        {"ref": "Genesis 1:1-3", "tId": "kjv"}
+      ],
+      "contentHtml": "<p>In the beginning, God created the heavens and the earth. Use visuals and sounds to show the wonder of creation.</p>",
+      "teacherNotes": "<p>Invite the children to describe their favourite part of God's creation. Encourage participation with props.</p>",
+      "attachments": [
+        {"type": "image", "title": "Creation Poster", "url": "https://example.com/creation-poster.png"},
+        {"type": "audio", "title": "Creation Song", "url": "https://example.com/creation-song.mp3"}
+      ],
+      "quizzes": [
+        {
+          "id": "B-Q1-L1-Q1",
+          "type": "mcq",
+          "prompt": "Who created the world?",
+          "options": ["God", "A giant", "Nobody"],
+          "answer": "God"
+        },
+        {
+          "id": "B-Q1-L1-Q2",
+          "type": "true_false",
+          "prompt": "God created light on the first day.",
+          "options": ["True", "False"],
+          "answer": "True"
+        }
+      ]
+    },
+    {
+      "id": "B-Q1-L2",
+      "title": "Noah's Ark",
+      "class": "Beginners",
+      "ageRange": {"min": 2, "max": 5},
+      "objectives": [
+        "Learn that Noah obeyed God.",
+        "Recognise the rainbow as God's promise."
+      ],
+      "scriptures": [
+        {"ref": "Genesis 6:9-22", "tId": "kjv"},
+        {"ref": "Genesis 9:12-17", "tId": "kjv"}
+      ],
+      "contentHtml": "<p>Noah built the ark just as God instructed. Explore obedience and God's promises with colourful crafts.</p>",
+      "teacherNotes": "<p>Use animal figurines to retell the story. Discuss promises that the children can keep.</p>",
+      "attachments": [
+        {"type": "pdf", "title": "Ark Craft Template", "url": "https://example.com/ark-craft.pdf"}
+      ],
+      "quizzes": [
+        {
+          "id": "B-Q1-L2-Q1",
+          "type": "short_answer",
+          "prompt": "What sign did God give as a promise after the flood?",
+          "answer": "Rainbow"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "cohortId": "discovery-q1",
+  "title": "Discovery Quarter 1",
+  "class": "Discovery",
+  "lessons": [
+    {
+      "id": "D-Q1-L1",
+      "title": "The Beatitudes",
+      "class": "Discovery",
+      "ageRange": {"min": 12, "max": 15},
+      "objectives": [
+        "Explore the blessings Jesus shared in the Sermon on the Mount.",
+        "Discuss practical ways to live each beatitude."
+      ],
+      "scriptures": [
+        {"ref": "Matthew 5:1-12", "tId": "amp"}
+      ],
+      "contentHtml": "<p>Work through each beatitude, inviting students to connect the teaching to modern life. Encourage journaling and group reflection.</p>",
+      "teacherNotes": "<p>Use breakout groups to let learners wrestle with each blessing. Summarise insights at the end.</p>",
+      "attachments": [
+        {"type": "pdf", "title": "Beatitudes Worksheet", "url": "https://example.com/beatitudes-worksheet.pdf"},
+        {"type": "video", "title": "Sermon on the Mount Overview", "url": "https://example.com/sermon-video.mp4"}
+      ],
+      "quizzes": [
+        {
+          "id": "D-Q1-L1-Q1",
+          "type": "mcq",
+          "prompt": "Which Gospel contains the Beatitudes?",
+          "options": ["Matthew", "Mark", "Luke"],
+          "answer": "Matthew"
+        }
+      ]
+    },
+    {
+      "id": "D-Q1-L2",
+      "title": "Faith in Action",
+      "class": "Discovery",
+      "ageRange": {"min": 13, "max": 16},
+      "objectives": [
+        "Consider how faith shapes daily decisions.",
+        "Challenge students to plan a service project."
+      ],
+      "scriptures": [
+        {"ref": "James 2:14-26", "tId": "amp"}
+      ],
+      "contentHtml": "<p>Discuss the relationship between faith and works. Use case studies to prompt debate and commitment.</p>",
+      "teacherNotes": "<p>Invite testimonies from youth leaders about living faith. Assign planning roles for a class outreach activity.</p>",
+      "attachments": [
+        {"type": "image", "title": "Service Brainstorm", "url": "https://example.com/service-board.png"}
+      ],
+      "quizzes": [
+        {
+          "id": "D-Q1-L2-Q1",
+          "type": "true_false",
+          "prompt": "James teaches that faith without works is dead.",
+          "options": ["True", "False"],
+          "answer": "True"
+        }
+      ]
+    }
+  ]
+}

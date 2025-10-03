@@ -81,7 +81,7 @@ flutter:
   assets:
     - AssetManifest.json
     - assets/images/
-    - assets/lessons.json
+    - assets/lessons/
     - assets/bibles/kjv.db
     - assets/bibles/kjv.json
     - assets/bibles/shona_bible.db
