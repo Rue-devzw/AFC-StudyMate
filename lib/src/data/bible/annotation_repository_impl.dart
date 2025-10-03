@@ -2,14 +2,24 @@ import 'package:uuid/uuid.dart';
 
 import '../../domain/annotations/entities.dart';
 import '../../domain/annotations/repositories.dart';
+import '../../domain/sync/entities.dart';
+import '../../domain/sync/repositories.dart';
 import '../../infrastructure/db/app_database.dart';
 import '../../infrastructure/db/daos/annotation_dao.dart';
+import '../../infrastructure/db/daos/sync_dao.dart';
 
 class AnnotationRepositoryImpl implements AnnotationRepository {
-  AnnotationRepositoryImpl(this._db, this._dao);
+  AnnotationRepositoryImpl(
+    this._db,
+    this._dao,
+    this._syncDao,
+    this._syncRepository,
+  );
 
   final AppDatabase _db;
   final AnnotationDao _dao;
+  final SyncDao _syncDao;
+  final SyncRepository _syncRepository;
   final Uuid _uuid = const Uuid();
 
   Future<void> _ensureSeeded() => _db.ensureSeeded();
@@ -208,7 +218,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
           updatedAt: now.millisecondsSinceEpoch,
         ),
       );
-      return Note(
+      final note = Note(
         id: id,
         location: location,
         text: text,
@@ -218,6 +228,31 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
           NoteHistoryEntry(version: 1, text: text, updatedAt: now),
         ],
       );
+      await _syncDao.recordNoteChange(
+        noteId: id,
+        userId: userId,
+        localUpdatedAt: now.millisecondsSinceEpoch,
+        operation: 'upsert',
+      );
+      await _syncRepository.enqueue(
+        SyncOperation(
+          id: 'note:$id',
+          userId: userId,
+          opType: 'note.upsert',
+          payload: {
+            'noteId': id,
+            'translationId': location.translationId,
+            'bookId': location.bookId,
+            'chapter': location.chapter,
+            'verse': location.verse,
+            'text': text,
+            'version': 1,
+            'updatedAt': now.millisecondsSinceEpoch,
+          },
+          createdAt: now,
+        ),
+      );
+      return note;
     }
 
     final newVersion = existing.version + 1;
@@ -244,12 +279,68 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
       location.verse,
     );
     final historyRows = await _dao.getRevisions(userId, existing.id);
-    return _mapNote(updated!, historyRows);
+    final mapped = _mapNote(updated!, historyRows);
+    await _syncDao.recordNoteChange(
+      noteId: mapped.id,
+      userId: userId,
+      localUpdatedAt: mapped.updatedAt.millisecondsSinceEpoch,
+      operation: 'upsert',
+    );
+    await _syncRepository.enqueue(
+      SyncOperation(
+        id: 'note:${mapped.id}',
+        userId: userId,
+        opType: 'note.upsert',
+        payload: {
+          'noteId': mapped.id,
+          'translationId': location.translationId,
+          'bookId': location.bookId,
+          'chapter': location.chapter,
+          'verse': location.verse,
+          'text': mapped.text,
+          'version': mapped.version,
+          'updatedAt': mapped.updatedAt.millisecondsSinceEpoch,
+        },
+        createdAt: mapped.updatedAt,
+      ),
+    );
+    return mapped;
   }
 
   @override
-  Future<void> deleteNote(String userId, String id) {
-    return _dao.deleteNote(userId, id);
+  Future<void> deleteNote(String userId, String id) async {
+    await _ensureSeeded();
+    final existing = await _dao.findNoteById(userId, id);
+    await _dao.deleteNote(userId, id);
+    final now = DateTime.now();
+    await _syncDao.recordNoteChange(
+      noteId: id,
+      userId: userId,
+      localUpdatedAt: now.millisecondsSinceEpoch,
+      operation: 'delete',
+    );
+    final payload = <String, dynamic>{
+      'noteId': id,
+      'updatedAt': now.millisecondsSinceEpoch,
+      'deleted': true,
+    };
+    if (existing != null) {
+      payload.addAll({
+        'translationId': existing.translationId,
+        'bookId': existing.bookId,
+        'chapter': existing.chapter,
+        'verse': existing.verse,
+      });
+    }
+    await _syncRepository.enqueue(
+      SyncOperation(
+        id: 'note:$id',
+        userId: userId,
+        opType: 'note.delete',
+        payload: payload,
+        createdAt: now,
+      ),
+    );
   }
 
   @override
@@ -300,8 +391,36 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
       ),
     );
     final updated = await _dao.findNoteById(userId, noteId);
+    if (updated == null) {
+      return null;
+    }
     final updatedHistory = await _dao.getRevisions(userId, noteId);
-    return updated == null ? null : _mapNote(updated, updatedHistory);
+    final mapped = _mapNote(updated, updatedHistory);
+    await _syncDao.recordNoteChange(
+      noteId: mapped.id,
+      userId: userId,
+      localUpdatedAt: mapped.updatedAt.millisecondsSinceEpoch,
+      operation: 'upsert',
+    );
+    await _syncRepository.enqueue(
+      SyncOperation(
+        id: 'note:${mapped.id}',
+        userId: userId,
+        opType: 'note.upsert',
+        payload: {
+          'noteId': mapped.id,
+          'translationId': mapped.location.translationId,
+          'bookId': mapped.location.bookId,
+          'chapter': mapped.location.chapter,
+          'verse': mapped.location.verse,
+          'text': mapped.text,
+          'version': mapped.version,
+          'updatedAt': mapped.updatedAt.millisecondsSinceEpoch,
+        },
+        createdAt: mapped.updatedAt,
+      ),
+    );
+    return mapped;
   }
 
   Bookmark _mapBookmark(BookmarksData row) {

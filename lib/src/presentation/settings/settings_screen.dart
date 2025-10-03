@@ -12,6 +12,7 @@ import '../providers.dart';
 import '../accounts/cloud_auth_sheet.dart';
 import 'bible_import_controller.dart';
 import 'about_screen.dart';
+import 'data_sync_controller.dart';
 import 'lesson_sync_controller.dart';
 import 'privacy_policy_screen.dart';
 import '../accounts/profile_management_screen.dart';
@@ -24,6 +25,7 @@ class SettingsScreen extends ConsumerWidget {
     final themeModeAsync = ref.watch(themeModeControllerProvider);
     final translationsAsync = ref.watch(translationsProvider);
     final syncState = ref.watch(lessonSyncControllerProvider);
+    final dataSyncState = ref.watch(dataSyncControllerProvider);
     final importState = ref.watch(bibleImportControllerProvider);
     final activeAccountAsync = ref.watch(activeAccountProvider);
     final cloudUserAsync = ref.watch(firebaseAuthUserProvider);
@@ -270,6 +272,50 @@ class SettingsScreen extends ConsumerWidget {
             child: Text('Lessons'),
           ),
           ListTile(
+            leading: const Icon(Icons.cloud_sync_outlined),
+            title: const Text('Sync data'),
+            subtitle: Text(_buildDataSyncSubtitle(dataSyncState)),
+            trailing: dataSyncState.isSyncing
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () => ref
+                        .read(dataSyncControllerProvider.notifier)
+                        .syncNow(),
+                  ),
+            enabled: !dataSyncState.isSyncing,
+            onTap: dataSyncState.isSyncing
+                ? null
+                : () => ref
+                    .read(dataSyncControllerProvider.notifier)
+                    .syncNow(),
+          ),
+          if (dataSyncState.lastError != null)
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              child: Text(
+                dataSyncState.lastError!,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+          if (dataSyncState.conflictCount > 0)
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+              child: Text(
+                '${dataSyncState.conflictCount} change${dataSyncState.conflictCount == 1 ? '' : 's'} need review',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ListTile(
             leading: const Icon(Icons.sync_outlined),
             title: const Text('Sync lessons'),
             subtitle: Text(_buildSyncSubtitle(syncState)),
@@ -455,6 +501,21 @@ String _buildSyncSubtitle(LessonSyncState state) {
     parts.add('Not yet synced');
   }
   return parts.join(' • ');
+}
+
+String _buildDataSyncSubtitle(DataSyncState state) {
+  final parts = <String>[];
+  parts.add('Queue: ${state.pendingOperations}');
+  if (state.isSyncing) {
+    parts.add('Sync in progress…');
+  }
+  if (state.lastSyncedAt != null) {
+    parts.add('Last sync: ${_formatTimestamp(state.lastSyncedAt!)}');
+  }
+  if (state.conflictCount > 0) {
+    parts.add('${state.conflictCount} conflict${state.conflictCount == 1 ? '' : 's'}');
+  }
+  return parts.join(' · ');
 }
 
 String _formatTimestamp(DateTime timestamp) {

@@ -56,10 +56,12 @@ import '../infrastructure/lessons/lesson_cache_invalidator.dart';
 import '../infrastructure/lessons/lesson_ingestion_pipeline.dart';
 import '../infrastructure/lessons/lesson_source_registry.dart';
 import '../infrastructure/lessons/lesson_sync_service.dart';
+import '../infrastructure/sync/sync_orchestrator.dart';
 import '../infrastructure/accounts/cloud_account_coordinator.dart';
 import '../infrastructure/accounts/firebase_auth_service.dart';
 import '../utils/iterable_extensions.dart';
 import 'settings/bible_import_controller.dart';
+import 'settings/data_sync_controller.dart';
 import 'settings/lesson_sync_controller.dart';
 import 'accounts/cloud_auth_controller.dart';
 
@@ -160,6 +162,15 @@ final lessonSyncControllerProvider =
   return controller;
 });
 
+final dataSyncControllerProvider =
+    StateNotifierProvider<DataSyncController, DataSyncState>((ref) {
+  final orchestrator = ref.watch(syncOrchestratorProvider);
+  final repository = ref.watch(syncRepositoryProvider);
+  final controller = DataSyncController(orchestrator, repository);
+  ref.onDispose(controller.dispose);
+  return controller;
+});
+
 final bibleRepositoryProvider = Provider<BibleRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final dao = ref.watch(bibleDaoProvider);
@@ -170,7 +181,9 @@ final lessonRepositoryProvider = Provider<LessonRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final dao = ref.watch(lessonDaoProvider);
   final pipeline = ref.watch(lessonIngestionPipelineProvider);
-  return LessonRepositoryImpl(db, dao, pipeline);
+  final syncDao = ref.watch(syncDaoProvider);
+  final syncRepository = ref.watch(syncRepositoryProvider);
+  return LessonRepositoryImpl(db, dao, pipeline, syncDao, syncRepository);
 });
 
 final lessonCacheInvalidatorProvider = Provider<LessonCacheInvalidator>((ref) {
@@ -245,6 +258,26 @@ final syncRepositoryProvider = Provider<SyncRepository>((ref) {
   return SyncRepositoryImpl(db, dao);
 });
 
+final syncRemoteDataSourceProvider =
+    Provider<SyncRemoteDataSource>((ref) => const NoopSyncRemoteDataSource());
+
+final syncOrchestratorProvider = Provider<SyncOrchestrator>((ref) {
+  final db = ref.watch(appDatabaseProvider);
+  final syncRepository = ref.watch(syncRepositoryProvider);
+  final accountRepository = ref.watch(accountRepositoryProvider);
+  final remote = ref.watch(syncRemoteDataSourceProvider);
+  final syncDao = ref.watch(syncDaoProvider);
+  final orchestrator = SyncOrchestrator(
+    db: db,
+    syncRepository: syncRepository,
+    accountRepository: accountRepository,
+    remoteDataSource: remote,
+    syncDao: syncDao,
+  );
+  ref.onDispose(orchestrator.dispose);
+  return orchestrator;
+});
+
 final cloudAccountCoordinatorProvider =
     Provider<CloudAccountCoordinator>((ref) {
   return CloudAccountCoordinator(
@@ -265,12 +298,16 @@ final cloudAccountBindingProvider = Provider<void>((ref) {
 final chatRepositoryProvider = Provider<ChatRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final dao = ref.watch(chatDaoProvider);
-  return ChatRepositoryImpl(db, dao);
+  final syncDao = ref.watch(syncDaoProvider);
+  final syncRepository = ref.watch(syncRepositoryProvider);
+  return ChatRepositoryImpl(db, dao, syncDao, syncRepository);
 });
 final annotationRepositoryProvider = Provider<AnnotationRepository>((ref) {
   final db = ref.watch(appDatabaseProvider);
   final dao = ref.watch(annotationDaoProvider);
-  return AnnotationRepositoryImpl(db, dao);
+  final syncDao = ref.watch(syncDaoProvider);
+  final syncRepository = ref.watch(syncRepositoryProvider);
+  return AnnotationRepositoryImpl(db, dao, syncDao, syncRepository);
 });
 final readingProgressRepositoryProvider =
     Provider<ReadingProgressRepository>((ref) {

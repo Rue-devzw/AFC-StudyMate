@@ -45,13 +45,22 @@ class _$AppDatabase extends GeneratedDatabase {
       'Run build_runner to generate table bindings for `sync_queue`.');
   late final TableInfo<Table, dynamic> messages = throw UnimplementedError(
       'Run build_runner to generate table bindings for `messages`.');
+  late final TableInfo<Table, dynamic> noteChangeTrackers =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `note_change_trackers`.');
+  late final TableInfo<Table, dynamic> progressChangeTrackers =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `progress_change_trackers`.');
+  late final TableInfo<Table, dynamic> messageChangeTrackers =
+      throw UnimplementedError(
+          'Run build_runner to generate table bindings for `message_change_trackers`.');
 
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       throw UnimplementedError('Run build_runner to generate table bindings.');
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 8;
 }
 
 /// A lightweight stand-in for the generated [LocalUser] data class.
