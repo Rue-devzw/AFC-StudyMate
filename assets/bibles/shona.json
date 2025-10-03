@@ -1,0 +1,12 @@
+{
+  "id": "sbl",
+  "abbreviation": "SBL",
+  "name": "Bhaibheri muChiShona",
+  "language": {
+    "code": "sn",
+    "name": "ChiShona"
+  },
+  "version": "Public Domain",
+  "copyright": "Public Domain",
+  "bundle": "assets/bibles/shona_bible.db"
+}

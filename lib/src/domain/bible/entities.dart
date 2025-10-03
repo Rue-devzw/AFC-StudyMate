@@ -2,16 +2,20 @@ class BibleTranslation {
   final String id;
   final String name;
   final String language;
+  final String languageName;
   final String version;
   final String? source;
+  final String copyright;
   final DateTime installedAt;
 
   const BibleTranslation({
     required this.id,
     required this.name,
     required this.language,
+    required this.languageName,
     required this.version,
     required this.installedAt,
+    required this.copyright,
     this.source,
   });
 }

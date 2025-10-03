@@ -1,0 +1,12 @@
+{
+  "id": "nde",
+  "abbreviation": "NDE",
+  "name": "IBhayibhili lesiNdebele",
+  "language": {
+    "code": "nd",
+    "name": "isiNdebele"
+  },
+  "version": "2024",
+  "copyright": "© 2024 AFC StudyMate Team (CC BY 4.0)",
+  "bundle": "assets/bibles/ndebele.db"
+}

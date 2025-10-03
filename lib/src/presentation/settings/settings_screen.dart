@@ -12,6 +12,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeModeAsync = ref.watch(themeModeControllerProvider);
+    final translationsAsync = ref.watch(translationsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -46,6 +47,42 @@ class SettingsScreen extends ConsumerWidget {
                 subject: 'AFC StudyMate',
               );
             },
+          ),
+          const Divider(),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Bible Translations'),
+          ),
+          translationsAsync.when(
+            data: (translations) => Column(
+              children: [
+                for (final translation in translations)
+                  ListTile(
+                    leading: const Icon(Icons.translate_outlined),
+                    title: Text(translation.name),
+                    subtitle: Text(
+                      '${translation.languageName} · ${translation.language.toUpperCase()}\nVersion ${translation.version}\n${translation.copyright}',
+                    ),
+                    isThreeLine: true,
+                    trailing: Chip(
+                      label: Text(
+                        translation.language.toUpperCase(),
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 12.0),
+                child: CircularProgressIndicator(),
+              ),
+            ),
+            error: (error, stack) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text('Failed to load translations: $error'),
+            ),
           ),
           const Divider(),
           const Padding(

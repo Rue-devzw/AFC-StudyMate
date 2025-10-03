@@ -2,8 +2,11 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+
+import '../bible/database_service.dart';
 
 part 'app_database.g.dart';
 
@@ -11,7 +14,11 @@ class Translations extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
   TextColumn get language => text()();
+  TextColumn get languageName =>
+      text().withDefault(const Constant(''))();
   TextColumn get version => text()();
+  TextColumn get copyright =>
+      text().withDefault(const Constant(''))();
   TextColumn get source => text().nullable()();
   IntColumn get installedAt => integer()();
 
@@ -159,6 +166,8 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
       : super(executor ?? _openConnection());
 
+  Future<void>? _seedingFuture;
+
   static QueryExecutor _openConnection() {
     return LazyDatabase(() async {
       final dir = await getApplicationDocumentsDirectory();
@@ -168,56 +177,137 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
-  Future<void> ensureSeeded() async {
-    final hasTranslations = await (select(translations).get()).then((rows) => rows.isNotEmpty);
-    if (hasTranslations) return;
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) async {
+          await m.createAllTables();
+        },
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.addColumn(translations, translations.languageName);
+            await m.addColumn(translations, translations.copyright);
+          }
+        },
+      );
+
+  Future<void> ensureSeeded() {
+    return _seedingFuture ??=
+        _seedBundledContent().catchError((error, stackTrace) {
+      _seedingFuture = null;
+      Error.throwWithStackTrace(error, stackTrace);
+    });
+  }
+
+  Future<void> _seedBundledContent() async {
+    final service = DatabaseService(rootBundle);
+    final bundledVersions = await service.getBibleVersions();
+    if (bundledVersions.isEmpty) {
+      return;
+    }
+
+    final existingTranslations = await select(translations).get();
+    final existingById = {
+      for (final row in existingTranslations) row.id: row,
+    };
+
+    for (final manifest in bundledVersions) {
+      final existing = existingById[manifest.id];
+
+      if (existing != null) {
+        await (update(translations)..where((tbl) => tbl.id.equals(manifest.id))).write(
+          TranslationsCompanion(
+            name: Value(manifest.name),
+            language: Value(manifest.languageCode),
+            languageName: Value(manifest.languageName),
+            version: Value(manifest.version),
+            copyright: Value(manifest.copyright),
+            source: const Value('bundled'),
+          ),
+        );
+        final hasVerseData = await _hasVerses(manifest.id);
+        if (hasVerseData) {
+          continue;
+        }
+      }
+
+      final verseRows = await service.loadVerses(manifest);
+      if (verseRows.isEmpty) {
+        continue;
+      }
+
+      await transaction(() async {
+        await into(translations).insert(
+          TranslationsCompanion.insert(
+            id: manifest.id,
+            name: manifest.name,
+            language: manifest.languageCode,
+            languageName: manifest.languageName,
+            version: manifest.version,
+            copyright: manifest.copyright,
+            source: const Value('bundled'),
+            installedAt: DateTime.now().millisecondsSinceEpoch,
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
+
+        await batch((batch) {
+          batch.insertAll(
+            verses,
+            verseRows
+                .map(
+                  (verse) => VersesCompanion.insert(
+                    translationId: manifest.id,
+                    bookId: verse.bookId,
+                    chapter: verse.chapter,
+                    verse: verse.verse,
+                    text: verse.text,
+                  ),
+                )
+                .toList(),
+            mode: InsertMode.insertOrReplace,
+          );
+        });
+      });
+    }
 
     await batch((batch) {
-      batch.insert(translations, TranslationsCompanion.insert(
-        id: 'kjv',
-        name: 'King James Version',
-        language: 'en',
-        version: '1.0',
-        source: const Value('bundled'),
-        installedAt: DateTime.now().millisecondsSinceEpoch,
-      ));
-      batch.insertAll(verses, [
-        VersesCompanion.insert(
-          translationId: 'kjv',
-          bookId: 1,
-          chapter: 1,
-          verse: 1,
-          text: 'In the beginning God created the heaven and the earth.',
+      batch.insert(
+        lessons,
+        LessonsCompanion.insert(
+          id: 'sample-lesson',
+          title: 'Welcome to StudyMate',
+          lessonClass: 'General',
+          objectives: const Value('["Explore the sample lesson"]'),
+          scriptures: const Value('[{"ref":"Genesis 1","tId":"kjv"}]'),
+          contentHtml: const Value('<p>This is placeholder content for the pilot lesson.</p>'),
+          teacherNotes: const Value('<p>Guide learners through the creation story.</p>'),
+          attachments: const Value('[]'),
+          quizzes: const Value('[]'),
+          sourceUrl: const Value(null),
+          lastFetchedAt: Value(DateTime.now().millisecondsSinceEpoch),
         ),
-        VersesCompanion.insert(
-          translationId: 'kjv',
-          bookId: 1,
-          chapter: 1,
-          verse: 2,
-          text:
-              'And the earth was without form, and void; and darkness was upon the face of the deep.',
+        mode: InsertMode.insertOrReplace,
+      );
+      batch.insert(
+        localUsers,
+        LocalUsersCompanion.insert(
+          id: 'local-user',
+          displayName: const Value('You'),
+          avatarUrl: const Value(null),
         ),
-      ]);
-      batch.insert(lessons, LessonsCompanion.insert(
-        id: 'sample-lesson',
-        title: 'Welcome to StudyMate',
-        lessonClass: 'General',
-        objectives: const Value('["Explore the sample lesson"]'),
-        scriptures: const Value('[{"ref":"Genesis 1","tId":"kjv"}]'),
-        contentHtml: const Value('<p>This is placeholder content for the pilot lesson.</p>'),
-        teacherNotes: const Value('<p>Guide learners through the creation story.</p>'),
-        attachments: const Value('[]'),
-        quizzes: const Value('[]'),
-        sourceUrl: const Value(null),
-        lastFetchedAt: Value(DateTime.now().millisecondsSinceEpoch),
-      ));
-      batch.insert(localUsers, LocalUsersCompanion.insert(
-        id: 'local-user',
-        displayName: const Value('You'),
-        avatarUrl: const Value(null),
-      ));
+        mode: InsertMode.insertOrIgnore,
+      );
     });
+  }
+
+  Future<bool> _hasVerses(String translationId) async {
+    final count = await customSelect(
+      'SELECT COUNT(*) as count FROM verses WHERE translation_id = ? LIMIT 1',
+      variables: [Variable<String>(translationId)],
+      readsFrom: {verses},
+    ).map((row) => row.read<int>('count')).getSingleOrNull();
+    return (count ?? 0) > 0;
   }
 }

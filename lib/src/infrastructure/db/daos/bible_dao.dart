@@ -8,7 +8,12 @@ class BibleDao {
   final AppDatabase _db;
 
   Future<List<TranslationsData>> getTranslations() {
-    return _db.select(_db.translations).get();
+    final query = _db.select(_db.translations)
+      ..orderBy([
+        (tbl) => OrderingTerm.asc(tbl.languageName),
+        (tbl) => OrderingTerm.asc(tbl.name),
+      ]);
+    return query.get();
   }
 
   Future<List<Verse>> getChapter(

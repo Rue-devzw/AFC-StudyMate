@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Bundled Bible databases are added locally and tracked via LFS when pushing
+assets/bibles/*.db
