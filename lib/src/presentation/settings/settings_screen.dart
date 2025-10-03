@@ -42,16 +42,14 @@ class SettingsScreen extends ConsumerWidget {
       if (previous?.conflict != next.conflict && next.conflict != null) {
         Future.microtask(() async {
           final resolution = await _showConflictDialog(context, next.conflict!);
-          final controller =
-              ref.read(bibleImportControllerProvider.notifier);
+          final controller = ref.read(bibleImportControllerProvider.notifier);
           if (resolution == ImportConflictResolution.replace) {
             await controller.resolveConflict(ImportConflictResolution.replace);
           } else {
             controller.clearOutcome();
           }
         });
-      } else if (previous?.imported != next.imported &&
-          next.imported != null) {
+      } else if (previous?.imported != next.imported && next.imported != null) {
         Future.microtask(() {
           if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -93,405 +91,412 @@ class SettingsScreen extends ConsumerWidget {
       body: FocusTraversalGroup(
         child: ListView(
           children: [
-          activeAccountAsync.when(
-            data: (account) => ListTile(
-              leading: _ProfileAvatar(avatar: account?.avatarUrl, name: account?.displayName),
-              title: Text(account?.displayName?.isNotEmpty == true
-                  ? account!.displayName!
-                  : 'No profile selected'),
-              subtitle: const Text('Current profile'),
-              trailing: Tooltip(
-                message: 'Manage profiles',
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfileManagementScreen()),
-                    );
-                  },
-                  child: const Text('Manage'),
-                ),
-              ),
-            ),
-            loading: () => const ListTile(
-              leading: CircularProgressIndicator(),
-              title: Text('Loading profile...'),
-            ),
-            error: (error, stack) => ListTile(
-              leading: const Icon(Icons.error_outline),
-              title: Text('Failed to load profile: $error'),
-              trailing: Tooltip(
-                message: 'Manage profiles',
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfileManagementScreen()),
-                    );
-                  },
-                  child: const Text('Manage'),
-                ),
-              ),
-            ),
-          ),
-          const Divider(),
-          themeProfileAsync.when(
-            data: (selected) => _ThemeProfileSection(
-              profiles: themeProfiles,
-              selectedId: selected.id,
-              brightness: Theme.of(context).brightness,
-              onSelected: (value) =>
-                  ref.read(themeProfileControllerProvider.notifier).setProfile(value),
-            ),
-            loading: const _ThemeProfileLoadingPlaceholder(),
-            error: (error, stack) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text('Unable to load theme profiles: $error'),
-            ),
-          ),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Semantics(
-              header: true,
-              child: Text('Cloud sync'),
-            ),
-          ),
-          cloudUserAsync.when(
-            data: (user) {
-              if (user == null) {
-                return ListTile(
-                  leading: const Icon(Icons.cloud_outlined),
-                  title: const Text('Not connected'),
-                  subtitle: const Text('Sign in to sync lessons, notes and chat across devices.'),
-                  trailing: FilledButton.tonal(
-                    onPressed: authState.isLoading
-                        ? null
-                        : () => CloudAuthSheet.show(context),
-                    child: const Text('Sign in'),
+            activeAccountAsync.when(
+              data: (account) => ListTile(
+                leading: _ProfileAvatar(
+                    avatar: account?.avatarUrl, name: account?.displayName),
+                title: Text(account?.displayName?.isNotEmpty == true
+                    ? account!.displayName!
+                    : 'No profile selected'),
+                subtitle: const Text('Current profile'),
+                trailing: Tooltip(
+                  message: 'Manage profiles',
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ProfileManagementScreen()),
+                      );
+                    },
+                    child: const Text('Manage'),
                   ),
-                );
-              }
-              final providers =
-                  user.providerData.map((item) => item.providerId).join(', ');
-              return ListTile(
-                leading: const Icon(Icons.cloud_done_outlined),
-                title: Text(user.displayName ?? user.email ?? 'Signed in'),
-                subtitle: Text(
-                  providers.isEmpty
-                      ? 'Cloud sync is active.'
-                      : 'Connected via $providers',
                 ),
-                trailing: authState.isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : TextButton(
-                        onPressed: () => _signOutCloud(context, ref),
-                        child: const Text('Sign out'),
-                      ),
-              );
-            },
-            loading: () => const ListTile(
-              leading: CircularProgressIndicator(),
-              title: Text('Checking cloud status...'),
-            ),
-            error: (error, stack) => ListTile(
-              leading: const Icon(Icons.cloud_off_outlined),
-              title: const Text('Cloud status unavailable'),
-              subtitle: Text('Failed to load: $error'),
-              trailing: TextButton(
-                onPressed:
-                    authState.isLoading ? null : () => CloudAuthSheet.show(context),
-                child: const Text('Retry'),
+              ),
+              loading: () => const ListTile(
+                leading: CircularProgressIndicator(),
+                title: Text('Loading profile...'),
+              ),
+              error: (error, stack) => ListTile(
+                leading: const Icon(Icons.error_outline),
+                title: Text('Failed to load profile: $error'),
+                trailing: Tooltip(
+                  message: 'Manage profiles',
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ProfileManagementScreen()),
+                      );
+                    },
+                    child: const Text('Manage'),
+                  ),
+                ),
               ),
             ),
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('About'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AboutScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.privacy_tip_outlined),
-            title: const Text('Privacy Policy'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.share_outlined),
-            title: const Text('Share App'),
-            onTap: () {
-              Share.share(
-                'Check out AFC StudyMate!',
-                subject: 'AFC StudyMate',
-              );
-            },
-          ),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text('Bible Translations'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.download_outlined),
-            title: const Text('Import translation package'),
-            subtitle: const Text('Install a translation from a .zip package'),
-            enabled: !importState.isImporting,
-            onTap: importState.isImporting
-                ? null
-                : () => _pickAndImport(context, ref),
-            trailing: importState.isImporting
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : null,
-          ),
-          if (importState.isImporting && importState.progress != null)
+            const Divider(),
+            themeProfileAsync.when(
+              data: (selected) => _ThemeProfileSection(
+                profiles: themeProfiles,
+                selectedId: selected.id,
+                brightness: Theme.of(context).brightness,
+                onSelected: (value) => ref
+                    .read(themeProfileControllerProvider.notifier)
+                    .setProfile(value),
+              ),
+              loading: () => const _ThemeProfileLoadingPlaceholder(),
+              error: (error, stack) => Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Text('Unable to load theme profiles: $error'),
+              ),
+            ),
+            const Divider(),
             Padding(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Semantics(
+                header: true,
+                child: const Text('Cloud sync'),
+              ),
+            ),
+            cloudUserAsync.when(
+              data: (user) {
+                if (user == null) {
+                  return ListTile(
+                    leading: const Icon(Icons.cloud_outlined),
+                    title: const Text('Not connected'),
+                    subtitle: const Text(
+                        'Sign in to sync lessons, notes and chat across devices.'),
+                    trailing: FilledButton.tonal(
+                      onPressed: authState.isLoading
+                          ? null
+                          : () => CloudAuthSheet.show(context),
+                      child: const Text('Sign in'),
+                    ),
+                  );
+                }
+                final providers =
+                    user.providerData.map((item) => item.providerId).join(', ');
+                return ListTile(
+                  leading: const Icon(Icons.cloud_done_outlined),
+                  title: Text(user.displayName ?? user.email ?? 'Signed in'),
+                  subtitle: Text(
+                    providers.isEmpty
+                        ? 'Cloud sync is active.'
+                        : 'Connected via $providers',
+                  ),
+                  trailing: authState.isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : TextButton(
+                          onPressed: () => _signOutCloud(context, ref),
+                          child: const Text('Sign out'),
+                        ),
+                );
+              },
+              loading: () => const ListTile(
+                leading: CircularProgressIndicator(),
+                title: Text('Checking cloud status...'),
+              ),
+              error: (error, stack) => ListTile(
+                leading: const Icon(Icons.cloud_off_outlined),
+                title: const Text('Cloud status unavailable'),
+                subtitle: Text('Failed to load: $error'),
+                trailing: TextButton(
+                  onPressed: authState.isLoading
+                      ? null
+                      : () => CloudAuthSheet.show(context),
+                  child: const Text('Retry'),
+                ),
+              ),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('About'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AboutScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.privacy_tip_outlined),
+              title: const Text('Privacy Policy'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const PrivacyPolicyScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: const Text('Share App'),
+              onTap: () {
+                Share.share(
+                  'Check out AFC StudyMate!',
+                  subject: 'AFC StudyMate',
+                );
+              },
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text('Bible Translations'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.download_outlined),
+              title: const Text('Import translation package'),
+              subtitle: const Text('Install a translation from a .zip package'),
+              enabled: !importState.isImporting,
+              onTap: importState.isImporting
+                  ? null
+                  : () => _pickAndImport(context, ref),
+              trailing: importState.isImporting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : null,
+            ),
+            if (importState.isImporting && importState.progress != null)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(importState.progress!.message ??
+                        importState.progress!.stage.name),
+                    const SizedBox(height: 8),
+                    LinearProgressIndicator(
+                      value: importState.progress!.progress,
+                    ),
+                  ],
+                ),
+              ),
+            translationsAsync.when(
+              data: (translations) => Column(
                 children: [
-                  Text(importState.progress!.message ??
-                      importState.progress!.stage.name),
-                  const SizedBox(height: 8),
-                  LinearProgressIndicator(
-                    value: importState.progress!.progress,
+                  for (final translation in translations)
+                    ListTile(
+                      leading: const Icon(Icons.translate_outlined),
+                      title: Text(translation.name),
+                      subtitle: Text(
+                        '${translation.languageName} · ${translation.language.toUpperCase()}\nVersion ${translation.version}\n${translation.copyright}',
+                      ),
+                      isThreeLine: true,
+                      trailing: Chip(
+                        label: Text(
+                          translation.language.toUpperCase(),
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12.0),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              error: (error, stack) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text('Failed to load translations: $error'),
+              ),
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text('Lessons'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.cloud_sync_outlined),
+              title: const Text('Sync data'),
+              subtitle: Text(_buildDataSyncSubtitle(dataSyncState)),
+              trailing: dataSyncState.isSyncing
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () => ref
+                          .read(dataSyncControllerProvider.notifier)
+                          .syncNow(),
+                    ),
+              enabled: !dataSyncState.isSyncing,
+              onTap: dataSyncState.isSyncing
+                  ? null
+                  : () =>
+                      ref.read(dataSyncControllerProvider.notifier).syncNow(),
+            ),
+            if (dataSyncState.lastError != null)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                child: Text(
+                  dataSyncState.lastError!,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            if (dataSyncState.conflictCount > 0)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                child: Text(
+                  '${dataSyncState.conflictCount} change${dataSyncState.conflictCount == 1 ? '' : 's'} need review',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ),
+            ListTile(
+              leading: const Icon(Icons.sync_outlined),
+              title: const Text('Sync lessons'),
+              subtitle: Text(_buildSyncSubtitle(syncState)),
+              trailing: syncState.isSyncing
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.refresh),
+                      onPressed: () => ref
+                          .read(lessonSyncControllerProvider.notifier)
+                          .syncNow(),
+                    ),
+              enabled: !syncState.isSyncing,
+              onTap: syncState.isSyncing
+                  ? null
+                  : () =>
+                      ref.read(lessonSyncControllerProvider.notifier).syncNow(),
+            ),
+            if (syncState.lastError != null)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                child: Text(
+                  syncState.lastError!,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Theme.of(context).colorScheme.error),
+                ),
+              ),
+            for (final status in syncState.sources)
+              _LessonSourceTile(status: status),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text('Privacy & Data'),
+            ),
+            ListTile(
+              leading: privacyState.isExporting
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.download_outlined),
+              title: const Text('Export my data'),
+              subtitle: const Text(
+                'Download your notes, highlights, messages and lesson progress as JSON.',
+              ),
+              onTap: privacyState.isExporting
+                  ? null
+                  : () => _exportUserData(context, ref, userId),
+            ),
+            ListTile(
+              leading: privacyState.isDeleting
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.delete_forever_outlined),
+              title: const Text('Delete my data'),
+              subtitle: const Text(
+                'Erase local data and request deletion from connected cloud services.',
+              ),
+              onTap: privacyState.isDeleting
+                  ? null
+                  : () => _confirmDeleteData(context, ref, userId),
+            ),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text('Theme Mode'),
+            ),
+            themeModeAsync.when(
+              data: (mode) => Column(
+                children: [
+                  RadioListTile<ThemeMode>(
+                    title: const Text('System default'),
+                    value: ThemeMode.system,
+                    groupValue: mode,
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref
+                            .read(themeModeControllerProvider.notifier)
+                            .setThemeMode(value);
+                      }
+                    },
+                  ),
+                  RadioListTile<ThemeMode>(
+                    title: const Text('Light'),
+                    value: ThemeMode.light,
+                    groupValue: mode,
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref
+                            .read(themeModeControllerProvider.notifier)
+                            .setThemeMode(value);
+                      }
+                    },
+                  ),
+                  RadioListTile<ThemeMode>(
+                    title: const Text('Dark'),
+                    value: ThemeMode.dark,
+                    groupValue: mode,
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref
+                            .read(themeModeControllerProvider.notifier)
+                            .setThemeMode(value);
+                      }
+                    },
                   ),
                 ],
               ),
-          ),
-          translationsAsync.when(
-            data: (translations) => Column(
-              children: [
-                for (final translation in translations)
-                  ListTile(
-                    leading: const Icon(Icons.translate_outlined),
-                    title: Text(translation.name),
-                    subtitle: Text(
-                      '${translation.languageName} · ${translation.language.toUpperCase()}\nVersion ${translation.version}\n${translation.copyright}',
-                    ),
-                    isThreeLine: true,
-                    trailing: Chip(
-                      label: Text(
-                        translation.language.toUpperCase(),
-                        style: Theme.of(context).textTheme.labelSmall,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            loading: () => const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.0),
-                child: CircularProgressIndicator(),
-              ),
-            ),
-            error: (error, stack) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text('Failed to load translations: $error'),
-            ),
-          ),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text('Lessons'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.cloud_sync_outlined),
-            title: const Text('Sync data'),
-            subtitle: Text(_buildDataSyncSubtitle(dataSyncState)),
-            trailing: dataSyncState.isSyncing
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () => ref
-                        .read(dataSyncControllerProvider.notifier)
-                        .syncNow(),
-                  ),
-            enabled: !dataSyncState.isSyncing,
-            onTap: dataSyncState.isSyncing
-                ? null
-                : () => ref
-                    .read(dataSyncControllerProvider.notifier)
-                    .syncNow(),
-          ),
-          if (dataSyncState.lastError != null)
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              child: Text(
-                dataSyncState.lastError!,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-          if (dataSyncState.conflictCount > 0)
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              child: Text(
-                '${dataSyncState.conflictCount} change${dataSyncState.conflictCount == 1 ? '' : 's'} need review',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-          ListTile(
-            leading: const Icon(Icons.sync_outlined),
-            title: const Text('Sync lessons'),
-            subtitle: Text(_buildSyncSubtitle(syncState)),
-            trailing: syncState.isSyncing
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () => ref
-                        .read(lessonSyncControllerProvider.notifier)
-                        .syncNow(),
-                  ),
-            enabled: !syncState.isSyncing,
-            onTap: syncState.isSyncing
-                ? null
-                : () => ref
-                    .read(lessonSyncControllerProvider.notifier)
-                    .syncNow(),
-          ),
-          if (syncState.lastError != null)
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              child: Text(
-                syncState.lastError!,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: Theme.of(context).colorScheme.error),
-              ),
-            ),
-          for (final status in syncState.sources)
-            _LessonSourceTile(status: status),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text('Privacy & Data'),
-          ),
-          ListTile(
-            leading: privacyState.isExporting
-                ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.download_outlined),
-            title: const Text('Export my data'),
-            subtitle: const Text(
-              'Download your notes, highlights, messages and lesson progress as JSON.',
-            ),
-            onTap: privacyState.isExporting
-                ? null
-                : () => _exportUserData(context, ref, userId),
-          ),
-          ListTile(
-            leading: privacyState.isDeleting
-                ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.delete_forever_outlined),
-            title: const Text('Delete my data'),
-            subtitle: const Text(
-              'Erase local data and request deletion from connected cloud services.',
-            ),
-            onTap: privacyState.isDeleting
-                ? null
-                : () => _confirmDeleteData(context, ref, userId),
-          ),
-          const Divider(),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text('Theme Mode'),
-          ),
-          themeModeAsync.when(
-            data: (mode) => Column(
-              children: [
-                RadioListTile<ThemeMode>(
-                  title: const Text('System default'),
-                  value: ThemeMode.system,
-                  groupValue: mode,
-                  onChanged: (value) {
-                    if (value != null) {
-                      ref
-                          .read(themeModeControllerProvider.notifier)
-                          .setThemeMode(value);
-                    }
-                  },
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 24),
+                  child: CircularProgressIndicator(),
                 ),
-                RadioListTile<ThemeMode>(
-                  title: const Text('Light'),
-                  value: ThemeMode.light,
-                  groupValue: mode,
-                  onChanged: (value) {
-                    if (value != null) {
-                      ref
-                          .read(themeModeControllerProvider.notifier)
-                          .setThemeMode(value);
-                    }
-                  },
-                ),
-                RadioListTile<ThemeMode>(
-                  title: const Text('Dark'),
-                  value: ThemeMode.dark,
-                  groupValue: mode,
-                  onChanged: (value) {
-                    if (value != null) {
-                      ref
-                          .read(themeModeControllerProvider.notifier)
-                          .setThemeMode(value);
-                    }
-                  },
-                ),
-              ],
-            ),
-            loading: () => const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: CircularProgressIndicator(),
+              ),
+              error: (error, stack) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text('Failed to load theme: $error'),
               ),
             ),
-            error: (error, stack) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text('Failed to load theme: $error'),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
+    );
   }
 
   Future<void> _exportUserData(
@@ -556,7 +561,8 @@ class SettingsScreen extends ConsumerWidget {
     }
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Personal data removed locally and queued for remote deletion.'),
+        content: Text(
+            'Personal data removed locally and queued for remote deletion.'),
       ),
     );
   }
@@ -594,7 +600,8 @@ class SettingsScreen extends ConsumerWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(ImportConflictResolution.skip),
+              onPressed: () =>
+                  Navigator.of(context).pop(ImportConflictResolution.skip),
               child: const Text('Keep existing'),
             ),
             FilledButton(
@@ -762,7 +769,8 @@ class _ThemeProfilePreview extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.menu_book_outlined, size: previewTheme.iconTheme.size),
+                  Icon(Icons.menu_book_outlined,
+                      size: previewTheme.iconTheme.size),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -789,9 +797,11 @@ class _ProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (avatar != null && avatar!.isNotEmpty) {
-      return CircleAvatar(child: Text(avatar!, style: const TextStyle(fontSize: 20)));
+      return CircleAvatar(
+          child: Text(avatar!, style: const TextStyle(fontSize: 20)));
     }
-    final initial = (name ?? '').trim().isNotEmpty ? name!.trim()[0].toUpperCase() : '?';
+    final initial =
+        (name ?? '').trim().isNotEmpty ? name!.trim()[0].toUpperCase() : '?';
     return CircleAvatar(child: Text(initial));
   }
 }
@@ -818,7 +828,8 @@ String _buildDataSyncSubtitle(DataSyncState state) {
     parts.add('Last sync: ${_formatTimestamp(state.lastSyncedAt!)}');
   }
   if (state.conflictCount > 0) {
-    parts.add('${state.conflictCount} conflict${state.conflictCount == 1 ? '' : 's'}');
+    parts.add(
+        '${state.conflictCount} conflict${state.conflictCount == 1 ? '' : 's'}');
   }
   return parts.join(' · ');
 }
