@@ -9,8 +9,9 @@ import 'package:flutter/services.dart';
 import '../db/app_database.dart';
 import 'lesson_sync_constants.dart';
 
-Insertable<dynamic> _lessonSourceInsertable(LessonSourcesCompanion companion) =>
-    companion as dynamic;
+Insertable<LessonSourceRow> _lessonSourceInsertable(
+        LessonSourcesCompanion companion) =>
+    companion;
 
 class LessonSourceType {
   const LessonSourceType._();
