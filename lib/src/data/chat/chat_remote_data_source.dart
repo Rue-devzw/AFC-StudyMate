@@ -357,17 +357,17 @@ class ChatRemoteDataSource {
         .doc(appeal.id)
         .set(appeal.toMap(), SetOptions(merge: true));
   }
+}
 
-  static DateTime _fromTimestamp(dynamic value) {
-    if (value is Timestamp) {
-      return value.toDate().toUtc();
-    }
-    if (value is DateTime) {
-      return value.toUtc();
-    }
-    if (value is int) {
-      return DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
-    }
-    return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+DateTime _fromTimestamp(dynamic value) {
+  if (value is Timestamp) {
+    return value.toDate().toUtc();
   }
+  if (value is DateTime) {
+    return value.toUtc();
+  }
+  if (value is int) {
+    return DateTime.fromMillisecondsSinceEpoch(value, isUtc: true);
+  }
+  return DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
 }
