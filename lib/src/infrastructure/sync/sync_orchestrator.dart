@@ -80,7 +80,7 @@ class SyncOrchestrator {
         kDataSyncBackgroundTask,
         frequency: const Duration(hours: 1),
         initialDelay: const Duration(minutes: 10),
-        existingWorkPolicy: ExistingWorkPolicy.keep,
+        existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
         backoffPolicy: BackoffPolicy.exponential,
         backoffPolicyDelay: const Duration(minutes: 5),
         constraints: Constraints(
