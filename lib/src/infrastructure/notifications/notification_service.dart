@@ -176,7 +176,7 @@ class NotificationService {
       '$title starts at ${startTime.toLocal()}.',
       tz.TZDateTime.from(reminderTime, tz.local),
       notificationDetails,
-      androidAllowWhileIdle: true,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dateAndTime,
@@ -214,7 +214,7 @@ class NotificationService {
       '$title starts soon $roleLabel.',
       tz.TZDateTime.from(reminderTime, tz.local),
       notificationDetails,
-      androidAllowWhileIdle: true,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dateAndTime,
