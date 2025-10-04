@@ -14,9 +14,7 @@ class SecureStorageService {
           mOptions: MacOsOptions(
             accessibility: KeychainAccessibility.unlocked_this_device,
           ),
-          webOptions: WebOptions(
-            webSecureMode: true,
-          ),
+          webOptions: const WebOptions(),
         );
 
   final FlutterSecureStorage _secureStorage;
