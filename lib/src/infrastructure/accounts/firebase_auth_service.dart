@@ -117,7 +117,7 @@ class FirebaseAuthService {
       if (error.code == AuthorizationErrorCode.canceled) {
         throw const AuthException('Apple sign-in was cancelled.');
       }
-      throw AuthException('Apple sign-in failed: ${error.localizedDescription ?? error.code.name}');
+      throw AuthException('Apple sign-in failed: ${error.message ?? error.code.name}');
     } on FirebaseAuthException catch (error) {
       throw AuthException(_mapError(error));
     }
