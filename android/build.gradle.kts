@@ -42,6 +42,8 @@ subprojects {
                 .using(module("com.github.jiangdongguo.androidusbcamera:libnative:$usbCameraVersion"))
             substitute(module("com.github.jiangdongguo.AndroidUSBCamera:libuvc"))
                 .using(module("com.github.jiangdongguo.androidusbcamera:libuvc:$usbCameraVersion"))
+            substitute(module("com.github.jiangdongguo.AndroidUSBCamera:libausbc"))
+                .using(module("com.github.jiangdongguo.androidusbcamera:libausbc:$usbCameraVersion"))
         }
     }
 }
