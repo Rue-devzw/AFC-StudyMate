@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart';
+
 import '../../domain/lessons/entities.dart';
 import '../../domain/lessons/repositories.dart';
 import '../../domain/meetings/entities.dart';
