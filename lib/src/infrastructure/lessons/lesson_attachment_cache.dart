@@ -50,9 +50,10 @@ class LessonAttachmentCache {
       return AttachmentCacheSummary.empty.copyWith(totalBytes: usage);
     }
 
-    final attachments = await (_db.select(_db.lessonAttachments)
-          ..where((tbl) => tbl.lessonId.isIn(ids.toList())))
-        .get();
+    final List<LessonAttachmentRow> attachments =
+        await (_db.select(_db.lessonAttachments)
+              ..where((tbl) => tbl.lessonId.isIn(ids.toList())))
+            .get();
     if (attachments.isEmpty) {
       final usage = await _currentUsage();
       return AttachmentCacheSummary.empty.copyWith(totalBytes: usage);
@@ -137,10 +138,11 @@ class LessonAttachmentCache {
     if (quotaBytes <= 0) {
       return 0;
     }
-    final attachments = await (_db.select(_db.lessonAttachments)
-          ..where((tbl) => tbl.localPath.isNotNull())
-          ..orderBy([(tbl) => OrderingTerm(expression: tbl.downloadedAt)]))
-        .get();
+    final List<LessonAttachmentRow> attachments =
+        await (_db.select(_db.lessonAttachments)
+              ..where((tbl) => tbl.localPath.isNotNull())
+              ..orderBy([(tbl) => OrderingTerm(expression: tbl.downloadedAt)]))
+            .get();
 
     var total = 0;
     final toDelete = <LessonAttachmentRow>[];
@@ -176,9 +178,10 @@ class LessonAttachmentCache {
   }
 
   Future<int> _evictMissingFiles() async {
-    final attachments = await (_db.select(_db.lessonAttachments)
-          ..where((tbl) => tbl.localPath.isNotNull()))
-        .get();
+    final List<LessonAttachmentRow> attachments =
+        await (_db.select(_db.lessonAttachments)
+              ..where((tbl) => tbl.localPath.isNotNull()))
+            .get();
 
     var removed = 0;
     for (final attachment in attachments) {
@@ -207,9 +210,10 @@ class LessonAttachmentCache {
   }
 
   Future<int> _currentUsage() async {
-    final attachments = await (_db.select(_db.lessonAttachments)
-          ..where((tbl) => tbl.sizeBytes.isNotNull()))
-        .get();
+    final List<LessonAttachmentRow> attachments =
+        await (_db.select(_db.lessonAttachments)
+              ..where((tbl) => tbl.sizeBytes.isNotNull()))
+            .get();
     return attachments.fold<int>(
       0,
       (int sum, LessonAttachmentRow item) => sum + (item.sizeBytes ?? 0),
