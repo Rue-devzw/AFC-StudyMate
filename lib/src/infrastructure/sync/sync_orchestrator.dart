@@ -365,7 +365,7 @@ class SyncOrchestrator {
           reason: 'local_newer',
           remoteSnapshot: change.toJson(),
         );
-      } else if (existing != null && existing.noteText != change.text) {
+      } else if (existing.noteText != change.text) {
         await _syncDao.markNoteConflict(
           change.noteId,
           reason: 'content_mismatch',
@@ -423,8 +423,7 @@ class SyncOrchestrator {
         reason: 'local_newer',
         remoteSnapshot: change.toJson(),
       );
-    } else if (existing != null &&
-        (existing.status != change.status ||
+    } else if ((existing.status != change.status ||
             (existing.quizScore ?? 0) != (change.quizScore ?? 0) ||
             existing.timeSpentSeconds != change.timeSpentSeconds)) {
       await _syncDao.markProgressConflict(
@@ -483,8 +482,7 @@ class SyncOrchestrator {
         reason: 'local_newer',
         remoteSnapshot: change.toJson(),
       );
-    } else if (existing != null &&
-        (existing.body != change.body ||
+    } else if ((existing.body != change.body ||
             existing.flagged != change.flagged ||
             existing.deleted != change.deleted)) {
       await _syncDao.markMessageConflict(
