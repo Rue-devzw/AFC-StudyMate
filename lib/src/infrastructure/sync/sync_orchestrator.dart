@@ -326,7 +326,7 @@ class SyncOrchestrator {
       if (existing == null || change.updatedAt > localUpdatedAt) {
         if (existing != null) {
           await _db.into(_db.noteRevisions).insert(
-                NoteRevisionsCompanion.insert(
+                app_db.NoteRevisionsCompanion.insert(
                   noteId: existing.id,
                   version: existing.version,
                   text: existing.text,
@@ -336,7 +336,7 @@ class SyncOrchestrator {
               );
         }
         await _db.into(_db.notes).insertOnConflictUpdate(
-              NotesCompanion(
+              app_db.NotesCompanion(
                 id: Value(change.noteId),
                 userId: Value(change.userId),
                 translationId: Value(change.translationId),
@@ -349,7 +349,7 @@ class SyncOrchestrator {
               ) as dynamic,
             );
         await _db.into(_db.noteRevisions).insert(
-              NoteRevisionsCompanion.insert(
+              app_db.NoteRevisionsCompanion.insert(
                 noteId: change.noteId,
                 version: change.version,
                 text: change.text,
