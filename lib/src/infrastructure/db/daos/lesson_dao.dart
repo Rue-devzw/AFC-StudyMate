@@ -53,9 +53,10 @@ class LessonDao {
     final scriptures = await (_db.select(_db.lessonScriptures)
           ..where((tbl) => tbl.lessonId.isIn(ids)))
         .get();
-    final attachments = await (_db.select(_db.lessonAttachments)
-          ..where((tbl) => tbl.lessonId.isIn(ids)))
-        .get();
+    final attachments = (await (_db.select(_db.lessonAttachments)
+              ..where((tbl) => tbl.lessonId.isIn(ids)))
+            .get())
+        .cast<LessonAttachmentRow>();
     final quizzes = await (_db.select(_db.lessonQuizzes)
           ..where((tbl) => tbl.lessonId.isIn(ids)))
         .get();
@@ -89,9 +90,10 @@ class LessonDao {
     final scriptures = await (_db.select(_db.lessonScriptures)
           ..where((tbl) => tbl.lessonId.equals(id)))
         .get();
-    final attachments = await (_db.select(_db.lessonAttachments)
-          ..where((tbl) => tbl.lessonId.equals(id)))
-        .get();
+    final attachments = (await (_db.select(_db.lessonAttachments)
+              ..where((tbl) => tbl.lessonId.equals(id)))
+            .get())
+        .cast<LessonAttachmentRow>();
     final quizzes = await (_db.select(_db.lessonQuizzes)
           ..where((tbl) => tbl.lessonId.equals(id)))
         .get();
