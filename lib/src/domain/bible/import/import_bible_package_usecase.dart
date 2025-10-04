@@ -44,7 +44,6 @@ class ImportBiblePackageUseCase {
       await ZipFile.extractToDirectory(
         zipFile: packageFile,
         destinationDir: tempDir,
-        allowWrite: true,
       );
 
       final manifestFile = File(p.join(tempDir.path, 'manifest.json'));
@@ -180,14 +179,8 @@ class ImportBiblePackageUseCase {
   }
 
   Future<String> _computeChecksum(File file) async {
-    final sink = crypto.AccumulatorSink<crypto.Digest>();
-    final input = crypto.sha256.startChunkedConversion(sink);
-    final stream = file.openRead();
-    await for (final chunk in stream) {
-      input.add(chunk);
-    }
-    input.close();
-    return sink.events.single.toString();
+    final digest = await crypto.sha256.bind(file.openRead()).first;
+    return digest.toString();
   }
 
   Future<List<BibleVerse>> _parsePayload({
