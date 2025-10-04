@@ -33,8 +33,7 @@ class Verses extends Table {
   IntColumn get bookId => integer()();
   IntColumn get chapter => integer()();
   IntColumn get verse => integer()();
-  @DriftColumnName('text')
-  TextColumn get verseText => text()();
+  TextColumn get verseText => text().named('text')();
 
   @override
   Set<Column> get primaryKey => {translationId, bookId, chapter, verse};
@@ -100,8 +99,7 @@ class Notes extends Table {
   IntColumn get bookId => integer()();
   IntColumn get chapter => integer()();
   IntColumn get verse => integer()();
-  @DriftColumnName('text')
-  TextColumn get noteText => text()();
+  TextColumn get noteText => text().named('text')();
   IntColumn get version => integer().withDefault(const Constant(1))();
   IntColumn get updatedAt => integer()();
 
@@ -114,8 +112,7 @@ class NoteRevisions extends Table {
   TextColumn get noteId =>
       text().references(Notes, #id, onDelete: KeyAction.cascade)();
   IntColumn get version => integer()();
-  @DriftColumnName('text')
-  TextColumn get revisionText => text()();
+  TextColumn get revisionText => text().named('text')();
   IntColumn get updatedAt => integer()();
 
   @override
@@ -590,15 +587,15 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(localUsers, localUsers.preferredCohortTitle);
             await m.addColumn(localUsers, localUsers.preferredLessonClass);
             await m.addColumn(localUsers, localUsers.isActive);
-            await m.issueCustomStatement(
+            await m.customStatement(
                 "UPDATE local_users SET is_active = CASE WHEN id = 'local-user' THEN 1 ELSE 0 END");
-            await m.issueCustomStatement(
+            await m.customStatement(
                 "INSERT INTO local_users (id, display_name, avatar_url, preferred_cohort_id, preferred_cohort_title, preferred_lesson_class, is_active) SELECT 'local-user', NULL, NULL, NULL, NULL, NULL, 1 WHERE NOT EXISTS (SELECT 1 FROM local_users WHERE id = 'local-user')");
-            await m.issueCustomStatement(
+            await m.customStatement(
                 "UPDATE bookmarks SET user_id = 'local-user' WHERE user_id IS NULL");
-            await m.issueCustomStatement(
+            await m.customStatement(
                 "UPDATE highlights SET user_id = 'local-user' WHERE user_id IS NULL");
-            await m.issueCustomStatement(
+            await m.customStatement(
                 "UPDATE notes SET user_id = 'local-user' WHERE user_id IS NULL");
           }
           if (from < 8) {
@@ -676,9 +673,9 @@ class AppDatabase extends _$AppDatabase {
             id: manifest.id,
             name: manifest.name,
             language: manifest.languageCode,
-            languageName: manifest.languageName,
+            languageName: Value(manifest.languageName),
             version: manifest.version,
-            copyright: manifest.copyright,
+            copyright: Value(manifest.copyright),
             source: const Value('bundled'),
             installedAt: DateTime.now().millisecondsSinceEpoch,
           ),
