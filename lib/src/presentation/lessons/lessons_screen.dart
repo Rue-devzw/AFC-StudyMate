@@ -40,8 +40,11 @@ class LessonsScreen extends ConsumerWidget {
                 ref.read(lessonFiltersProvider.notifier).setClass(value),
             onAgeChanged: (value) =>
                 ref.read(lessonFiltersProvider.notifier).setAge(value),
-            onCompletionChanged: (value) =>
-                ref.read(lessonFiltersProvider.notifier).setCompletion(value),
+            onCompletionChanged: (value) {
+              if (value != null) {
+                ref.read(lessonFiltersProvider.notifier).setCompletion(value);
+              }
+            },
           ),
           Expanded(
             child: lessonsAsync.when(
@@ -117,7 +120,7 @@ class _LessonFilterBar extends StatelessWidget {
   final LessonFilterState state;
   final ValueChanged<String?> onClassChanged;
   final ValueChanged<int?> onAgeChanged;
-  final ValueChanged<LessonCompletionFilter> onCompletionChanged;
+  final ValueChanged<LessonCompletionFilter?> onCompletionChanged;
 
   static const _classOptions = <String?>[
     null,
