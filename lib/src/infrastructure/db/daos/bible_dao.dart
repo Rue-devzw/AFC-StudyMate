@@ -91,11 +91,11 @@ class BibleDao {
       ..writeln('ORDER BY rank ASC, v.book_id ASC, v.chapter ASC, v.verse ASC')
       ..writeln('LIMIT ?');
 
-    final variables = <Variable<dynamic>>[
-      Variable<String>(translationId),
-      Variable<String>(matchQuery),
-      if (bookId != null) Variable<int>(bookId),
-      Variable<int>(limit ?? 50),
+    final variables = <Variable<Object?>>[
+      Variable<Object?>(translationId),
+      Variable<Object?>(matchQuery),
+      if (bookId != null) Variable<Object?>(bookId),
+      Variable<Object?>(limit ?? 50),
     ];
 
     final rows = await _db.customSelect(
