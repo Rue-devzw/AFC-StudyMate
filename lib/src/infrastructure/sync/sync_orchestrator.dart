@@ -9,7 +9,7 @@ import 'package:workmanager/workmanager.dart';
 import '../../domain/accounts/repositories.dart';
 import '../../domain/sync/entities.dart';
 import '../../domain/sync/repositories.dart';
-import '../db/app_database.dart';
+import '../db/app_database.dart' as app_db;
 import '../db/daos/sync_dao.dart';
 import '../db/daos/account_dao.dart';
 import '../../data/accounts/account_repository_impl.dart';
@@ -19,7 +19,7 @@ const String kDataSyncBackgroundTask = 'afc_data_sync';
 
 class SyncOrchestrator {
   SyncOrchestrator({
-    required AppDatabase db,
+    required app_db.AppDatabase db,
     required SyncRepository syncRepository,
     required AccountRepository accountRepository,
     required SyncRemoteDataSource remoteDataSource,
@@ -45,7 +45,7 @@ class SyncOrchestrator {
     }
   }
 
-  final AppDatabase _db;
+  final app_db.AppDatabase _db;
   final SyncRepository _syncRepository;
   final AccountRepository _accountRepository;
   final SyncRemoteDataSource _remoteDataSource;
@@ -83,7 +83,7 @@ class SyncOrchestrator {
         existingWorkPolicy: ExistingWorkPolicy.keep,
         backoffPolicy: BackoffPolicy.exponential,
         backoffPolicyDelay: const Duration(minutes: 5),
-        constraints: const Constraints(
+        constraints: Constraints(
           networkType: NetworkType.connected,
         ),
       );
@@ -399,7 +399,7 @@ class SyncOrchestrator {
 
     if (existing == null || change.updatedAt > localUpdatedAt) {
       await _db.into(_db.progress).insertOnConflictUpdate(
-            ProgressCompanion(
+            app_db.ProgressCompanion(
               id: Value(change.progressId),
               userId: Value(change.userId),
               lessonId: Value(change.lessonId),
@@ -706,7 +706,7 @@ class NoopSyncRemoteDataSource implements SyncRemoteDataSource {
 
 @pragma('vm:entry-point')
 Future<bool> runDataSyncTask() async {
-  final db = AppDatabase();
+  final db = app_db.AppDatabase();
   final syncDao = SyncDao(db);
   final accountDao = AccountDao(db);
   final accountRepository = AccountRepositoryImpl(db, accountDao);
