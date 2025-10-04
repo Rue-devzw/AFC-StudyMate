@@ -152,13 +152,17 @@ class AnnotationDao {
 
   Future<NotesData?> findNoteById(String userId, String id) {
     final query = _db.select(_db.notes)
-      ..where((tbl) => tbl.id.equals(id) & tbl.userId.equals(userId))
+      ..where((tbl) =>
+          (tbl as dynamic).id.equals(id) &
+          (tbl as dynamic).userId.equals(userId))
       ..limit(1);
     return query.getSingleOrNull();
   }
 
   Future<void> insertNote(NotesCompanion companion) {
-    return _db.into(_db.notes).insert(companion, mode: InsertMode.insertOrReplace);
+    return _db
+        .into(_db.notes)
+        .insert(companion as dynamic, mode: InsertMode.insertOrReplace);
   }
 
   Future<void> updateNote(
@@ -169,7 +173,9 @@ class AnnotationDao {
     int updatedAt,
   ) {
     return (_db.update(_db.notes)
-          ..where((tbl) => tbl.id.equals(id) & tbl.userId.equals(userId)))
+          ..where((tbl) =>
+              (tbl as dynamic).id.equals(id) &
+              (tbl as dynamic).userId.equals(userId)))
         .write(
       NotesCompanion(
         text: Value(text),
@@ -181,14 +187,16 @@ class AnnotationDao {
 
   Future<void> deleteNote(String userId, String id) {
     return (_db.delete(_db.notes)
-          ..where((tbl) => tbl.id.equals(id) & tbl.userId.equals(userId)))
+          ..where((tbl) =>
+              (tbl as dynamic).id.equals(id) &
+              (tbl as dynamic).userId.equals(userId)))
         .go();
   }
 
   Future<void> insertRevision(NoteRevisionsCompanion companion) {
     return _db
         .into(_db.noteRevisions)
-        .insert(companion, mode: InsertMode.insertOrReplace);
+        .insert(companion as dynamic, mode: InsertMode.insertOrReplace);
   }
 
   Future<NoteRevisionsData?> findRevision(
@@ -197,17 +205,17 @@ class AnnotationDao {
     int version,
   ) {
     final query = _db.select(_db.noteRevisions)
-      ..where((tbl) =>
-          tbl.noteId.equals(noteId) & tbl.version.equals(version))
+      ..where((tbl) => (tbl as dynamic).noteId.equals(noteId) &
+          (tbl as dynamic).version.equals(version))
       ..limit(1);
     return query.getSingleOrNull();
   }
 
   Future<List<NoteRevisionsData>> getRevisions(String userId, String noteId) {
     final query = _db.select(_db.noteRevisions)
-      ..where((tbl) => tbl.noteId.equals(noteId))
+      ..where((tbl) => (tbl as dynamic).noteId.equals(noteId))
       ..orderBy([
-        (tbl) => OrderingTerm.desc(tbl.version),
+        (tbl) => OrderingTerm.desc((tbl as dynamic).version),
       ]);
     return query.get();
   }
