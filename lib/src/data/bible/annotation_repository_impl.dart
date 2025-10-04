@@ -207,7 +207,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
           chapter: location.chapter,
           verse: location.verse,
           noteText: text,
-          version: 1,
+          version: const Value(1),
           updatedAt: now.millisecondsSinceEpoch,
         ),
       );
