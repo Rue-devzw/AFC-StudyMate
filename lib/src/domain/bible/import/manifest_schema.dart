@@ -132,8 +132,8 @@ class BiblePackageManifestValidator {
       }
     }
 
-    for (final key
-        in ['id', 'language', 'name', 'version', 'fileFormat', 'checksum']) {
+    for (final key in
+        ['id', 'language', 'name', 'version', 'fileFormat', 'checksum']) {
       ensureRequired(key);
     }
 
@@ -142,7 +142,7 @@ class BiblePackageManifestValidator {
     } else {
       final id = (json['id'] as String).trim();
       if (!_idPattern.hasMatch(id)) {
-        errors.add('`id` must match the pattern ^[a-z0-9_-]+$.');
+        errors.add(r'`id` must match the pattern ^[a-z0-9_-]+$.');
       }
     }
 
