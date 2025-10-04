@@ -92,15 +92,15 @@ class BibleRepositoryImpl implements BibleRepository {
     yield* _dao.watchChapter(translationId, bookId, chapter).map(
       (rows) => rows
           .map(
-            (row) => BibleVerse(
-              translationId: row.translationId,
-              bookId: row.bookId,
-              chapter: row.chapter,
-              verse: row.verse,
-              text: row.text,
-            ),
-          )
-          .toList(),
+          (row) => BibleVerse(
+            translationId: row.translationId,
+            bookId: row.bookId,
+            chapter: row.chapter,
+            verse: row.verse,
+            text: row.verseText,
+          ),
+        )
+        .toList(),
     );
   }
 
