@@ -9,6 +9,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../../domain/chat/entities.dart';
 import '../../domain/meetings/entities.dart';
+// ignore: unused_import
 import '../../domain/settings/entities.dart';
 import '../../domain/settings/repositories.dart';
 
