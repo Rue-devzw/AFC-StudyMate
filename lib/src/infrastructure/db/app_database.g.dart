@@ -216,6 +216,238 @@ class LocalUsersCompanion with _StubInsertable {
   }
 }
 
+class LessonRow {
+  const LessonRow({
+    required this.id,
+    required this.title,
+    required this.lessonClass,
+    this.ageMin,
+    this.ageMax,
+    this.objectives,
+    this.scriptures,
+    this.contentHtml,
+    this.teacherNotes,
+    this.attachments,
+    this.quizzes,
+    this.sourceUrl,
+    this.lastFetchedAt,
+    this.feedId,
+    this.cohortId,
+  });
+
+  final String id;
+  final String title;
+  final String lessonClass;
+  final int? ageMin;
+  final int? ageMax;
+  final String? objectives;
+  final String? scriptures;
+  final String? contentHtml;
+  final String? teacherNotes;
+  final String? attachments;
+  final String? quizzes;
+  final String? sourceUrl;
+  final int? lastFetchedAt;
+  final String? feedId;
+  final String? cohortId;
+
+  LessonRow copyWith({
+    String? id,
+    String? title,
+    String? lessonClass,
+    int? ageMin,
+    int? ageMax,
+    String? objectives,
+    String? scriptures,
+    String? contentHtml,
+    String? teacherNotes,
+    String? attachments,
+    String? quizzes,
+    String? sourceUrl,
+    int? lastFetchedAt,
+    String? feedId,
+    String? cohortId,
+  }) {
+    return LessonRow(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      lessonClass: lessonClass ?? this.lessonClass,
+      ageMin: ageMin ?? this.ageMin,
+      ageMax: ageMax ?? this.ageMax,
+      objectives: objectives ?? this.objectives,
+      scriptures: scriptures ?? this.scriptures,
+      contentHtml: contentHtml ?? this.contentHtml,
+      teacherNotes: teacherNotes ?? this.teacherNotes,
+      attachments: attachments ?? this.attachments,
+      quizzes: quizzes ?? this.quizzes,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
+      lastFetchedAt: lastFetchedAt ?? this.lastFetchedAt,
+      feedId: feedId ?? this.feedId,
+      cohortId: cohortId ?? this.cohortId,
+    );
+  }
+}
+
+class LessonObjectiveRow {
+  const LessonObjectiveRow({
+    required this.lessonId,
+    required this.position,
+    required this.objective,
+  });
+
+  final String lessonId;
+  final int position;
+  final String objective;
+
+  LessonObjectiveRow copyWith({
+    String? lessonId,
+    int? position,
+    String? objective,
+  }) {
+    return LessonObjectiveRow(
+      lessonId: lessonId ?? this.lessonId,
+      position: position ?? this.position,
+      objective: objective ?? this.objective,
+    );
+  }
+}
+
+class LessonScriptureRow {
+  const LessonScriptureRow({
+    required this.lessonId,
+    required this.position,
+    required this.reference,
+    this.translationId,
+  });
+
+  final String lessonId;
+  final int position;
+  final String reference;
+  final String? translationId;
+
+  LessonScriptureRow copyWith({
+    String? lessonId,
+    int? position,
+    String? reference,
+    String? translationId,
+  }) {
+    return LessonScriptureRow(
+      lessonId: lessonId ?? this.lessonId,
+      position: position ?? this.position,
+      reference: reference ?? this.reference,
+      translationId: translationId ?? this.translationId,
+    );
+  }
+}
+
+class LessonAttachmentRow {
+  const LessonAttachmentRow({
+    required this.lessonId,
+    required this.position,
+    required this.type,
+    this.title,
+    required this.url,
+    this.localPath,
+    this.sizeBytes,
+    this.downloadedAt,
+  });
+
+  final String lessonId;
+  final int position;
+  final String type;
+  final String? title;
+  final String url;
+  final String? localPath;
+  final int? sizeBytes;
+  final int? downloadedAt;
+
+  LessonAttachmentRow copyWith({
+    String? lessonId,
+    int? position,
+    String? type,
+    String? title,
+    String? url,
+    String? localPath,
+    int? sizeBytes,
+    int? downloadedAt,
+  }) {
+    return LessonAttachmentRow(
+      lessonId: lessonId ?? this.lessonId,
+      position: position ?? this.position,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      url: url ?? this.url,
+      localPath: localPath ?? this.localPath,
+      sizeBytes: sizeBytes ?? this.sizeBytes,
+      downloadedAt: downloadedAt ?? this.downloadedAt,
+    );
+  }
+}
+
+class LessonQuizRow {
+  const LessonQuizRow({
+    required this.id,
+    required this.lessonId,
+    required this.position,
+    required this.type,
+    required this.prompt,
+    this.answer,
+  });
+
+  final String id;
+  final String lessonId;
+  final int position;
+  final String type;
+  final String prompt;
+  final String? answer;
+
+  LessonQuizRow copyWith({
+    String? id,
+    String? lessonId,
+    int? position,
+    String? type,
+    String? prompt,
+    String? answer,
+  }) {
+    return LessonQuizRow(
+      id: id ?? this.id,
+      lessonId: lessonId ?? this.lessonId,
+      position: position ?? this.position,
+      type: type ?? this.type,
+      prompt: prompt ?? this.prompt,
+      answer: answer ?? this.answer,
+    );
+  }
+}
+
+class LessonQuizOptionRow {
+  const LessonQuizOptionRow({
+    required this.quizId,
+    required this.position,
+    required this.label,
+    this.isCorrect = false,
+  });
+
+  final String quizId;
+  final int position;
+  final String label;
+  final bool isCorrect;
+
+  LessonQuizOptionRow copyWith({
+    String? quizId,
+    int? position,
+    String? label,
+    bool? isCorrect,
+  }) {
+    return LessonQuizOptionRow(
+      quizId: quizId ?? this.quizId,
+      position: position ?? this.position,
+      label: label ?? this.label,
+      isCorrect: isCorrect ?? this.isCorrect,
+    );
+  }
+}
+
 class ProgressData {
   const ProgressData({
     required this.id,
