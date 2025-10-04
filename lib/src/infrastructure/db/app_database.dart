@@ -587,15 +587,15 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(localUsers, localUsers.preferredCohortTitle);
             await m.addColumn(localUsers, localUsers.preferredLessonClass);
             await m.addColumn(localUsers, localUsers.isActive);
-            await m.customStatement(
+            await m.database.customStatement(
                 "UPDATE local_users SET is_active = CASE WHEN id = 'local-user' THEN 1 ELSE 0 END");
-            await m.customStatement(
+            await m.database.customStatement(
                 "INSERT INTO local_users (id, display_name, avatar_url, preferred_cohort_id, preferred_cohort_title, preferred_lesson_class, is_active) SELECT 'local-user', NULL, NULL, NULL, NULL, NULL, 1 WHERE NOT EXISTS (SELECT 1 FROM local_users WHERE id = 'local-user')");
-            await m.customStatement(
+            await m.database.customStatement(
                 "UPDATE bookmarks SET user_id = 'local-user' WHERE user_id IS NULL");
-            await m.customStatement(
+            await m.database.customStatement(
                 "UPDATE highlights SET user_id = 'local-user' WHERE user_id IS NULL");
-            await m.customStatement(
+            await m.database.customStatement(
                 "UPDATE notes SET user_id = 'local-user' WHERE user_id IS NULL");
           }
           if (from < 8) {
