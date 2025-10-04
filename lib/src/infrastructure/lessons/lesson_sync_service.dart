@@ -61,7 +61,7 @@ class LessonSyncService {
         frequency: const Duration(hours: 6),
         initialDelay: const Duration(minutes: 15),
         existingWorkPolicy: ExistingWorkPolicy.keep,
-        constraints: const Constraints(
+        constraints: Constraints(
           networkType: NetworkType.connected,
         ),
       );
