@@ -149,18 +149,16 @@ class LessonIngestionPipeline {
       lessons: parsed.lessons,
     );
 
-    if (result != null) {
-      await _registry?.updateSuccess(
-        feedId,
-        checksum: result.checksum,
-        lessonCount: result.lessonCount,
-      );
-    }
+    await _registry?.updateSuccess(
+      feedId,
+      checksum: result.checksum,
+      lessonCount: result.lessonCount,
+    );
 
     return result;
   }
 
-  Future<LessonFeedIngestionResult?> _persistFeed({
+  Future<LessonFeedIngestionResult> _persistFeed({
     required String feedId,
     required String source,
     required String checksum,

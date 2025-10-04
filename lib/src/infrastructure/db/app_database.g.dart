@@ -8,74 +8,83 @@ part of 'app_database.dart';
 class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
 
-  late final TableInfo<Table, dynamic> translations = throw UnimplementedError(
+  late final TableInfo<Translations, dynamic> translations =
+      throw UnimplementedError(
       'Run build_runner to generate table bindings for `translations`.');
-  late final TableInfo<Table, dynamic> verses = throw UnimplementedError(
+  late final TableInfo<Verses, dynamic> verses = throw UnimplementedError(
       'Run build_runner to generate table bindings for `verses`.');
-  late final TableInfo<Table, dynamic> bookmarks = throw UnimplementedError(
+  late final TableInfo<Bookmarks, dynamic> bookmarks = throw UnimplementedError(
       'Run build_runner to generate table bindings for `bookmarks`.');
-  late final TableInfo<Table, dynamic> highlights = throw UnimplementedError(
+  late final TableInfo<Highlights, dynamic> highlights =
+      throw UnimplementedError(
       'Run build_runner to generate table bindings for `highlights`.');
-  late final TableInfo<Table, dynamic> notes = throw UnimplementedError(
+  late final TableInfo<Notes, dynamic> notes = throw UnimplementedError(
       'Run build_runner to generate table bindings for `notes`.');
-  late final TableInfo<Table, dynamic> noteRevisions = throw UnimplementedError(
+  late final TableInfo<NoteRevisions, dynamic> noteRevisions =
+      throw UnimplementedError(
       'Run build_runner to generate table bindings for `note_revisions`.');
-  late final TableInfo<Table, dynamic> lessons = throw UnimplementedError(
+  late final TableInfo<Lessons, dynamic> lessons = throw UnimplementedError(
       'Run build_runner to generate table bindings for `lessons`.');
-  late final TableInfo<Table, dynamic> lessonObjectives =
+  late final TableInfo<LessonObjectives, dynamic> lessonObjectives =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `lesson_objectives`.');
-  late final TableInfo<Table, dynamic> lessonScriptures =
+  late final TableInfo<LessonScriptures, dynamic> lessonScriptures =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `lesson_scriptures`.');
-  late final TableInfo<Table, dynamic> lessonAttachments =
+  late final TableInfo<LessonAttachments, dynamic> lessonAttachments =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `lesson_attachments`.');
-  late final TableInfo<Table, dynamic> lessonQuizzes = throw UnimplementedError(
+  late final TableInfo<LessonQuizzes, dynamic> lessonQuizzes =
+      throw UnimplementedError(
       'Run build_runner to generate table bindings for `lesson_quizzes`.');
-  late final TableInfo<Table, dynamic> lessonQuizOptions = throw UnimplementedError(
+  late final TableInfo<LessonQuizOptions, dynamic> lessonQuizOptions =
+      throw UnimplementedError(
       'Run build_runner to generate table bindings for `lesson_quiz_options`.');
-  late final TableInfo<Table, dynamic> lessonFeeds = throw UnimplementedError(
+  late final TableInfo<LessonFeeds, dynamic> lessonFeeds =
+      throw UnimplementedError(
       'Run build_runner to generate table bindings for `lesson_feeds`.');
-  late final TableInfo<Table, dynamic> lessonSources = throw UnimplementedError(
+  late final TableInfo<LessonSources, dynamic> lessonSources =
+      throw UnimplementedError(
       'Run build_runner to generate table bindings for `lesson_sources`.');
-  late final TableInfo<Table, dynamic> lessonDrafts = throw UnimplementedError(
+  late final TableInfo<LessonDrafts, dynamic> lessonDrafts =
+      throw UnimplementedError(
       'Run build_runner to generate table bindings for `lesson_drafts`.');
-  late final TableInfo<Table, dynamic> roundtableEvents =
+  late final TableInfo<RoundtableEvents, dynamic> roundtableEvents =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `roundtable_events`.');
-  late final TableInfo<Table, dynamic> meetingLinks = throw UnimplementedError(
+  late final TableInfo<MeetingLinks, dynamic> meetingLinks =
+      throw UnimplementedError(
       'Run build_runner to generate table bindings for `meeting_links`.');
-  late final TableInfo<Table, dynamic> discussionThreads =
+  late final TableInfo<DiscussionThreads, dynamic> discussionThreads =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `discussion_threads`.');
-  late final TableInfo<Table, dynamic> discussionPosts =
+  late final TableInfo<DiscussionPosts, dynamic> discussionPosts =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `discussion_posts`.');
-  late final TableInfo<Table, dynamic> progress = throw UnimplementedError(
+  late final TableInfo<Progress, dynamic> progress = throw UnimplementedError(
       'Run build_runner to generate table bindings for `progress`.');
-  late final TableInfo<Table, dynamic> localUsers = throw UnimplementedError(
+  late final TableInfo<LocalUsers, dynamic> localUsers = throw UnimplementedError(
       'Run build_runner to generate table bindings for `local_users`.');
-  late final TableInfo<Table, dynamic> syncQueue = throw UnimplementedError(
+  late final TableInfo<SyncQueue, dynamic> syncQueue = throw UnimplementedError(
       'Run build_runner to generate table bindings for `sync_queue`.');
-  late final TableInfo<Table, dynamic> messages = throw UnimplementedError(
+  late final TableInfo<Messages, dynamic> messages = throw UnimplementedError(
       'Run build_runner to generate table bindings for `messages`.');
-  late final TableInfo<Table, dynamic> typingIndicators =
+  late final TableInfo<TypingIndicators, dynamic> typingIndicators =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `typing_indicators`.');
-  late final TableInfo<Table, dynamic> moderationActionsTable =
+  late final TableInfo<ModerationActionsTable, dynamic> moderationActionsTable =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `moderation_actions_table`.');
-  late final TableInfo<Table, dynamic> moderationAppealsTable =
+  late final TableInfo<ModerationAppealsTable, dynamic> moderationAppealsTable =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `moderation_appeals_table`.');
-  late final TableInfo<Table, dynamic> noteChangeTrackers =
+  late final TableInfo<NoteChangeTrackers, dynamic> noteChangeTrackers =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `note_change_trackers`.');
-  late final TableInfo<Table, dynamic> progressChangeTrackers =
+  late final TableInfo<ProgressChangeTrackers, dynamic> progressChangeTrackers =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `progress_change_trackers`.');
-  late final TableInfo<Table, dynamic> messageChangeTrackers =
+  late final TableInfo<MessageChangeTrackers, dynamic> messageChangeTrackers =
       throw UnimplementedError(
           'Run build_runner to generate table bindings for `message_change_trackers`.');
 
@@ -731,6 +740,398 @@ class LessonSourcesCompanion {
       lessonCount: lessonCount ?? this.lessonCount,
       attachmentBytes: attachmentBytes ?? this.attachmentBytes,
       quotaBytes: quotaBytes ?? this.quotaBytes,
+    );
+  }
+}
+
+class LessonsCompanion {
+  const LessonsCompanion({
+    this.id = const Value.absent(),
+    this.title = const Value.absent(),
+    this.lessonClass = const Value.absent(),
+    this.ageMin = const Value.absent(),
+    this.ageMax = const Value.absent(),
+    this.objectives = const Value.absent(),
+    this.scriptures = const Value.absent(),
+    this.contentHtml = const Value.absent(),
+    this.teacherNotes = const Value.absent(),
+    this.attachments = const Value.absent(),
+    this.quizzes = const Value.absent(),
+    this.sourceUrl = const Value.absent(),
+    this.lastFetchedAt = const Value.absent(),
+    this.feedId = const Value.absent(),
+    this.cohortId = const Value.absent(),
+  });
+
+  LessonsCompanion.insert({
+    required String id,
+    required String title,
+    required String lessonClass,
+    Value<int?> ageMin = const Value.absent(),
+    Value<int?> ageMax = const Value.absent(),
+    Value<String?> objectives = const Value.absent(),
+    Value<String?> scriptures = const Value.absent(),
+    Value<String?> contentHtml = const Value.absent(),
+    Value<String?> teacherNotes = const Value.absent(),
+    Value<String?> attachments = const Value.absent(),
+    Value<String?> quizzes = const Value.absent(),
+    Value<String?> sourceUrl = const Value.absent(),
+    Value<int?> lastFetchedAt = const Value.absent(),
+    Value<String?> feedId = const Value.absent(),
+    Value<String?> cohortId = const Value.absent(),
+  })  : id = Value(id),
+        title = Value(title),
+        lessonClass = Value(lessonClass),
+        ageMin = ageMin,
+        ageMax = ageMax,
+        objectives = objectives,
+        scriptures = scriptures,
+        contentHtml = contentHtml,
+        teacherNotes = teacherNotes,
+        attachments = attachments,
+        quizzes = quizzes,
+        sourceUrl = sourceUrl,
+        lastFetchedAt = lastFetchedAt,
+        feedId = feedId,
+        cohortId = cohortId;
+
+  final Value<String> id;
+  final Value<String> title;
+  final Value<String> lessonClass;
+  final Value<int?> ageMin;
+  final Value<int?> ageMax;
+  final Value<String?> objectives;
+  final Value<String?> scriptures;
+  final Value<String?> contentHtml;
+  final Value<String?> teacherNotes;
+  final Value<String?> attachments;
+  final Value<String?> quizzes;
+  final Value<String?> sourceUrl;
+  final Value<int?> lastFetchedAt;
+  final Value<String?> feedId;
+  final Value<String?> cohortId;
+
+  LessonsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? title,
+    Value<String>? lessonClass,
+    Value<int?>? ageMin,
+    Value<int?>? ageMax,
+    Value<String?>? objectives,
+    Value<String?>? scriptures,
+    Value<String?>? contentHtml,
+    Value<String?>? teacherNotes,
+    Value<String?>? attachments,
+    Value<String?>? quizzes,
+    Value<String?>? sourceUrl,
+    Value<int?>? lastFetchedAt,
+    Value<String?>? feedId,
+    Value<String?>? cohortId,
+  }) {
+    return LessonsCompanion(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      lessonClass: lessonClass ?? this.lessonClass,
+      ageMin: ageMin ?? this.ageMin,
+      ageMax: ageMax ?? this.ageMax,
+      objectives: objectives ?? this.objectives,
+      scriptures: scriptures ?? this.scriptures,
+      contentHtml: contentHtml ?? this.contentHtml,
+      teacherNotes: teacherNotes ?? this.teacherNotes,
+      attachments: attachments ?? this.attachments,
+      quizzes: quizzes ?? this.quizzes,
+      sourceUrl: sourceUrl ?? this.sourceUrl,
+      lastFetchedAt: lastFetchedAt ?? this.lastFetchedAt,
+      feedId: feedId ?? this.feedId,
+      cohortId: cohortId ?? this.cohortId,
+    );
+  }
+}
+
+class LessonObjectivesCompanion {
+  const LessonObjectivesCompanion({
+    this.lessonId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.objective = const Value.absent(),
+  });
+
+  LessonObjectivesCompanion.insert({
+    required String lessonId,
+    required int position,
+    required String objective,
+  })  : lessonId = Value(lessonId),
+        position = Value(position),
+        objective = Value(objective);
+
+  final Value<String> lessonId;
+  final Value<int> position;
+  final Value<String> objective;
+
+  LessonObjectivesCompanion copyWith({
+    Value<String>? lessonId,
+    Value<int>? position,
+    Value<String>? objective,
+  }) {
+    return LessonObjectivesCompanion(
+      lessonId: lessonId ?? this.lessonId,
+      position: position ?? this.position,
+      objective: objective ?? this.objective,
+    );
+  }
+}
+
+class LessonScripturesCompanion {
+  const LessonScripturesCompanion({
+    this.lessonId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.reference = const Value.absent(),
+    this.translationId = const Value.absent(),
+  });
+
+  LessonScripturesCompanion.insert({
+    required String lessonId,
+    required int position,
+    required String reference,
+    Value<String?> translationId = const Value.absent(),
+  })  : lessonId = Value(lessonId),
+        position = Value(position),
+        reference = Value(reference),
+        translationId = translationId;
+
+  final Value<String> lessonId;
+  final Value<int> position;
+  final Value<String> reference;
+  final Value<String?> translationId;
+
+  LessonScripturesCompanion copyWith({
+    Value<String>? lessonId,
+    Value<int>? position,
+    Value<String>? reference,
+    Value<String?>? translationId,
+  }) {
+    return LessonScripturesCompanion(
+      lessonId: lessonId ?? this.lessonId,
+      position: position ?? this.position,
+      reference: reference ?? this.reference,
+      translationId: translationId ?? this.translationId,
+    );
+  }
+}
+
+class LessonAttachmentsCompanion {
+  const LessonAttachmentsCompanion({
+    this.lessonId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.type = const Value.absent(),
+    this.title = const Value.absent(),
+    this.url = const Value.absent(),
+    this.localPath = const Value.absent(),
+    this.sizeBytes = const Value.absent(),
+    this.downloadedAt = const Value.absent(),
+  });
+
+  LessonAttachmentsCompanion.insert({
+    required String lessonId,
+    required int position,
+    required String type,
+    Value<String?> title = const Value.absent(),
+    required String url,
+    Value<String?> localPath = const Value.absent(),
+    Value<int?> sizeBytes = const Value.absent(),
+    Value<int?> downloadedAt = const Value.absent(),
+  })  : lessonId = Value(lessonId),
+        position = Value(position),
+        type = Value(type),
+        title = title,
+        url = Value(url),
+        localPath = localPath,
+        sizeBytes = sizeBytes,
+        downloadedAt = downloadedAt;
+
+  final Value<String> lessonId;
+  final Value<int> position;
+  final Value<String> type;
+  final Value<String?> title;
+  final Value<String> url;
+  final Value<String?> localPath;
+  final Value<int?> sizeBytes;
+  final Value<int?> downloadedAt;
+
+  LessonAttachmentsCompanion copyWith({
+    Value<String>? lessonId,
+    Value<int>? position,
+    Value<String>? type,
+    Value<String?>? title,
+    Value<String>? url,
+    Value<String?>? localPath,
+    Value<int?>? sizeBytes,
+    Value<int?>? downloadedAt,
+  }) {
+    return LessonAttachmentsCompanion(
+      lessonId: lessonId ?? this.lessonId,
+      position: position ?? this.position,
+      type: type ?? this.type,
+      title: title ?? this.title,
+      url: url ?? this.url,
+      localPath: localPath ?? this.localPath,
+      sizeBytes: sizeBytes ?? this.sizeBytes,
+      downloadedAt: downloadedAt ?? this.downloadedAt,
+    );
+  }
+}
+
+class LessonQuizzesCompanion {
+  const LessonQuizzesCompanion({
+    this.id = const Value.absent(),
+    this.lessonId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.type = const Value.absent(),
+    this.prompt = const Value.absent(),
+    this.answer = const Value.absent(),
+  });
+
+  LessonQuizzesCompanion.insert({
+    required String id,
+    required String lessonId,
+    required int position,
+    required String type,
+    required String prompt,
+    Value<String?> answer = const Value.absent(),
+  })  : id = Value(id),
+        lessonId = Value(lessonId),
+        position = Value(position),
+        type = Value(type),
+        prompt = Value(prompt),
+        answer = answer;
+
+  final Value<String> id;
+  final Value<String> lessonId;
+  final Value<int> position;
+  final Value<String> type;
+  final Value<String> prompt;
+  final Value<String?> answer;
+
+  LessonQuizzesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? lessonId,
+    Value<int>? position,
+    Value<String>? type,
+    Value<String>? prompt,
+    Value<String?>? answer,
+  }) {
+    return LessonQuizzesCompanion(
+      id: id ?? this.id,
+      lessonId: lessonId ?? this.lessonId,
+      position: position ?? this.position,
+      type: type ?? this.type,
+      prompt: prompt ?? this.prompt,
+      answer: answer ?? this.answer,
+    );
+  }
+}
+
+class LessonQuizOptionsCompanion {
+  const LessonQuizOptionsCompanion({
+    this.quizId = const Value.absent(),
+    this.position = const Value.absent(),
+    this.label = const Value.absent(),
+    this.isCorrect = const Value.absent(),
+  });
+
+  LessonQuizOptionsCompanion.insert({
+    required String quizId,
+    required int position,
+    required String label,
+    Value<bool> isCorrect = const Value.absent(),
+  })  : quizId = Value(quizId),
+        position = Value(position),
+        label = Value(label),
+        isCorrect = isCorrect;
+
+  final Value<String> quizId;
+  final Value<int> position;
+  final Value<String> label;
+  final Value<bool> isCorrect;
+
+  LessonQuizOptionsCompanion copyWith({
+    Value<String>? quizId,
+    Value<int>? position,
+    Value<String>? label,
+    Value<bool>? isCorrect,
+  }) {
+    return LessonQuizOptionsCompanion(
+      quizId: quizId ?? this.quizId,
+      position: position ?? this.position,
+      label: label ?? this.label,
+      isCorrect: isCorrect ?? this.isCorrect,
+    );
+  }
+}
+
+class LessonFeedsCompanion {
+  const LessonFeedsCompanion({
+    this.id = const Value.absent(),
+    this.source = const Value.absent(),
+    this.cohort = const Value.absent(),
+    this.lessonClass = const Value.absent(),
+    this.checksum = const Value.absent(),
+    this.etag = const Value.absent(),
+    this.lastModified = const Value.absent(),
+    this.lastFetchedAt = const Value.absent(),
+    this.lastCheckedAt = const Value.absent(),
+  });
+
+  LessonFeedsCompanion.insert({
+    required String id,
+    required String source,
+    Value<String?> cohort = const Value.absent(),
+    Value<String?> lessonClass = const Value.absent(),
+    Value<String?> checksum = const Value.absent(),
+    Value<String?> etag = const Value.absent(),
+    Value<int?> lastModified = const Value.absent(),
+    Value<int?> lastFetchedAt = const Value.absent(),
+    Value<int?> lastCheckedAt = const Value.absent(),
+  })  : id = Value(id),
+        source = Value(source),
+        cohort = cohort,
+        lessonClass = lessonClass,
+        checksum = checksum,
+        etag = etag,
+        lastModified = lastModified,
+        lastFetchedAt = lastFetchedAt,
+        lastCheckedAt = lastCheckedAt;
+
+  final Value<String> id;
+  final Value<String> source;
+  final Value<String?> cohort;
+  final Value<String?> lessonClass;
+  final Value<String?> checksum;
+  final Value<String?> etag;
+  final Value<int?> lastModified;
+  final Value<int?> lastFetchedAt;
+  final Value<int?> lastCheckedAt;
+
+  LessonFeedsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? source,
+    Value<String?>? cohort,
+    Value<String?>? lessonClass,
+    Value<String?>? checksum,
+    Value<String?>? etag,
+    Value<int?>? lastModified,
+    Value<int?>? lastFetchedAt,
+    Value<int?>? lastCheckedAt,
+  }) {
+    return LessonFeedsCompanion(
+      id: id ?? this.id,
+      source: source ?? this.source,
+      cohort: cohort ?? this.cohort,
+      lessonClass: lessonClass ?? this.lessonClass,
+      checksum: checksum ?? this.checksum,
+      etag: etag ?? this.etag,
+      lastModified: lastModified ?? this.lastModified,
+      lastFetchedAt: lastFetchedAt ?? this.lastFetchedAt,
+      lastCheckedAt: lastCheckedAt ?? this.lastCheckedAt,
     );
   }
 }
