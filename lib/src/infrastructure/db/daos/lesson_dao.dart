@@ -143,31 +143,39 @@ class LessonDao {
       final progress = _db.progress;
       switch (completion) {
         case LessonCompletionState.completed:
-          query.whereExists(
-            _db.selectOnly(progress)
-              ..addColumns([progress.id])
-              ..where(progress.userId.equals(filter.userId))
-              ..where(progress.lessonId.equalsExp(_db.lessons.id))
-              ..where(progress.status.equals('completed')),
+          query.where(
+            (tbl) => tbl.id.isInQuery(
+              _db.selectOnly(progress)
+                ..addColumns([progress.lessonId])
+                ..where(progress.userId.equals(filter.userId))
+                ..where(progress.lessonId.equalsExp(_db.lessons.id))
+                ..where(progress.status.equals('completed')),
+            ),
           );
           break;
         case LessonCompletionState.inProgress:
-          query.whereExists(
-            _db.selectOnly(progress)
-              ..addColumns([progress.id])
-              ..where(progress.userId.equals(filter.userId))
-              ..where(progress.lessonId.equalsExp(_db.lessons.id))
-              ..where(progress.status.equals('in_progress')),
+          query.where(
+            (tbl) => tbl.id.isInQuery(
+              _db.selectOnly(progress)
+                ..addColumns([progress.lessonId])
+                ..where(progress.userId.equals(filter.userId))
+                ..where(progress.lessonId.equalsExp(_db.lessons.id))
+                ..where(progress.status.equals('in_progress')),
+            ),
           );
           break;
         case LessonCompletionState.notStarted:
-          query.whereNotExists(
-            _db.selectOnly(progress)
-              ..addColumns([progress.id])
-              ..where(progress.userId.equals(filter.userId))
-              ..where(progress.lessonId.equalsExp(_db.lessons.id))
-              ..where(progress.status.equals('completed') |
-                  progress.status.equals('in_progress')),
+          query.where(
+            (tbl) => tbl.id.isNotInQuery(
+              _db.selectOnly(progress)
+                ..addColumns([progress.lessonId])
+                ..where(progress.userId.equals(filter.userId))
+                ..where(progress.lessonId.equalsExp(_db.lessons.id))
+                ..where(
+                  progress.status.equals('completed') |
+                      progress.status.equals('in_progress'),
+                ),
+            ),
           );
           break;
         case LessonCompletionState.all:
