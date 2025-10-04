@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
 import '../../domain/accounts/entities.dart';
 import '../providers.dart';
 import '../home/home_screen.dart';
 import '../accounts/profile_onboarding_screen.dart';
 import '../theme/age_cohort_theme_profiles.dart';
+import '../l10n/app_localizations.dart';
 import '../l10n/l10n.dart';
 
 class StudyMateApp extends ConsumerWidget {
