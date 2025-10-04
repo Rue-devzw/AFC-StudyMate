@@ -47,6 +47,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
+  Future<void> clearThemeMode(String userId) async {
+    await _storage.delete(_themeModeKeyFor(userId));
+  }
+
+  @override
   Future<String?> getThemeProfileId(String userId) async {
     final value = await _storage.read(_themeProfileKeyFor(userId));
     if (value == null || value.isEmpty) {
