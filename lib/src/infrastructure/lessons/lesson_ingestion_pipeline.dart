@@ -353,7 +353,7 @@ class LessonIngestionPipeline {
           ),
         );
 
-    result ??= LessonFeedIngestionResult(
+    final resolvedResult = result ??= LessonFeedIngestionResult(
       feedId: feedId,
       checksum: checksum,
       lessonIds: lessonIds,
@@ -361,7 +361,7 @@ class LessonIngestionPipeline {
       lastModified: lastModified,
     );
 
-    return result;
+    return resolvedResult;
   }
 
   Future<String?> _safeLoadString(String assetPath) async {
