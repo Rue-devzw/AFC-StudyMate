@@ -210,7 +210,10 @@ class LessonAttachmentCache {
     final attachments = await (_db.select(_db.lessonAttachments)
           ..where((tbl) => tbl.sizeBytes.isNotNull()))
         .get();
-    return attachments.fold<int>(0, (sum, item) => sum + (item.sizeBytes ?? 0));
+    return attachments.fold<int>(
+      0,
+      (int sum, LessonAttachmentRow item) => sum + (item.sizeBytes ?? 0),
+    );
   }
 
   Future<File> _resolveFile(Directory directory, String url) async {
