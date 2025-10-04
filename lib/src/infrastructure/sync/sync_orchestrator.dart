@@ -299,14 +299,18 @@ class SyncOrchestrator {
   Future<void> _applyRemoteNoteChange(RemoteNoteChange change) async {
     await _db.transaction(() async {
       final existing = await (_db.select(_db.notes)
-            ..where((tbl) => tbl.id.equals(change.noteId) & tbl.userId.equals(change.userId)))
+            ..where((tbl) =>
+                (tbl as dynamic).id.equals(change.noteId) &
+                (tbl as dynamic).userId.equals(change.userId)))
           .getSingleOrNull();
       final localUpdatedAt = existing?.updatedAt ?? 0;
       if (change.deleted) {
         if (existing != null && change.updatedAt >= localUpdatedAt) {
           await (_db.delete(_db.notes)
-                ..where((tbl) => tbl.id.equals(change.noteId) & tbl.userId.equals(change.userId)))
-              .go();
+                ..where((tbl) =>
+                    (tbl as dynamic).id.equals(change.noteId) &
+                    (tbl as dynamic).userId.equals(change.userId)))
+            .go();
           await _syncDao.markNoteSynced(change.noteId, change.updatedAt,
               userId: change.userId);
         } else if (existing != null) {
@@ -327,7 +331,7 @@ class SyncOrchestrator {
                   version: existing.version,
                   text: existing.text,
                   updatedAt: existing.updatedAt,
-                ),
+                ) as dynamic,
                 mode: InsertMode.insertOrReplace,
               );
         }
@@ -342,7 +346,7 @@ class SyncOrchestrator {
                 text: Value(change.text),
                 version: Value(change.version),
                 updatedAt: Value(change.updatedAt),
-              ),
+              ) as dynamic,
             );
         await _db.into(_db.noteRevisions).insert(
               NoteRevisionsCompanion.insert(
@@ -350,7 +354,7 @@ class SyncOrchestrator {
                 version: change.version,
                 text: change.text,
                 updatedAt: change.updatedAt,
-              ),
+              ) as dynamic,
               mode: InsertMode.insertOrReplace,
             );
         await _syncDao.markNoteSynced(change.noteId, change.updatedAt,
@@ -373,13 +377,13 @@ class SyncOrchestrator {
 
   Future<void> _applyRemoteProgressChange(RemoteProgressChange change) async {
     final existing = await (_db.select(_db.progress)
-          ..where((tbl) => tbl.id.equals(change.progressId)))
+          ..where((tbl) => (tbl as dynamic).id.equals(change.progressId)))
         .getSingleOrNull();
     final localUpdatedAt = existing?.updatedAt ?? 0;
     if (change.deleted) {
       if (existing != null && change.updatedAt >= localUpdatedAt) {
         await (_db.delete(_db.progress)
-              ..where((tbl) => tbl.id.equals(change.progressId)))
+              ..where((tbl) => (tbl as dynamic).id.equals(change.progressId)))
             .go();
         await _syncDao.markProgressSynced(change.progressId, change.updatedAt,
             userId: change.userId);
@@ -409,7 +413,7 @@ class SyncOrchestrator {
               completedAt: change.completedAt == null
                   ? const Value.absent()
                   : Value(change.completedAt!),
-            ),
+            ) as dynamic,
           );
       await _syncDao.markProgressSynced(change.progressId, change.updatedAt,
           userId: change.userId);
@@ -433,18 +437,18 @@ class SyncOrchestrator {
 
   Future<void> _applyRemoteMessageChange(RemoteMessageChange change) async {
     final existing = await (_db.select(_db.messages)
-          ..where((tbl) => tbl.id.equals(change.messageId)))
+          ..where((tbl) => (tbl as dynamic).id.equals(change.messageId)))
         .getSingleOrNull();
     final localUpdatedAt = existing?.updatedAt ?? existing?.createdAt ?? 0;
     if (change.deleted) {
       if (existing != null && change.updatedAt >= localUpdatedAt) {
         await (_db.update(_db.messages)
-              ..where((tbl) => tbl.id.equals(change.messageId)))
+              ..where((tbl) => (tbl as dynamic).id.equals(change.messageId)))
             .write(
           MessagesCompanion(
             deleted: const Value(true),
             updatedAt: Value(change.updatedAt),
-          ),
+          ) as dynamic,
         );
         await _syncDao.markMessageSynced(change.messageId, change.updatedAt,
             userId: change.userId);
@@ -469,7 +473,7 @@ class SyncOrchestrator {
               updatedAt: Value(change.updatedAt),
               deleted: Value(change.deleted),
               flagged: Value(change.flagged),
-            ),
+            ) as dynamic,
           );
       await _syncDao.markMessageSynced(change.messageId, change.updatedAt,
           userId: change.userId);
