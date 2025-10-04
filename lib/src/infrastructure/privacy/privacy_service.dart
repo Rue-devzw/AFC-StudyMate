@@ -72,43 +72,43 @@ class PrivacyService {
     final notes = await _rows(
       'SELECT id, translation_id, book_id, chapter, verse, text, version, updated_at '
       'FROM notes WHERE user_id = ?',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
     final noteHistory = await _rows(
       'SELECT note_id, version, text, updated_at FROM note_revisions '
       'WHERE note_id IN (SELECT id FROM notes WHERE user_id = ?)',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
     final bookmarks = await _rows(
       'SELECT id, translation_id, book_id, chapter, verse, created_at '
       'FROM bookmarks WHERE user_id = ?',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
     final highlights = await _rows(
       'SELECT id, translation_id, book_id, chapter, verse, colour, created_at '
       'FROM highlights WHERE user_id = ?',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
     final progress = await _rows(
       'SELECT id, lesson_id, status, quiz_score, time_spent_seconds, updated_at, '
       'started_at, completed_at FROM progress WHERE user_id = ?',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
     final messages = await _rows(
       'SELECT id, class_id, body, created_at, updated_at FROM messages '
       'WHERE user_id = ?',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
     final localUser = await _rows(
       'SELECT id, display_name, avatar_url, preferred_cohort_id, '
       'preferred_cohort_title, preferred_lesson_class '
       'FROM local_users WHERE id = ? LIMIT 1',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
     final queue = await _rows(
       'SELECT id, op_type, payload, created_at, attempts, last_tried_at '
       'FROM sync_queue WHERE user_id = ?',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
 
     return {
@@ -125,9 +125,11 @@ class PrivacyService {
 
   Future<List<Map<String, dynamic>>> _rows(
     String query,
-    List<Variable<Object?>> variables,
+    List<Variable<String>> variables,
   ) async {
-    final result = await _db.customSelect(query, variables: variables).get();
+    final result = await _db
+        .customSelect(query, variables: List<Variable>.from(variables))
+        .get();
     return result.map((row) => Map<String, dynamic>.from(row.data)).toList();
   }
 
@@ -135,15 +137,15 @@ class PrivacyService {
     await _db.ensureSeeded();
     final notes = await _rows(
       'SELECT id, translation_id, book_id, chapter, verse FROM notes WHERE user_id = ?',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
     final progressRows = await _rows(
       'SELECT id FROM progress WHERE user_id = ?',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
     final messageRows = await _rows(
       'SELECT id FROM messages WHERE user_id = ?',
-      [Variable<Object?>(userId)],
+      [Variable<String>(userId)],
     );
 
     await _db.transaction(() async {
