@@ -7768,6 +7768,739 @@ class RoundtableEventsCompanion extends UpdateCompanion<RoundtableRow> {
   }
 }
 
+class $MeetingLinksTable extends MeetingLinks
+    with TableInfo<$MeetingLinksTable, MeetingLinkRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MeetingLinksTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _contextTypeMeta =
+      const VerificationMeta('contextType');
+  @override
+  late final GeneratedColumn<String> contextType = GeneratedColumn<String>(
+      'context_type', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _contextIdMeta =
+      const VerificationMeta('contextId');
+  @override
+  late final GeneratedColumn<String> contextId = GeneratedColumn<String>(
+      'context_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _roomNameMeta =
+      const VerificationMeta('roomName');
+  @override
+  late final GeneratedColumn<String> roomName = GeneratedColumn<String>(
+      'room_name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _roleMeta = const VerificationMeta('role');
+  @override
+  late final GeneratedColumn<String> role = GeneratedColumn<String>(
+      'role', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _urlMeta = const VerificationMeta('url');
+  @override
+  late final GeneratedColumn<String> url = GeneratedColumn<String>(
+      'url', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<int> createdAt = GeneratedColumn<int>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _scheduledStartMeta =
+      const VerificationMeta('scheduledStart');
+  @override
+  late final GeneratedColumn<int> scheduledStart = GeneratedColumn<int>(
+      'scheduled_start', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _reminderAtMeta =
+      const VerificationMeta('reminderAt');
+  @override
+  late final GeneratedColumn<int> reminderAt = GeneratedColumn<int>(
+      'reminder_at', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _reminderScheduledMeta =
+      const VerificationMeta('reminderScheduled');
+  @override
+  late final GeneratedColumn<bool> reminderScheduled = GeneratedColumn<bool>(
+      'reminder_scheduled', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("reminder_scheduled" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _recordingStoragePathMeta =
+      const VerificationMeta('recordingStoragePath');
+  @override
+  late final GeneratedColumn<String> recordingStoragePath =
+      GeneratedColumn<String>('recording_storage_path', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _recordingUrlMeta =
+      const VerificationMeta('recordingUrl');
+  @override
+  late final GeneratedColumn<String> recordingUrl = GeneratedColumn<String>(
+      'recording_url', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _recordingIndexedAtMeta =
+      const VerificationMeta('recordingIndexedAt');
+  @override
+  late final GeneratedColumn<int> recordingIndexedAt = GeneratedColumn<int>(
+      'recording_indexed_at', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        contextType,
+        contextId,
+        roomName,
+        role,
+        url,
+        title,
+        createdAt,
+        scheduledStart,
+        reminderAt,
+        reminderScheduled,
+        recordingStoragePath,
+        recordingUrl,
+        recordingIndexedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'meeting_links';
+  @override
+  VerificationContext validateIntegrity(Insertable<MeetingLinkRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('context_type')) {
+      context.handle(
+          _contextTypeMeta,
+          contextType.isAcceptableOrUnknown(
+              data['context_type']!, _contextTypeMeta));
+    } else if (isInserting) {
+      context.missing(_contextTypeMeta);
+    }
+    if (data.containsKey('context_id')) {
+      context.handle(
+          _contextIdMeta,
+          contextId.isAcceptableOrUnknown(
+              data['context_id']!, _contextIdMeta));
+    } else if (isInserting) {
+      context.missing(_contextIdMeta);
+    }
+    if (data.containsKey('room_name')) {
+      context.handle(_roomNameMeta,
+          roomName.isAcceptableOrUnknown(data['room_name']!, _roomNameMeta));
+    } else if (isInserting) {
+      context.missing(_roomNameMeta);
+    }
+    if (data.containsKey('role')) {
+      context.handle(
+          _roleMeta, role.isAcceptableOrUnknown(data['role']!, _roleMeta));
+    } else if (isInserting) {
+      context.missing(_roleMeta);
+    }
+    if (data.containsKey('url')) {
+      context.handle(
+          _urlMeta, url.isAcceptableOrUnknown(data['url']!, _urlMeta));
+    } else if (isInserting) {
+      context.missing(_urlMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(_titleMeta,
+          title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    } else if (isInserting) {
+      context.missing(_titleMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+          _createdAtMeta,
+          createdAt.isAcceptableOrUnknown(
+              data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('scheduled_start')) {
+      context.handle(
+          _scheduledStartMeta,
+          scheduledStart.isAcceptableOrUnknown(
+              data['scheduled_start']!, _scheduledStartMeta));
+    }
+    if (data.containsKey('reminder_at')) {
+      context.handle(
+          _reminderAtMeta,
+          reminderAt.isAcceptableOrUnknown(
+              data['reminder_at']!, _reminderAtMeta));
+    }
+    if (data.containsKey('reminder_scheduled')) {
+      context.handle(
+          _reminderScheduledMeta,
+          reminderScheduled.isAcceptableOrUnknown(
+              data['reminder_scheduled']!, _reminderScheduledMeta));
+    }
+    if (data.containsKey('recording_storage_path')) {
+      context.handle(
+          _recordingStoragePathMeta,
+          recordingStoragePath.isAcceptableOrUnknown(
+              data['recording_storage_path']!, _recordingStoragePathMeta));
+    }
+    if (data.containsKey('recording_url')) {
+      context.handle(
+          _recordingUrlMeta,
+          recordingUrl.isAcceptableOrUnknown(
+              data['recording_url']!, _recordingUrlMeta));
+    }
+    if (data.containsKey('recording_indexed_at')) {
+      context.handle(
+          _recordingIndexedAtMeta,
+          recordingIndexedAt.isAcceptableOrUnknown(
+              data['recording_indexed_at']!, _recordingIndexedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  MeetingLinkRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MeetingLinkRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      contextType: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}context_type'])!,
+      contextId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}context_id'])!,
+      roomName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}room_name'])!,
+      role: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}role'])!,
+      url: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}url'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}created_at'])!,
+      scheduledStart: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}scheduled_start']),
+      reminderAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}reminder_at']),
+      reminderScheduled: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}reminder_scheduled'])!,
+      recordingStoragePath: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}recording_storage_path']),
+      recordingUrl: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}recording_url']),
+      recordingIndexedAt: attachedDatabase.typeMapping.read(DriftSqlType.int,
+          data['${effectivePrefix}recording_indexed_at']),
+    );
+  }
+
+  @override
+  $MeetingLinksTable createAlias(String alias) {
+    return $MeetingLinksTable(attachedDatabase, alias);
+  }
+}
+
+class MeetingLinkRow extends DataClass implements Insertable<MeetingLinkRow> {
+  final String id;
+  final String contextType;
+  final String contextId;
+  final String roomName;
+  final String role;
+  final String url;
+  final String title;
+  final int createdAt;
+  final int? scheduledStart;
+  final int? reminderAt;
+  final bool reminderScheduled;
+  final String? recordingStoragePath;
+  final String? recordingUrl;
+  final int? recordingIndexedAt;
+  const MeetingLinkRow({
+    required this.id,
+    required this.contextType,
+    required this.contextId,
+    required this.roomName,
+    required this.role,
+    required this.url,
+    required this.title,
+    required this.createdAt,
+    this.scheduledStart,
+    this.reminderAt,
+    required this.reminderScheduled,
+    this.recordingStoragePath,
+    this.recordingUrl,
+    this.recordingIndexedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['context_type'] = Variable<String>(contextType);
+    map['context_id'] = Variable<String>(contextId);
+    map['room_name'] = Variable<String>(roomName);
+    map['role'] = Variable<String>(role);
+    map['url'] = Variable<String>(url);
+    map['title'] = Variable<String>(title);
+    map['created_at'] = Variable<int>(createdAt);
+    if (!nullToAbsent || scheduledStart != null) {
+      map['scheduled_start'] = Variable<int>(scheduledStart);
+    }
+    if (!nullToAbsent || reminderAt != null) {
+      map['reminder_at'] = Variable<int>(reminderAt);
+    }
+    map['reminder_scheduled'] = Variable<bool>(reminderScheduled);
+    if (!nullToAbsent || recordingStoragePath != null) {
+      map['recording_storage_path'] =
+          Variable<String>(recordingStoragePath);
+    }
+    if (!nullToAbsent || recordingUrl != null) {
+      map['recording_url'] = Variable<String>(recordingUrl);
+    }
+    if (!nullToAbsent || recordingIndexedAt != null) {
+      map['recording_indexed_at'] = Variable<int>(recordingIndexedAt);
+    }
+    return map;
+  }
+
+  MeetingLinksCompanion toCompanion(bool nullToAbsent) {
+    return MeetingLinksCompanion(
+      id: Value(id),
+      contextType: Value(contextType),
+      contextId: Value(contextId),
+      roomName: Value(roomName),
+      role: Value(role),
+      url: Value(url),
+      title: Value(title),
+      createdAt: Value(createdAt),
+      scheduledStart: scheduledStart == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scheduledStart),
+      reminderAt: reminderAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(reminderAt),
+      reminderScheduled: Value(reminderScheduled),
+      recordingStoragePath: recordingStoragePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recordingStoragePath),
+      recordingUrl: recordingUrl == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recordingUrl),
+      recordingIndexedAt: recordingIndexedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recordingIndexedAt),
+    );
+  }
+
+  factory MeetingLinkRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MeetingLinkRow(
+      id: serializer.fromJson<String>(json['id']),
+      contextType: serializer.fromJson<String>(json['contextType']),
+      contextId: serializer.fromJson<String>(json['contextId']),
+      roomName: serializer.fromJson<String>(json['roomName']),
+      role: serializer.fromJson<String>(json['role']),
+      url: serializer.fromJson<String>(json['url']),
+      title: serializer.fromJson<String>(json['title']),
+      createdAt: serializer.fromJson<int>(json['createdAt']),
+      scheduledStart: serializer.fromJson<int?>(json['scheduledStart']),
+      reminderAt: serializer.fromJson<int?>(json['reminderAt']),
+      reminderScheduled:
+          serializer.fromJson<bool>(json['reminderScheduled']),
+      recordingStoragePath:
+          serializer.fromJson<String?>(json['recordingStoragePath']),
+      recordingUrl: serializer.fromJson<String?>(json['recordingUrl']),
+      recordingIndexedAt:
+          serializer.fromJson<int?>(json['recordingIndexedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'contextType': serializer.toJson<String>(contextType),
+      'contextId': serializer.toJson<String>(contextId),
+      'roomName': serializer.toJson<String>(roomName),
+      'role': serializer.toJson<String>(role),
+      'url': serializer.toJson<String>(url),
+      'title': serializer.toJson<String>(title),
+      'createdAt': serializer.toJson<int>(createdAt),
+      'scheduledStart': serializer.toJson<int?>(scheduledStart),
+      'reminderAt': serializer.toJson<int?>(reminderAt),
+      'reminderScheduled':
+          serializer.toJson<bool>(reminderScheduled),
+      'recordingStoragePath':
+          serializer.toJson<String?>(recordingStoragePath),
+      'recordingUrl': serializer.toJson<String?>(recordingUrl),
+      'recordingIndexedAt':
+          serializer.toJson<int?>(recordingIndexedAt),
+    };
+  }
+
+  MeetingLinkRow copyWith(
+          {String? id,
+          String? contextType,
+          String? contextId,
+          String? roomName,
+          String? role,
+          String? url,
+          String? title,
+          int? createdAt,
+          Value<int?> scheduledStart = const Value.absent(),
+          Value<int?> reminderAt = const Value.absent(),
+          bool? reminderScheduled,
+          Value<String?> recordingStoragePath = const Value.absent(),
+          Value<String?> recordingUrl = const Value.absent(),
+          Value<int?> recordingIndexedAt = const Value.absent()}) {
+    return MeetingLinkRow(
+      id: id ?? this.id,
+      contextType: contextType ?? this.contextType,
+      contextId: contextId ?? this.contextId,
+      roomName: roomName ?? this.roomName,
+      role: role ?? this.role,
+      url: url ?? this.url,
+      title: title ?? this.title,
+      createdAt: createdAt ?? this.createdAt,
+      scheduledStart: scheduledStart.present
+          ? scheduledStart.value
+          : this.scheduledStart,
+      reminderAt:
+          reminderAt.present ? reminderAt.value : this.reminderAt,
+      reminderScheduled: reminderScheduled ?? this.reminderScheduled,
+      recordingStoragePath: recordingStoragePath.present
+          ? recordingStoragePath.value
+          : this.recordingStoragePath,
+      recordingUrl:
+          recordingUrl.present ? recordingUrl.value : this.recordingUrl,
+      recordingIndexedAt: recordingIndexedAt.present
+          ? recordingIndexedAt.value
+          : this.recordingIndexedAt,
+    );
+  }
+
+  MeetingLinkRow copyWithCompanion(MeetingLinksCompanion data) {
+    return MeetingLinkRow(
+      id: data.id.present ? data.id.value : this.id,
+      contextType: data.contextType.present
+          ? data.contextType.value
+          : this.contextType,
+      contextId:
+          data.contextId.present ? data.contextId.value : this.contextId,
+      roomName: data.roomName.present ? data.roomName.value : this.roomName,
+      role: data.role.present ? data.role.value : this.role,
+      url: data.url.present ? data.url.value : this.url,
+      title: data.title.present ? data.title.value : this.title,
+      createdAt:
+          data.createdAt.present ? data.createdAt.value : this.createdAt,
+      scheduledStart: data.scheduledStart.present
+          ? data.scheduledStart.value
+          : this.scheduledStart,
+      reminderAt: data.reminderAt.present
+          ? data.reminderAt.value
+          : this.reminderAt,
+      reminderScheduled: data.reminderScheduled.present
+          ? data.reminderScheduled.value
+          : this.reminderScheduled,
+      recordingStoragePath: data.recordingStoragePath.present
+          ? data.recordingStoragePath.value
+          : this.recordingStoragePath,
+      recordingUrl: data.recordingUrl.present
+          ? data.recordingUrl.value
+          : this.recordingUrl,
+      recordingIndexedAt: data.recordingIndexedAt.present
+          ? data.recordingIndexedAt.value
+          : this.recordingIndexedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MeetingLinkRow(')
+          ..write('id: $id, ')
+          ..write('contextType: $contextType, ')
+          ..write('contextId: $contextId, ')
+          ..write('roomName: $roomName, ')
+          ..write('role: $role, ')
+          ..write('url: $url, ')
+          ..write('title: $title, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('scheduledStart: $scheduledStart, ')
+          ..write('reminderAt: $reminderAt, ')
+          ..write('reminderScheduled: $reminderScheduled, ')
+          ..write('recordingStoragePath: $recordingStoragePath, ')
+          ..write('recordingUrl: $recordingUrl, ')
+          ..write('recordingIndexedAt: $recordingIndexedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      contextType,
+      contextId,
+      roomName,
+      role,
+      url,
+      title,
+      createdAt,
+      scheduledStart,
+      reminderAt,
+      reminderScheduled,
+      recordingStoragePath,
+      recordingUrl,
+      recordingIndexedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MeetingLinkRow &&
+          other.id == this.id &&
+          other.contextType == this.contextType &&
+          other.contextId == this.contextId &&
+          other.roomName == this.roomName &&
+          other.role == this.role &&
+          other.url == this.url &&
+          other.title == this.title &&
+          other.createdAt == this.createdAt &&
+          other.scheduledStart == this.scheduledStart &&
+          other.reminderAt == this.reminderAt &&
+          other.reminderScheduled == this.reminderScheduled &&
+          other.recordingStoragePath == this.recordingStoragePath &&
+          other.recordingUrl == this.recordingUrl &&
+          other.recordingIndexedAt == this.recordingIndexedAt);
+}
+
+class MeetingLinksCompanion extends UpdateCompanion<MeetingLinkRow> {
+  final Value<String> id;
+  final Value<String> contextType;
+  final Value<String> contextId;
+  final Value<String> roomName;
+  final Value<String> role;
+  final Value<String> url;
+  final Value<String> title;
+  final Value<int> createdAt;
+  final Value<int?> scheduledStart;
+  final Value<int?> reminderAt;
+  final Value<bool> reminderScheduled;
+  final Value<String?> recordingStoragePath;
+  final Value<String?> recordingUrl;
+  final Value<int?> recordingIndexedAt;
+  final Value<int> rowid;
+  const MeetingLinksCompanion({
+    this.id = const Value.absent(),
+    this.contextType = const Value.absent(),
+    this.contextId = const Value.absent(),
+    this.roomName = const Value.absent(),
+    this.role = const Value.absent(),
+    this.url = const Value.absent(),
+    this.title = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.scheduledStart = const Value.absent(),
+    this.reminderAt = const Value.absent(),
+    this.reminderScheduled = const Value.absent(),
+    this.recordingStoragePath = const Value.absent(),
+    this.recordingUrl = const Value.absent(),
+    this.recordingIndexedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MeetingLinksCompanion.insert({
+    required String id,
+    required String contextType,
+    required String contextId,
+    required String roomName,
+    required String role,
+    required String url,
+    required String title,
+    required int createdAt,
+    this.scheduledStart = const Value.absent(),
+    this.reminderAt = const Value.absent(),
+    this.reminderScheduled = const Value.absent(),
+    this.recordingStoragePath = const Value.absent(),
+    this.recordingUrl = const Value.absent(),
+    this.recordingIndexedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        contextType = Value(contextType),
+        contextId = Value(contextId),
+        roomName = Value(roomName),
+        role = Value(role),
+        url = Value(url),
+        title = Value(title),
+        createdAt = Value(createdAt);
+  static Insertable<MeetingLinkRow> custom({
+    Expression<String>? id,
+    Expression<String>? contextType,
+    Expression<String>? contextId,
+    Expression<String>? roomName,
+    Expression<String>? role,
+    Expression<String>? url,
+    Expression<String>? title,
+    Expression<int>? createdAt,
+    Expression<int>? scheduledStart,
+    Expression<int>? reminderAt,
+    Expression<bool>? reminderScheduled,
+    Expression<String>? recordingStoragePath,
+    Expression<String>? recordingUrl,
+    Expression<int>? recordingIndexedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (contextType != null) 'context_type': contextType,
+      if (contextId != null) 'context_id': contextId,
+      if (roomName != null) 'room_name': roomName,
+      if (role != null) 'role': role,
+      if (url != null) 'url': url,
+      if (title != null) 'title': title,
+      if (createdAt != null) 'created_at': createdAt,
+      if (scheduledStart != null) 'scheduled_start': scheduledStart,
+      if (reminderAt != null) 'reminder_at': reminderAt,
+      if (reminderScheduled != null)
+        'reminder_scheduled': reminderScheduled,
+      if (recordingStoragePath != null)
+        'recording_storage_path': recordingStoragePath,
+      if (recordingUrl != null) 'recording_url': recordingUrl,
+      if (recordingIndexedAt != null)
+        'recording_indexed_at': recordingIndexedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MeetingLinksCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? contextType,
+      Value<String>? contextId,
+      Value<String>? roomName,
+      Value<String>? role,
+      Value<String>? url,
+      Value<String>? title,
+      Value<int>? createdAt,
+      Value<int?>? scheduledStart,
+      Value<int?>? reminderAt,
+      Value<bool>? reminderScheduled,
+      Value<String?>? recordingStoragePath,
+      Value<String?>? recordingUrl,
+      Value<int?>? recordingIndexedAt,
+      Value<int>? rowid}) {
+    return MeetingLinksCompanion(
+      id: id ?? this.id,
+      contextType: contextType ?? this.contextType,
+      contextId: contextId ?? this.contextId,
+      roomName: roomName ?? this.roomName,
+      role: role ?? this.role,
+      url: url ?? this.url,
+      title: title ?? this.title,
+      createdAt: createdAt ?? this.createdAt,
+      scheduledStart: scheduledStart ?? this.scheduledStart,
+      reminderAt: reminderAt ?? this.reminderAt,
+      reminderScheduled: reminderScheduled ?? this.reminderScheduled,
+      recordingStoragePath:
+          recordingStoragePath ?? this.recordingStoragePath,
+      recordingUrl: recordingUrl ?? this.recordingUrl,
+      recordingIndexedAt:
+          recordingIndexedAt ?? this.recordingIndexedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (contextType.present) {
+      map['context_type'] = Variable<String>(contextType.value);
+    }
+    if (contextId.present) {
+      map['context_id'] = Variable<String>(contextId.value);
+    }
+    if (roomName.present) {
+      map['room_name'] = Variable<String>(roomName.value);
+    }
+    if (role.present) {
+      map['role'] = Variable<String>(role.value);
+    }
+    if (url.present) {
+      map['url'] = Variable<String>(url.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<int>(createdAt.value);
+    }
+    if (scheduledStart.present) {
+      map['scheduled_start'] = Variable<int>(scheduledStart.value);
+    }
+    if (reminderAt.present) {
+      map['reminder_at'] = Variable<int>(reminderAt.value);
+    }
+    if (reminderScheduled.present) {
+      map['reminder_scheduled'] =
+          Variable<bool>(reminderScheduled.value);
+    }
+    if (recordingStoragePath.present) {
+      map['recording_storage_path'] =
+          Variable<String>(recordingStoragePath.value);
+    }
+    if (recordingUrl.present) {
+      map['recording_url'] = Variable<String>(recordingUrl.value);
+    }
+    if (recordingIndexedAt.present) {
+      map['recording_indexed_at'] =
+          Variable<int>(recordingIndexedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MeetingLinksCompanion(')
+          ..write('id: $id, ')
+          ..write('contextType: $contextType, ')
+          ..write('contextId: $contextId, ')
+          ..write('roomName: $roomName, ')
+          ..write('role: $role, ')
+          ..write('url: $url, ')
+          ..write('title: $title, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('scheduledStart: $scheduledStart, ')
+          ..write('reminderAt: $reminderAt, ')
+          ..write('reminderScheduled: $reminderScheduled, ')
+          ..write('recordingStoragePath: $recordingStoragePath, ')
+          ..write('recordingUrl: $recordingUrl, ')
+          ..write('recordingIndexedAt: $recordingIndexedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $DiscussionThreadsTable extends DiscussionThreads
     with TableInfo<$DiscussionThreadsTable, DiscussionThreadRow> {
   @override
@@ -12897,6 +13630,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $LessonSourcesTable lessonSources = $LessonSourcesTable(this);
   late final $RoundtableEventsTable roundtableEvents =
       $RoundtableEventsTable(this);
+  late final $MeetingLinksTable meetingLinks = $MeetingLinksTable(this);
   late final $DiscussionThreadsTable discussionThreads =
       $DiscussionThreadsTable(this);
   late final $DiscussionPostsTable discussionPosts =
@@ -12938,6 +13672,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         lessonFeeds,
         lessonSources,
         roundtableEvents,
+        meetingLinks,
         discussionThreads,
         discussionPosts,
         progress,

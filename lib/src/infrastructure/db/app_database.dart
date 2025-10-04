@@ -505,6 +505,7 @@ class MessageChangeTrackers extends Table {
     LessonFeeds,
     LessonSources,
     RoundtableEvents,
+    MeetingLinks,
     DiscussionThreads,
     DiscussionPosts,
     Progress,
@@ -546,7 +547,7 @@ class AppDatabase extends _$AppDatabase {
   }
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -620,6 +621,9 @@ class AppDatabase extends _$AppDatabase {
             await m.createTable(roundtableEvents);
             await m.createTable(discussionThreads);
             await m.createTable(discussionPosts);
+          }
+          if (from < 11) {
+            await m.createTable(meetingLinks);
           }
         },
       );
