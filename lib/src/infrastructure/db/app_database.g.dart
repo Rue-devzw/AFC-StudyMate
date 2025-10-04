@@ -201,6 +201,122 @@ class LocalUsersCompanion {
   }
 }
 
+class ProgressData {
+  const ProgressData({
+    required this.id,
+    required this.userId,
+    required this.lessonId,
+    required this.status,
+    this.quizScore,
+    this.timeSpentSeconds = 0,
+    this.startedAt,
+    this.completedAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String userId;
+  final String lessonId;
+  final String status;
+  final double? quizScore;
+  final int timeSpentSeconds;
+  final int? startedAt;
+  final int? completedAt;
+  final int updatedAt;
+
+  ProgressData copyWith({
+    String? id,
+    String? userId,
+    String? lessonId,
+    String? status,
+    double? quizScore,
+    int? timeSpentSeconds,
+    int? startedAt,
+    int? completedAt,
+    int? updatedAt,
+  }) {
+    return ProgressData(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      lessonId: lessonId ?? this.lessonId,
+      status: status ?? this.status,
+      quizScore: quizScore ?? this.quizScore,
+      timeSpentSeconds: timeSpentSeconds ?? this.timeSpentSeconds,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
+class ProgressCompanion {
+  const ProgressCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.lessonId = const Value.absent(),
+    this.status = const Value.absent(),
+    this.quizScore = const Value.absent(),
+    this.timeSpentSeconds = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+
+  ProgressCompanion.insert({
+    required String id,
+    required String userId,
+    required String lessonId,
+    required String status,
+    Value<double?> quizScore = const Value.absent(),
+    Value<int> timeSpentSeconds = const Value.absent(),
+    Value<int?> startedAt = const Value.absent(),
+    Value<int?> completedAt = const Value.absent(),
+    required int updatedAt,
+  })  : id = Value(id),
+        userId = Value(userId),
+        lessonId = Value(lessonId),
+        status = Value(status),
+        quizScore = quizScore,
+        timeSpentSeconds = timeSpentSeconds,
+        startedAt = startedAt,
+        completedAt = completedAt,
+        updatedAt = Value(updatedAt);
+
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> lessonId;
+  final Value<String> status;
+  final Value<double?> quizScore;
+  final Value<int> timeSpentSeconds;
+  final Value<int?> startedAt;
+  final Value<int?> completedAt;
+  final Value<int> updatedAt;
+
+  ProgressCompanion copyWith({
+    Value<String>? id,
+    Value<String>? userId,
+    Value<String>? lessonId,
+    Value<String>? status,
+    Value<double?>? quizScore,
+    Value<int>? timeSpentSeconds,
+    Value<int?>? startedAt,
+    Value<int?>? completedAt,
+    Value<int>? updatedAt,
+  }) {
+    return ProgressCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      lessonId: lessonId ?? this.lessonId,
+      status: status ?? this.status,
+      quizScore: quizScore ?? this.quizScore,
+      timeSpentSeconds: timeSpentSeconds ?? this.timeSpentSeconds,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}
+
 class BookmarksData {
   const BookmarksData({
     required this.id,
