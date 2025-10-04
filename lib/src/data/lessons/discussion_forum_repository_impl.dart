@@ -1,3 +1,5 @@
+import 'package:drift/drift.dart' show Value;
+
 import '../../domain/lessons/entities.dart';
 import '../../domain/lessons/repositories.dart';
 import '../../domain/sync/entities.dart';
