@@ -17,7 +17,7 @@ class SyncDao {
     final countExpression = _db.syncQueue.id.count();
     final query = _db.selectOnly(_db.syncQueue)..addColumns([countExpression]);
     final result = await query.getSingle();
-    return result.read<int?>(countExpression) ?? 0;
+    return result.read<int>(countExpression);
   }
 
   Future<List<SyncQueueData>> pendingOps({int limit = 50}) {
