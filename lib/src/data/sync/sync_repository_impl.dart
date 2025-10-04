@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'dart:convert';
-
 import 'package:drift/drift.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
@@ -85,9 +83,9 @@ class SyncRepositoryImpl implements SyncRepository {
       _dao.watchProgressConflicts(),
       _dao.watchMessageConflicts(),
       (
-        List<NoteChangeTrackerData> noteRows,
-        List<ProgressChangeTrackerData> progressRows,
-        List<MessageChangeTrackerData> messageRows,
+        List<NoteChangeTracker> noteRows,
+        List<ProgressChangeTracker> progressRows,
+        List<MessageChangeTracker> messageRows,
       ) {
         final conflicts = <SyncConflict>[];
         conflicts.addAll(noteRows.map(_mapNoteConflict));
@@ -117,7 +115,7 @@ class SyncRepositoryImpl implements SyncRepository {
         .toList();
   }
 
-  SyncConflict _mapNoteConflict(NoteChangeTrackerData row) {
+  SyncConflict _mapNoteConflict(NoteChangeTracker row) {
     return SyncConflict(
       entityType: SyncEntityType.note,
       entityId: row.noteId,
@@ -128,7 +126,7 @@ class SyncRepositoryImpl implements SyncRepository {
     );
   }
 
-  SyncConflict _mapProgressConflict(ProgressChangeTrackerData row) {
+  SyncConflict _mapProgressConflict(ProgressChangeTracker row) {
     return SyncConflict(
       entityType: SyncEntityType.progress,
       entityId: row.progressId,
@@ -139,7 +137,7 @@ class SyncRepositoryImpl implements SyncRepository {
     );
   }
 
-  SyncConflict _mapMessageConflict(MessageChangeTrackerData row) {
+  SyncConflict _mapMessageConflict(MessageChangeTracker row) {
     return SyncConflict(
       entityType: SyncEntityType.message,
       entityId: row.messageId,
