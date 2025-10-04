@@ -98,8 +98,8 @@ class _$AppDatabase extends GeneratedDatabase {
 
 mixin _StubInsertable implements Insertable<dynamic> {
   @override
-  Map<String, Expression<Object?>> toColumns(bool nullToAbsent) =>
-      const <String, Expression<Object?>>{};
+  Map<String, Expression<Object>> toColumns(bool nullToAbsent) =>
+      const <String, Expression<Object>>{};
 }
 
 /// A lightweight stand-in for the generated [LocalUser] data class.
@@ -1364,27 +1364,27 @@ class MessagesCompanion {
     this.authorName = const Value.absent(),
   });
 
-  const MessagesCompanion.insert({
+  MessagesCompanion.insert({
     required String id,
     required String classId,
     required String userId,
     required String body,
     required int createdAt,
     required int updatedAt,
-    Value<bool> deleted = const Value(false),
-    Value<bool> flagged = const Value(false),
-    Value<String> attachments = const Value('[]'),
-    Value<String?> authorName = const Value.absent(),
+    Value<bool>? deleted,
+    Value<bool>? flagged,
+    Value<String>? attachments,
+    Value<String?>? authorName,
   })  : id = Value(id),
         classId = Value(classId),
         userId = Value(userId),
         body = Value(body),
         createdAt = Value(createdAt),
         updatedAt = Value(updatedAt),
-        deleted = deleted,
-        flagged = flagged,
-        attachments = attachments,
-        authorName = authorName;
+        deleted = deleted ?? Value(false),
+        flagged = flagged ?? Value(false),
+        attachments = attachments ?? Value('[]'),
+        authorName = authorName ?? const Value.absent();
 
   final Value<String> id;
   final Value<String> classId;
