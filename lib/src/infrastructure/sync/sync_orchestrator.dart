@@ -445,7 +445,7 @@ class SyncOrchestrator {
         await (_db.update(_db.messages)
               ..where((tbl) => (tbl as dynamic).id.equals(change.messageId)))
             .write(
-          MessagesCompanion(
+          app_db.MessagesCompanion(
             deleted: const Value(true),
             updatedAt: Value(change.updatedAt),
           ) as dynamic,
@@ -464,7 +464,7 @@ class SyncOrchestrator {
 
     if (existing == null || change.updatedAt > localUpdatedAt) {
       await _db.into(_db.messages).insertOnConflictUpdate(
-            MessagesCompanion(
+            app_db.MessagesCompanion(
               id: Value(change.messageId),
               classId: Value(change.classId),
               userId: Value(change.userId),
