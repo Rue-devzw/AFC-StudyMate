@@ -61,7 +61,7 @@ class LessonSyncService {
         kLessonSyncBackgroundTask,
         frequency: const Duration(hours: 6),
         initialDelay: const Duration(minutes: 15),
-        existingWorkPolicy: ExistingWorkPolicy.keep,
+        existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
         constraints: Constraints(
           networkType: NetworkType.connected,
         ),
