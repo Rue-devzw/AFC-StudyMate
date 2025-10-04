@@ -501,7 +501,8 @@ class SyncOrchestrator {
     }
     final result = <List<T>>[];
     for (var i = 0; i < source.length; i += size) {
-      result.add(source.sublist(i, math.min(source.length, i + size)));
+      final end = source.length < i + size ? source.length : i + size;
+      result.add(source.sublist(i, end));
     }
     return result;
   }
