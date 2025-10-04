@@ -99,8 +99,8 @@ class SyncDao {
             NoteChangeTrackersCompanion.insert(
               noteId: noteId,
               userId: userId,
-              localUpdatedAt: localUpdatedAt,
-              lastOperation: operation,
+              localUpdatedAt: Value(localUpdatedAt),
+              lastOperation: Value(operation),
             ),
             mode: InsertMode.insertOrReplace,
           );
@@ -135,8 +135,8 @@ class SyncDao {
             ProgressChangeTrackersCompanion.insert(
               progressId: progressId,
               userId: userId,
-              localUpdatedAt: localUpdatedAt,
-              lastOperation: operation,
+              localUpdatedAt: Value(localUpdatedAt),
+              lastOperation: Value(operation),
             ),
             mode: InsertMode.insertOrReplace,
           );
@@ -171,8 +171,8 @@ class SyncDao {
             MessageChangeTrackersCompanion.insert(
               messageId: messageId,
               userId: userId,
-              localUpdatedAt: localUpdatedAt,
-              lastOperation: operation,
+              localUpdatedAt: Value(localUpdatedAt),
+              lastOperation: Value(operation),
             ),
             mode: InsertMode.insertOrReplace,
           );
@@ -342,19 +342,19 @@ class SyncDao {
     );
   }
 
-  Stream<List<NoteChangeTrackerData>> watchNoteConflicts() {
+  Stream<List<NoteChangeTracker>> watchNoteConflicts() {
     final query = _db.select(_db.noteChangeTrackers)
       ..where((tbl) => tbl.status.equals('conflict'));
     return query.watch();
   }
 
-  Stream<List<ProgressChangeTrackerData>> watchProgressConflicts() {
+  Stream<List<ProgressChangeTracker>> watchProgressConflicts() {
     final query = _db.select(_db.progressChangeTrackers)
       ..where((tbl) => tbl.status.equals('conflict'));
     return query.watch();
   }
 
-  Stream<List<MessageChangeTrackerData>> watchMessageConflicts() {
+  Stream<List<MessageChangeTracker>> watchMessageConflicts() {
     final query = _db.select(_db.messageChangeTrackers)
       ..where((tbl) => tbl.status.equals('conflict'));
     return query.watch();
