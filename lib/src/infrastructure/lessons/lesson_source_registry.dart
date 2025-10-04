@@ -1,10 +1,16 @@
+// ignore_for_file: avoid_dynamic_calls
+
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../db/app_database.dart';
 import 'lesson_sync_constants.dart';
+
+Insertable<dynamic> _lessonSourceInsertable(LessonSourcesCompanion companion) =>
+    companion as dynamic;
 
 class LessonSourceType {
   const LessonSourceType._();
@@ -66,59 +72,71 @@ class LessonSourceRegistry {
     int? quotaBytes,
   }) async {
     final existing = await (_db.select(_db.lessonSources)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((tbl) => (tbl as dynamic).id.equals(id)))
         .getSingleOrNull();
+    final typedExisting = existing is LessonSourceRow ? existing : null;
 
-    final effectiveEnabled = existing == null
+    final effectiveEnabled = typedExisting == null
         ? (isBundled ? true : enabled)
-        : (existing.isBundled ? true : existing.enabled);
-    final effectivePriority = priority ?? existing?.priority ?? 0;
-    final effectiveQuota = quotaBytes ?? existing?.quotaBytes;
-    final effectiveIsBundled = existing?.isBundled ?? isBundled;
+        : (typedExisting.isBundled ? true : typedExisting.enabled);
+    final effectivePriority = priority ?? typedExisting?.priority ?? 0;
+    final effectiveQuota = quotaBytes ?? typedExisting?.quotaBytes;
+    final effectiveIsBundled = typedExisting?.isBundled ?? isBundled;
 
     await _db.into(_db.lessonSources).insertOnConflictUpdate(
-          LessonSourcesCompanion(
-            id: Value(id),
-            type: Value(type),
-            location: Value(location),
-            label: Value(label ?? existing?.label),
-            cohort: Value(cohort ?? existing?.cohort),
-            lessonClass: Value(lessonClass ?? existing?.lessonClass),
-            enabled: Value(effectiveEnabled),
-            isBundled: Value(effectiveIsBundled),
-            priority: Value(effectivePriority),
-            quotaBytes: Value(effectiveQuota),
+          _lessonSourceInsertable(
+            LessonSourcesCompanion(
+              id: Value(id),
+              type: Value(type),
+              location: Value(location),
+              label: Value(label ?? typedExisting?.label),
+              cohort: Value(cohort ?? typedExisting?.cohort),
+              lessonClass: Value(lessonClass ?? typedExisting?.lessonClass),
+              enabled: Value(effectiveEnabled),
+              isBundled: Value(effectiveIsBundled),
+              priority: Value(effectivePriority),
+              quotaBytes: Value(effectiveQuota),
+            ),
           ),
         );
   }
 
   Future<List<LessonSourceRow>> getEnabledSources() async {
     final query = _db.select(_db.lessonSources)
-      ..where((tbl) => tbl.enabled.equals(true))
-      ..orderBy([(tbl) => OrderingTerm(expression: tbl.priority)]);
-    return query.get();
+      ..where((tbl) => (tbl as dynamic).enabled.equals(true))
+      ..orderBy([
+        (tbl) => OrderingTerm(expression: (tbl as dynamic).priority),
+      ]);
+    final results = await query.get();
+    return results.cast<LessonSourceRow>();
   }
 
   Future<List<LessonSourceRow>> getAllSources() {
     final query = _db.select(_db.lessonSources)
-      ..orderBy([(tbl) => OrderingTerm(expression: tbl.priority)]);
-    return query.get();
+      ..orderBy([
+        (tbl) => OrderingTerm(expression: (tbl as dynamic).priority),
+      ]);
+    return query.get().then((rows) => rows.cast<LessonSourceRow>());
   }
 
   Stream<List<LessonSourceRow>> watchSources() {
     final query = _db.select(_db.lessonSources)
-      ..orderBy([(tbl) => OrderingTerm(expression: tbl.priority)]);
-    return query.watch();
+      ..orderBy([
+        (tbl) => OrderingTerm(expression: (tbl as dynamic).priority),
+      ]);
+    return query.watch().map((rows) => rows.cast<LessonSourceRow>());
   }
 
   Future<void> markAttempt(String id) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     await (_db.update(_db.lessonSources)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((tbl) => (tbl as dynamic).id.equals(id)))
         .write(
-          LessonSourcesCompanion(
-            lastAttemptedAt: Value(now),
-            lastError: const Value(null),
+          _lessonSourceInsertable(
+            LessonSourcesCompanion(
+              lastAttemptedAt: Value(now),
+              lastError: const Value(null),
+            ),
           ),
         );
   }
@@ -130,12 +148,14 @@ class LessonSourceRegistry {
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     await (_db.update(_db.lessonSources)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((tbl) => (tbl as dynamic).id.equals(id)))
         .write(
-          LessonSourcesCompanion(
-            lastCheckedAt: Value(now),
-            etag: Value(etag),
-            lastModified: Value(lastModified?.millisecondsSinceEpoch),
+          _lessonSourceInsertable(
+            LessonSourcesCompanion(
+              lastCheckedAt: Value(now),
+              etag: Value(etag),
+              lastModified: Value(lastModified?.millisecondsSinceEpoch),
+            ),
           ),
         );
   }
@@ -149,26 +169,30 @@ class LessonSourceRegistry {
   }) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     await (_db.update(_db.lessonSources)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((tbl) => (tbl as dynamic).id.equals(id)))
         .write(
-          LessonSourcesCompanion(
-            checksum: Value(checksum),
-            lessonCount: Value(lessonCount ?? 0),
-            lastSyncedAt: Value(now),
-            lastCheckedAt: Value(now),
-            lastError: const Value(null),
-            etag: Value(etag),
-            lastModified: Value(lastModified?.millisecondsSinceEpoch),
+          _lessonSourceInsertable(
+            LessonSourcesCompanion(
+              checksum: Value(checksum),
+              lessonCount: Value(lessonCount ?? 0),
+              lastSyncedAt: Value(now),
+              lastCheckedAt: Value(now),
+              lastError: const Value(null),
+              etag: Value(etag),
+              lastModified: Value(lastModified?.millisecondsSinceEpoch),
+            ),
           ),
         );
   }
 
   Future<void> updateAttachmentUsage(String id, int bytes) async {
     await (_db.update(_db.lessonSources)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((tbl) => (tbl as dynamic).id.equals(id)))
         .write(
-          LessonSourcesCompanion(
-            attachmentBytes: Value(bytes),
+          _lessonSourceInsertable(
+            LessonSourcesCompanion(
+              attachmentBytes: Value(bytes),
+            ),
           ),
         );
   }
@@ -176,21 +200,25 @@ class LessonSourceRegistry {
   Future<void> updateError(String id, String message) async {
     final now = DateTime.now().millisecondsSinceEpoch;
     await (_db.update(_db.lessonSources)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((tbl) => (tbl as dynamic).id.equals(id)))
         .write(
-          LessonSourcesCompanion(
-            lastAttemptedAt: Value(now),
-            lastError: Value(message),
+          _lessonSourceInsertable(
+            LessonSourcesCompanion(
+              lastAttemptedAt: Value(now),
+              lastError: Value(message),
+            ),
           ),
         );
   }
 
   Future<void> setEnabled(String id, bool enabled) async {
     await (_db.update(_db.lessonSources)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((tbl) => (tbl as dynamic).id.equals(id)))
         .write(
-          LessonSourcesCompanion(
-            enabled: Value(enabled),
+          _lessonSourceInsertable(
+            LessonSourcesCompanion(
+              enabled: Value(enabled),
+            ),
           ),
         );
   }
