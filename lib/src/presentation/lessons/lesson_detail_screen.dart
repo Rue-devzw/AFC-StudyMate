@@ -75,7 +75,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
           lessonId: widget.lesson.id,
         ),
       ),
-      (next) {
+      (_, next) {
         next.whenData((value) {
           if (!mounted) {
             return;
