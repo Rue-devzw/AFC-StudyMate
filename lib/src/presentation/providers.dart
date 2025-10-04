@@ -23,6 +23,7 @@ import '../data/lessons/discussion_forum_repository_impl.dart';
 import '../data/lessons/lesson_draft_repository_impl.dart';
 import '../data/lessons/lesson_repository_impl.dart';
 import '../data/lessons/roundtable_repository_impl.dart';
+import '../data/meetings/meeting_repository_impl.dart';
 import '../data/settings/settings_repository_impl.dart';
 import '../data/sync/sync_repository_impl.dart';
 import '../data/bible/verse_of_the_day_service.dart';
@@ -76,6 +77,10 @@ import '../infrastructure/meetings/meeting_reminder_coordinator.dart';
 import '../infrastructure/sync/sync_orchestrator.dart';
 import '../infrastructure/accounts/cloud_account_coordinator.dart';
 import '../infrastructure/accounts/firebase_auth_service.dart';
+import '../infrastructure/notifications/notification_service.dart';
+import '../infrastructure/privacy/privacy_remote_data_source.dart';
+import '../infrastructure/privacy/privacy_service.dart';
+import '../infrastructure/security/secure_storage_service.dart';
 import '../utils/iterable_extensions.dart';
 import 'settings/bible_import_controller.dart';
 import 'settings/data_sync_controller.dart';
@@ -98,7 +103,21 @@ final firebaseStorageProvider = Provider<FirebaseStorage>((ref) {
   return FirebaseStorage.instance;
 });
 
+final firebaseFirestoreProvider = Provider<FirebaseFirestore>((ref) {
+  return FirebaseFirestore.instance;
+});
 
+final firebaseMessagingProvider = Provider<FirebaseMessaging>((ref) {
+  return FirebaseMessaging.instance;
+});
+
+final flutterLocalNotificationsProvider =
+    Provider<FlutterLocalNotificationsPlugin>((ref) {
+  return FlutterLocalNotificationsPlugin();
+});
+
+final secureStorageProvider = Provider<SecureStorageService>((ref) {
+  return SecureStorageService();
 });
 
 final googleSignInProvider = Provider<GoogleSignIn>((ref) {
