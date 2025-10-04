@@ -277,7 +277,7 @@ class LessonRepositoryImpl implements LessonRepository {
         .getSingleOrNull();
     final nextPosition = (existing?.position ?? -1) + 1;
     await _db.into(_db.lessonAttachments).insertOnConflictUpdate(
-          LessonAttachmentsCompanion(
+          db.LessonAttachmentsCompanion(
             lessonId: Value(lessonId),
             position: Value(nextPosition),
             type: Value(_mapAttachmentTypeToString(attachment.type)),
