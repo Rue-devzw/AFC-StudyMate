@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -333,7 +334,7 @@ class LessonSyncSourceResult {
 void lessonSyncCallbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     WidgetsFlutterBinding.ensureInitialized();
-    DartPluginRegistrant.ensureInitialized();
+    ui.DartPluginRegistrant.ensureInitialized();
 
     if (task == kDataSyncBackgroundTask) {
       return await runDataSyncTask();
