@@ -17,12 +17,20 @@ class AuthException implements Exception {
 }
 
 class FirebaseAuthService {
-  FirebaseAuthService({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
-      : _auth = auth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn(scopes: const ['email', 'profile']);
+  FirebaseAuthService({
+    FirebaseAuth? auth,
+    GoogleSignIn? googleSignIn,
+    Future<void>? googleSignInInitialization,
+  })  : _auth = auth ?? FirebaseAuth.instance,
+        _googleSignIn = googleSignIn ?? GoogleSignIn.instance,
+        _googleSignInInitialization =
+            googleSignInInitialization ?? Future<void>.value();
 
   final FirebaseAuth _auth;
   final GoogleSignIn _googleSignIn;
+  final Future<void> _googleSignInInitialization;
+
+  static const List<String> _googleScopes = <String>['email', 'profile'];
 
   Stream<User?> authStateChanges() => _auth.authStateChanges();
 
@@ -64,18 +72,31 @@ class FirebaseAuthService {
         return await _auth.signInWithPopup(provider);
       }
 
-      final account = await _googleSignIn.signIn();
-      if (account == null) {
-        throw const AuthException('Google sign-in was cancelled.');
-      }
+      await _googleSignInInitialization;
+
+      final account = await _googleSignIn.authenticate(scopeHint: _googleScopes);
       final authentication = await account.authentication;
+      if (authentication.idToken == null) {
+        throw const AuthException('Google sign-in failed: Missing ID token.');
+      }
+
+      final authorizationClient = account.authorizationClient;
+      final GoogleSignInClientAuthorization? existingAuthorization =
+          await authorizationClient.authorizationForScopes(_googleScopes);
+      final GoogleSignInClientAuthorization authorization =
+          existingAuthorization ??
+              await authorizationClient.authorizeScopes(_googleScopes);
+
       final credential = GoogleAuthProvider.credential(
-        accessToken: authentication.accessToken,
+        accessToken: authorization.accessToken,
         idToken: authentication.idToken,
       );
       return await _auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (error) {
       throw AuthException(_mapError(error));
+    } on GoogleSignInException catch (error) {
+      final description = error.description ?? error.code.name;
+      throw AuthException('Google sign-in failed: $description');
     }
   }
 
@@ -127,6 +148,7 @@ class FirebaseAuthService {
     try {
       await _auth.signOut();
       if (!kIsWeb) {
+        await _googleSignInInitialization;
         await _googleSignIn.signOut();
       }
     } on FirebaseAuthException catch (error) {
