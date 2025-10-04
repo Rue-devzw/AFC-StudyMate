@@ -48,27 +48,14 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         _sessionSeconds = seconds;
       });
     });
+    final initialUserId = ref.read(activeUserIdProvider);
+    _handleActiveUserChange(initialUserId);
+
     ref.listen<String?>(
       activeUserIdProvider,
       (previous, next) {
-        if (!mounted) {
-          return;
-        }
-        if (next == null || next.isEmpty) {
-          setState(() {
-            _userId = null;
-            _progress = null;
-          });
-          _progressSubscription?.close();
-          _progressSubscription = null;
-          return;
-        }
-        if (next != _userId) {
-          _userId = next;
-          _subscribeToProgress(next);
-        }
+        _handleActiveUserChange(next);
       },
-      fireImmediately: true,
     );
   }
 
@@ -81,14 +68,14 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
 
   void _subscribeToProgress(String userId) {
     _progressSubscription?.close();
-    _progressSubscription = ref.listen<AsyncValue<LessonProgress?>>(
+    _progressSubscription = ref.listenManual<AsyncValue<LessonProgress?>>(
       lessonProgressProvider(
         LessonProgressRequest(
           userId: userId,
           lessonId: widget.lesson.id,
         ),
       ),
-      (previous, next) {
+      (next) {
         next.whenData((value) {
           if (!mounted) {
             return;
@@ -100,6 +87,25 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
       },
       fireImmediately: true,
     );
+  }
+
+  void _handleActiveUserChange(String? next) {
+    if (!mounted) {
+      return;
+    }
+    if (next == null || next.isEmpty) {
+      setState(() {
+        _userId = null;
+        _progress = null;
+      });
+      _progressSubscription?.close();
+      _progressSubscription = null;
+      return;
+    }
+    if (next != _userId) {
+      _userId = next;
+      _subscribeToProgress(next);
+    }
   }
 
   bool _canHostLesson(LocalAccount? account) {
