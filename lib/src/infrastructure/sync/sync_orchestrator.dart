@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:drift/drift.dart' show InsertMode, Value;
+import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:workmanager/workmanager.dart';
@@ -300,16 +300,16 @@ class SyncOrchestrator {
     await _db.transaction(() async {
       final existing = await (_db.select(_db.notes)
             ..where((tbl) =>
-                (tbl as dynamic).id.equals(change.noteId) &
-                (tbl as dynamic).userId.equals(change.userId)))
+                tbl.id.equals(change.noteId) &
+                tbl.userId.equals(change.userId)))
           .getSingleOrNull();
       final localUpdatedAt = existing?.updatedAt ?? 0;
       if (change.deleted) {
         if (existing != null && change.updatedAt >= localUpdatedAt) {
           await (_db.delete(_db.notes)
                 ..where((tbl) =>
-                    (tbl as dynamic).id.equals(change.noteId) &
-                    (tbl as dynamic).userId.equals(change.userId)))
+                    tbl.id.equals(change.noteId) &
+                    tbl.userId.equals(change.userId)))
             .go();
           await _syncDao.markNoteSynced(change.noteId, change.updatedAt,
               userId: change.userId);
@@ -329,9 +329,9 @@ class SyncOrchestrator {
                 app_db.NoteRevisionsCompanion.insert(
                   noteId: existing.id,
                   version: existing.version,
-                  text: existing.text,
+                  revisionText: existing.noteText,
                   updatedAt: existing.updatedAt,
-                ) as dynamic,
+                ),
                 mode: InsertMode.insertOrReplace,
               );
         }
@@ -343,18 +343,18 @@ class SyncOrchestrator {
                 bookId: Value(change.bookId),
                 chapter: Value(change.chapter),
                 verse: Value(change.verse),
-                text: Value(change.text),
+                noteText: Value(change.text),
                 version: Value(change.version),
                 updatedAt: Value(change.updatedAt),
-              ) as dynamic,
+              ),
             );
         await _db.into(_db.noteRevisions).insert(
               app_db.NoteRevisionsCompanion.insert(
                 noteId: change.noteId,
                 version: change.version,
-                text: change.text,
+                revisionText: change.text,
                 updatedAt: change.updatedAt,
-              ) as dynamic,
+              ),
               mode: InsertMode.insertOrReplace,
             );
         await _syncDao.markNoteSynced(change.noteId, change.updatedAt,
@@ -365,7 +365,7 @@ class SyncOrchestrator {
           reason: 'local_newer',
           remoteSnapshot: change.toJson(),
         );
-      } else if (existing != null && existing.text != change.text) {
+      } else if (existing != null && existing.noteText != change.text) {
         await _syncDao.markNoteConflict(
           change.noteId,
           reason: 'content_mismatch',

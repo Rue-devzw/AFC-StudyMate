@@ -76,7 +76,7 @@ class BibleRepositoryImpl implements BibleRepository {
             bookId: row.bookId,
             chapter: row.chapter,
             verse: row.verse,
-            text: row.text,
+            text: row.verseText,
           ),
         )
         .toList();
@@ -124,13 +124,13 @@ class BibleRepositoryImpl implements BibleRepository {
     return rows
         .map(
           (row) => BibleSearchResult(
-            verse: BibleVerse(
-              translationId: row.translationId,
-              bookId: row.bookId,
-              chapter: row.chapter,
-              verse: row.verse,
-              text: row.text,
-            ),
+              verse: BibleVerse(
+                translationId: row.translationId,
+                bookId: row.bookId,
+                chapter: row.chapter,
+                verse: row.verse,
+                text: row.text,
+              ),
             snippet: row.snippet,
             rank: row.rank,
           ),
@@ -184,9 +184,9 @@ class BibleRepositoryImpl implements BibleRepository {
               id: translation.id,
               name: translation.name,
               language: translation.language,
-              languageName: translation.languageName,
+              languageName: Value(translation.languageName),
               version: translation.version,
-              copyright: translation.copyright,
+              copyright: Value(translation.copyright),
               source: Value(translation.source),
               installedAt:
                   translation.installedAt.millisecondsSinceEpoch,
@@ -206,7 +206,7 @@ class BibleRepositoryImpl implements BibleRepository {
                 bookId: verse.bookId,
                 chapter: verse.chapter,
                 verse: verse.verse,
-                text: verse.text,
+                verseText: verse.text,
               ),
             );
         await _db.batch((batch) {

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/annotations/entities.dart';
@@ -59,7 +60,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
     await _dao.insertBookmark(
       BookmarksCompanion.insert(
         id: id,
-        userId: userId,
+        userId: Value(userId),
         translationId: location.translationId,
         bookId: location.bookId,
         chapter: location.chapter,
@@ -115,7 +116,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
     await _dao.upsertHighlight(
       HighlightsCompanion.insert(
         id: id,
-        userId: userId,
+        userId: Value(userId),
         translationId: highlight.location.translationId,
         bookId: highlight.location.bookId,
         chapter: highlight.location.chapter,
@@ -200,12 +201,12 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
       await _dao.insertNote(
         NotesCompanion.insert(
           id: id,
-          userId: userId,
+          userId: Value(userId),
           translationId: location.translationId,
           bookId: location.bookId,
           chapter: location.chapter,
           verse: location.verse,
-          text: text,
+          noteText: text,
           version: 1,
           updatedAt: now.millisecondsSinceEpoch,
         ),
@@ -214,7 +215,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
         NoteRevisionsCompanion.insert(
           noteId: id,
           version: 1,
-          text: text,
+          revisionText: text,
           updatedAt: now.millisecondsSinceEpoch,
         ),
       );
@@ -245,7 +246,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
             'bookId': location.bookId,
             'chapter': location.chapter,
             'verse': location.verse,
-            'text': text,
+          'text': text,
             'version': 1,
             'updatedAt': now.millisecondsSinceEpoch,
           },
@@ -267,7 +268,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
       NoteRevisionsCompanion.insert(
         noteId: existing.id,
         version: newVersion,
-        text: text,
+        revisionText: text,
         updatedAt: now.millisecondsSinceEpoch,
       ),
     );
@@ -354,7 +355,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
         .map(
           (row) => NoteHistoryEntry(
             version: row.version,
-            text: row.text,
+            text: row.revisionText,
             updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
           ),
         )
@@ -378,7 +379,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
     await _dao.updateNote(
       noteId,
       userId,
-      previous.text,
+      previous.revisionText,
       newVersion,
       now.millisecondsSinceEpoch,
     );
@@ -386,7 +387,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
       NoteRevisionsCompanion.insert(
         noteId: noteId,
         version: newVersion,
-        text: previous.text,
+        revisionText: previous.revisionText,
         updatedAt: now.millisecondsSinceEpoch,
       ),
     );
@@ -423,7 +424,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
     return mapped;
   }
 
-  Bookmark _mapBookmark(BookmarksData row) {
+  Bookmark _mapBookmark(BookmarkRow row) {
     return Bookmark(
       id: row.id,
       location: VerseLocation(
@@ -436,7 +437,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
     );
   }
 
-  Highlight _mapHighlight(HighlightsData row) {
+  Highlight _mapHighlight(HighlightRow row) {
     return Highlight(
       id: row.id,
       location: VerseLocation(
@@ -450,12 +451,12 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
     );
   }
 
-  Note _mapNote(NotesData row, List<NoteRevisionsData> historyRows) {
+  Note _mapNote(NoteRow row, List<NoteRevisionRow> historyRows) {
     final history = historyRows
         .map(
           (entry) => NoteHistoryEntry(
             version: entry.version,
-            text: entry.text,
+            text: entry.revisionText,
             updatedAt: DateTime.fromMillisecondsSinceEpoch(entry.updatedAt),
           ),
         )
@@ -468,7 +469,7 @@ class AnnotationRepositoryImpl implements AnnotationRepository {
         chapter: row.chapter,
         verse: row.verse,
       ),
-      text: row.text,
+      text: row.noteText,
       version: row.version,
       updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
       history: history,

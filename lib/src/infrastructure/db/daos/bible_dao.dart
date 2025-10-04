@@ -7,7 +7,7 @@ class BibleDao {
 
   final AppDatabase _db;
 
-  Future<List<TranslationsData>> getTranslations() {
+  Future<List<Translation>> getTranslations() {
     final query = _db.select(_db.translations)
       ..orderBy([
         (tbl) => OrderingTerm.asc(tbl.languageName),
@@ -16,7 +16,7 @@ class BibleDao {
     return query.get();
   }
 
-  Future<List<Verse>> getChapter(
+  Future<List<VerseRow>> getChapter(
     String translationId,
     int bookId,
     int chapter,
@@ -32,7 +32,7 @@ class BibleDao {
     return query.get();
   }
 
-  Stream<List<Verse>> watchChapter(
+  Stream<List<VerseRow>> watchChapter(
     String translationId,
     int bookId,
     int chapter,
@@ -77,7 +77,7 @@ class BibleDao {
       ..writeln('  v.book_id,')
       ..writeln('  v.chapter,')
       ..writeln('  v.verse,')
-      ..writeln('  v.text,')
+      ..writeln('  v.verse_text AS text,')
       ..writeln(
           "  snippet($tableName, 0, '<b>', '</b>', '…', 10) AS snippet,")
       ..writeln('  bm25($tableName) AS rank')

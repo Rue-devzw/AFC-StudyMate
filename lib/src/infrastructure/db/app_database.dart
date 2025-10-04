@@ -26,13 +26,15 @@ class Translations extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('VerseRow')
 class Verses extends Table {
   TextColumn get translationId =>
       text().references(Translations, #id, onDelete: KeyAction.cascade)();
   IntColumn get bookId => integer()();
   IntColumn get chapter => integer()();
   IntColumn get verse => integer()();
-  TextColumn get text => text()();
+  @DriftColumnName('text')
+  TextColumn get verseText => text()();
 
   @override
   Set<Column> get primaryKey => {translationId, bookId, chapter, verse};
@@ -52,6 +54,7 @@ class LocalUsers extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('BookmarkRow')
 class Bookmarks extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()
@@ -68,6 +71,7 @@ class Bookmarks extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('HighlightRow')
 class Highlights extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()
@@ -85,6 +89,7 @@ class Highlights extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('NoteRow')
 class Notes extends Table {
   TextColumn get id => text()();
   TextColumn get userId => text()
@@ -95,7 +100,8 @@ class Notes extends Table {
   IntColumn get bookId => integer()();
   IntColumn get chapter => integer()();
   IntColumn get verse => integer()();
-  TextColumn get text => text()();
+  @DriftColumnName('text')
+  TextColumn get noteText => text()();
   IntColumn get version => integer().withDefault(const Constant(1))();
   IntColumn get updatedAt => integer()();
 
@@ -103,11 +109,13 @@ class Notes extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+@DataClassName('NoteRevisionRow')
 class NoteRevisions extends Table {
   TextColumn get noteId =>
       text().references(Notes, #id, onDelete: KeyAction.cascade)();
   IntColumn get version => integer()();
-  TextColumn get text => text()();
+  @DriftColumnName('text')
+  TextColumn get revisionText => text()();
   IntColumn get updatedAt => integer()();
 
   @override
@@ -411,7 +419,7 @@ class ModerationActionsTable extends Table {
 @DataClassName('ModerationAppealRow')
 class ModerationAppealsTable extends Table {
   TextColumn get id => text()();
-  TextColumn get actionId => text()()
+  TextColumn get actionId => text()
       .references(ModerationActionsTable, #id, onDelete: KeyAction.cascade)();
   TextColumn get classId => text()();
   TextColumn get userId => text()();
@@ -582,15 +590,15 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(localUsers, localUsers.preferredCohortTitle);
             await m.addColumn(localUsers, localUsers.preferredLessonClass);
             await m.addColumn(localUsers, localUsers.isActive);
-            await m.customStatement(
+            await m.issueCustomStatement(
                 "UPDATE local_users SET is_active = CASE WHEN id = 'local-user' THEN 1 ELSE 0 END");
-            await m.customStatement(
+            await m.issueCustomStatement(
                 "INSERT INTO local_users (id, display_name, avatar_url, preferred_cohort_id, preferred_cohort_title, preferred_lesson_class, is_active) SELECT 'local-user', NULL, NULL, NULL, NULL, NULL, 1 WHERE NOT EXISTS (SELECT 1 FROM local_users WHERE id = 'local-user')");
-            await m.customStatement(
+            await m.issueCustomStatement(
                 "UPDATE bookmarks SET user_id = 'local-user' WHERE user_id IS NULL");
-            await m.customStatement(
+            await m.issueCustomStatement(
                 "UPDATE highlights SET user_id = 'local-user' WHERE user_id IS NULL");
-            await m.customStatement(
+            await m.issueCustomStatement(
                 "UPDATE notes SET user_id = 'local-user' WHERE user_id IS NULL");
           }
           if (from < 8) {
@@ -687,7 +695,7 @@ class AppDatabase extends _$AppDatabase {
                     bookId: verse.bookId,
                     chapter: verse.chapter,
                     verse: verse.verse,
-                    text: verse.text,
+                    verseText: verse.text,
                   ),
                 )
                 .toList(),
@@ -756,7 +764,7 @@ class AppDatabase extends _$AppDatabase {
       "WHEN NEW.translation_id = '$escapedId'\n"
       'BEGIN\n'
       '  INSERT INTO $tableName(rowid, text, book_id, chapter, verse)\n'
-      '  VALUES(NEW.rowid, NEW.text, NEW.book_id, NEW.chapter, NEW.verse);\n'
+      '  VALUES(NEW.rowid, NEW.verse_text, NEW.book_id, NEW.chapter, NEW.verse);\n'
       'END',
     );
 
@@ -767,9 +775,9 @@ class AppDatabase extends _$AppDatabase {
       "  AND NEW.translation_id = '$escapedId'\n"
       'BEGIN\n'
       "  INSERT INTO $tableName($tableName, rowid, text, book_id, chapter, verse)\n"
-      '  VALUES(\'delete\', OLD.rowid, OLD.text, OLD.book_id, OLD.chapter, OLD.verse);\n'
+      '  VALUES(\'delete\', OLD.rowid, OLD.verse_text, OLD.book_id, OLD.chapter, OLD.verse);\n'
       '  INSERT INTO $tableName(rowid, text, book_id, chapter, verse)\n'
-      '  VALUES(NEW.rowid, NEW.text, NEW.book_id, NEW.chapter, NEW.verse);\n'
+      '  VALUES(NEW.rowid, NEW.verse_text, NEW.book_id, NEW.chapter, NEW.verse);\n'
       'END',
     );
 
@@ -779,7 +787,7 @@ class AppDatabase extends _$AppDatabase {
       "WHEN OLD.translation_id = '$escapedId'\n"
       'BEGIN\n'
       "  INSERT INTO $tableName($tableName, rowid, text, book_id, chapter, verse)\n"
-      '  VALUES(\'delete\', OLD.rowid, OLD.text, OLD.book_id, OLD.chapter, OLD.verse);\n'
+      '  VALUES(\'delete\', OLD.rowid, OLD.verse_text, OLD.book_id, OLD.chapter, OLD.verse);\n'
       'END',
     );
   }
@@ -800,7 +808,7 @@ class AppDatabase extends _$AppDatabase {
     await dropSearchIndex(translationId);
     await _createFtsInfrastructure(translationId);
     await customStatement(
-      'INSERT INTO $tableName(rowid, text, book_id, chapter, verse) SELECT rowid, text, book_id, chapter, verse FROM verses WHERE translation_id = ?',
+      'INSERT INTO $tableName(rowid, text, book_id, chapter, verse) SELECT rowid, verse_text, book_id, chapter, verse FROM verses WHERE translation_id = ?',
       [translationId],
     );
   }
