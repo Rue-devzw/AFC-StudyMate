@@ -120,7 +120,10 @@ final secureStorageProvider = Provider<SecureStorageService>((ref) {
   return SecureStorageService();
 });
 
+Future<void>? _googleSignInInitialization;
+
 final googleSignInProvider = Provider<GoogleSignIn>((ref) {
+  final instance = GoogleSignIn.instance;
   String? clientId;
   if (!kIsWeb && Firebase.apps.isNotEmpty) {
     final app = Firebase.app();
@@ -136,16 +139,21 @@ final googleSignInProvider = Provider<GoogleSignIn>((ref) {
         clientId = null;
     }
   }
-  return GoogleSignIn(
-    clientId: clientId,
-    scopes: const ['email', 'profile'],
-  );
+
+  _googleSignInInitialization ??= instance.initialize(clientId: clientId);
+  return instance;
+});
+
+final googleSignInInitializationProvider = Provider<Future<void>>((ref) {
+  ref.watch(googleSignInProvider);
+  return _googleSignInInitialization ?? Future<void>.value();
 });
 
 final firebaseAuthServiceProvider = Provider<FirebaseAuthService>((ref) {
   return FirebaseAuthService(
     auth: ref.watch(firebaseAuthProvider),
     googleSignIn: ref.watch(googleSignInProvider),
+    googleSignInInitialization: ref.watch(googleSignInInitializationProvider),
   );
 });
 
