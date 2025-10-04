@@ -178,7 +178,7 @@ class LessonIngestionPipeline {
         final existing = await (_db.select(_db.lessons)
               ..where((tbl) => tbl.feedId.equals(feedId)))
             .get();
-        final existingIds = existing.map((row) => row.id).toSet();
+        final existingIds = existing.map<String>((row) => row.id).toSet();
         final incomingIds = lessons.map((lesson) => lesson.id).toSet();
         final toDelete = existingIds.difference(incomingIds);
         if (toDelete.isNotEmpty) {
