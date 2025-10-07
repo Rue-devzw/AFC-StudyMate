@@ -49,12 +49,20 @@ class AppDatabase {
         final entries = (decoded['primary_pals_lessons'] as List<dynamic>? ?? <dynamic>[])
             .whereType<Map<String, dynamic>>();
         return entries.map(_mapPrimaryPalsLesson).toList();
+      case Track.answer:
+        // Answer lessons are not yet available in the local dataset.
+        return <Lesson>[];
       case Track.search:
         if (decoded is! List) {
           return <Lesson>[];
         }
         final entries = decoded.whereType<Map<String, dynamic>>();
         return entries.map(_mapSearchLesson).toList();
+      case Track.discovery:
+      case Track.daybreak:
+        // Discovery and Daybreak lessons are sourced remotely and are not part of the
+        // bundled assets yet, so we return an empty collection for now.
+        return <Lesson>[];
     }
   }
 
