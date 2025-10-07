@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../drift/app_database.dart';
@@ -20,26 +21,53 @@ class LessonRepository {
 
   Future<Lesson?> getCurrentSundayLesson(Track track) async {
     final lessons = await database.getLessonsByTrack(track);
-    return lessons.firstWhere(
+    final matchingLesson = lessons.firstWhereOrNull(
       (lesson) => lesson.weekIndex == scheduleService.currentSundayWeekIndex,
-      orElse: () => lessons.isEmpty ? null : lessons.first,
     );
+
+    if (matchingLesson != null) {
+      return matchingLesson;
+    }
+
+    if (lessons.isEmpty) {
+      return null;
+    }
+
+    return lessons.first;
   }
 
   Future<Lesson?> getDiscoveryLesson() async {
     final lessons = await database.getLessonsByTrack(Track.discovery);
-    return lessons.firstWhere(
+    final matchingLesson = lessons.firstWhereOrNull(
       (lesson) => lesson.weekIndex == scheduleService.discoveryWeekIndex,
-      orElse: () => lessons.isEmpty ? null : lessons.first,
     );
+
+    if (matchingLesson != null) {
+      return matchingLesson;
+    }
+
+    if (lessons.isEmpty) {
+      return null;
+    }
+
+    return lessons.first;
   }
 
   Future<Lesson?> getDaybreakLesson() async {
     final lessons = await database.getLessonsByTrack(Track.daybreak);
-    return lessons.firstWhere(
+    final matchingLesson = lessons.firstWhereOrNull(
       (lesson) => lesson.dayIndex == scheduleService.daybreakIndex,
-      orElse: () => lessons.isEmpty ? null : lessons.first,
     );
+
+    if (matchingLesson != null) {
+      return matchingLesson;
+    }
+
+    if (lessons.isEmpty) {
+      return null;
+    }
+
+    return lessons.first;
   }
 
   Future<List<Lesson>> getLessonsForTrack(Track track) => database.getLessonsByTrack(track);
