@@ -12,7 +12,6 @@ final bibleServiceProvider = Provider<BibleService>((ref) {
 
 class BibleService {
   Future<List<Verse>> getPassage(BibleRef ref, Translation translation) async {
-    final dbPath = translation == Translation.kjv ? 'assets/db/kjv.db' : 'assets/db/shona_bible.db';
     // In this scaffold implementation we simply return a placeholder verse to
     // demonstrate offline capability without requiring platform-specific
     // SQLite bindings during bootstrapping. The bundled databases are still

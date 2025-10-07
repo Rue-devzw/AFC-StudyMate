@@ -37,10 +37,12 @@ class OnboardingScreen extends HookConsumerWidget {
               decoration: const InputDecoration(labelText: 'Who are you?'),
               onChanged: (Role? value) => controller.updateRole(value ?? state.role),
               items: Role.values
-                  .map((role) => DropdownMenuItem<Role>(
-                        value: role,
-                        child: Text(role.name.replaceAllMapped(RegExp(r'([A-Z])'), (match) => ' ${match[0]}').trim()),
-                      ))
+                  .map(
+                    (role) => DropdownMenuItem<Role>(
+                      value: role,
+                      child: Text(_formatRoleName(role.name)),
+                    ),
+                  )
                   .toList(),
             ),
             const SizedBox(height: 16),
@@ -111,5 +113,10 @@ class OnboardingScreen extends HookConsumerWidget {
       default:
         return track.name;
     }
+  }
+
+  String _formatRoleName(String name) {
+    // Insert space before each uppercase letter except the first character
+    return name.replaceAllMapped(RegExp('([A-Z])'), (match) => ' ${match[0]}').trim();
   }
 }

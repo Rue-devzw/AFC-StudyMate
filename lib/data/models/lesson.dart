@@ -68,8 +68,19 @@ class Lesson {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, track, title, Object.hashAll(bibleReferences), Object.hashAll(payload.entries), weekIndex, dayIndex);
+  int get hashCode {
+    final sortedPayloadEntries = payload.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+    return Object.hash(
+      id,
+      track,
+      title,
+      Object.hashAll(bibleReferences),
+      Object.hashAll(sortedPayloadEntries.map((e) => Object.hash(e.key, e.value))),
+      weekIndex,
+      dayIndex,
+    );
+  }
 
   @override
   bool operator ==(Object other) {

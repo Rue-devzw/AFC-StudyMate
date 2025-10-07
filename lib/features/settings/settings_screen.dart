@@ -15,7 +15,7 @@ class SettingsScreen extends StatelessWidget {
           SwitchListTile.adaptive(
             title: const Text('Dark theme'),
             subtitle: const Text('Match system appearance'),
-            value: MediaQuery.of(context).platformBrightness == Brightness.dark,
+            value: Theme.of(context).brightness == Brightness.dark,
             onChanged: (_) {},
           ),
           const ListTile(

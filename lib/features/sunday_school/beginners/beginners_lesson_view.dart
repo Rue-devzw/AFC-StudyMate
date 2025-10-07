@@ -35,7 +35,7 @@ class BeginnersLessonView extends StatelessWidget {
                     padding: const EdgeInsets.all(24),
                     child: Text(
                       section['sectionContent'] as String? ?? 'Content coming soon.',
-                      textScaleFactor: 1.2,
+                      textScaler: TextScaler.linear(1.2),
                     ),
                   ),
                 ),

@@ -27,7 +27,10 @@ class VerseCard extends StatelessWidget {
               style: Theme.of(context).textTheme.labelSmall,
             ),
             const SizedBox(height: 12),
-            const Text('Verse text displayed here.', textScaleFactor: 1.1),
+            const Text(
+              'Verse text displayed here.',
+              textScaler: TextScaler.linear(1.1),
+            ),
           ],
         ),
       ),
