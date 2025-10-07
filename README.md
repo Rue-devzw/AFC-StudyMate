@@ -9,6 +9,18 @@ AFC StudyMate is an offline-first Flutter application designed to support Aposto
 3. Copy curriculum assets into place (already provided in `assets/data/` and `assets/db/`).
 4. Launch with `flutter run --dart-define=USE_FIREBASE=false` to disable Firebase during local development.
 
+> **Platform shells**
+>
+> The `android/`, `ios/`, `windows/`, and other platform folders are not checked in to keep the repository lean. Before running
+> the app on a specific platform, generate the platform scaffolding once per machine:
+>
+> ```sh
+> flutter create . --platforms=windows,android,ios,macos,linux,web
+> ```
+>
+> This command is idempotent—it will only create the missing platform directories and leave your Dart code untouched. After the
+> scaffolding is in place, `flutter run` will detect the relevant devices (for example `-d windows`) and start the app normally.
+
 ## Firebase configuration
 
 Firebase is optional in debug. Create `lib/firebase_options.dart` via `flutterfire configure` for production builds. The following services are expected:
