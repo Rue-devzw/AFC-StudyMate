@@ -1,6 +1,5 @@
 import 'package:meta/meta.dart';
 
-import 'enums.dart';
 
 @immutable
 class BibleRef {

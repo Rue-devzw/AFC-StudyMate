@@ -1,14 +1,13 @@
 import 'dart:async';
 
+import 'package:afc_studymate/app_router.dart';
+import 'package:afc_studymate/data/services/app_bootstrap_service.dart';
+import 'package:afc_studymate/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:timezone/data/latest.dart' as tz;
-
-import 'app_router.dart';
-import 'data/services/app_bootstrap_service.dart';
-import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
