@@ -1,13 +1,11 @@
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/data/repositories/lesson_repository.dart';
+import 'package:afc_studymate/features/sunday_school/beginners/beginners_lesson_view.dart';
+import 'package:afc_studymate/features/sunday_school/primary_pals/primary_pals_lesson_view.dart';
+import 'package:afc_studymate/features/sunday_school/search/search_lesson_view.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../../data/models/enums.dart';
-import '../../data/models/lesson.dart';
-import '../../data/repositories/lesson_repository.dart';
-import '../../widgets/completion_banner.dart';
-import 'beginners/beginners_lesson_view.dart';
-import 'primary_pals/primary_pals_lesson_view.dart';
-import 'search/search_lesson_view.dart';
 
 class SundaySchoolScreen extends HookConsumerWidget {
   const SundaySchoolScreen({super.key});
