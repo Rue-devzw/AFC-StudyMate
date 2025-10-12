@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
 
+import '../models/bible_book.dart';
 import '../models/bible_ref.dart';
 import '../models/enums.dart';
 import '../models/verse.dart';
@@ -26,12 +27,19 @@ class BibleService {
   final Future<Directory> Function() _supportDirectoryBuilder;
   final Map<Translation, Future<Database>> _databaseCache = <Translation, Future<Database>>{};
 
-  Future<List<String>> getBooks(Translation translation) async {
+  Future<List<BibleBook>> getBooks(Translation translation) async {
     final db = await _databaseFor(translation);
     final result = db.select(
-      'SELECT DISTINCT book_name_text FROM bible_verses ORDER BY book ASC',
+      'SELECT DISTINCT book, book_name_text FROM bible_verses ORDER BY book ASC',
     );
-    return result.map((row) => row['book_name_text'] as String).toList();
+    return result.map((row) {
+      final rawNumber = row['book'];
+      final number = rawNumber is int ? rawNumber : (rawNumber as num).toInt();
+      return BibleBook(
+        number: number,
+        name: row['book_name_text'] as String,
+      );
+    }).toList();
   }
 
   Future<int> getChapterCount(String book, Translation translation) async {
