@@ -463,7 +463,8 @@ class _PassageSelectorSheet extends HookWidget {
       <Object?>[books],
     );
     final newTestamentBooks = useMemoized(
-      () => books.where((book) => book.testament == Testament.new).toList(),
+      () =>
+          books.where((book) => book.testament == Testament.newTestament).toList(),
       <Object?>[books],
     );
 

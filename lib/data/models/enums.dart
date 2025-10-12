@@ -4,4 +4,7 @@ enum Role { learner, parent, teacher, admin, anonymous }
 
 enum Translation { kjv, shona }
 
-enum Testament { old, new }
+enum Testament {
+  old,
+  newTestament,
+}
