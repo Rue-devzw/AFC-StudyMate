@@ -45,6 +45,21 @@ class BibleRef {
     );
   }
 
+  String get displayText {
+    final buffer = StringBuffer('$book $chapter');
+
+    if (verseStart != null) {
+      buffer.write(':${verseStart!}');
+
+      final end = verseEnd;
+      if (end != null && end != verseStart) {
+        buffer.write('-$end');
+      }
+    }
+
+    return buffer.toString();
+  }
+
   @override
   int get hashCode => Object.hash(book, chapter, verseStart, verseEnd);
 
