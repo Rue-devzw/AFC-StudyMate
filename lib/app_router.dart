@@ -81,7 +81,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/home/bible',
                 name: BibleScreen.routeName,
-                builder: (BuildContext context, GoRouterState state) => const BibleScreen(),
+                builder: (BuildContext context, GoRouterState state) {
+                  final params = state.uri.queryParameters;
+                  final chapter = int.tryParse(params['chapter'] ?? '');
+                  final verse = int.tryParse(params['verse'] ?? '');
+                  return BibleScreen(
+                    initialBook: params['book'],
+                    initialChapter: chapter,
+                    highlightVerse: verse,
+                  );
+                },
               ),
             ],
           ),
