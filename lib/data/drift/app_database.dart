@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/bible_ref.dart';
 import '../models/enums.dart';
@@ -23,6 +22,7 @@ class AppDatabase {
   final Map<String, Note> _notes = <String, Note>{};
   final Map<String, String> _settings = <String, String>{};
   final Map<String, MemoryVerse> _memoryVerses = <String, MemoryVerse>{};
+  Future<void>? _seedFuture;
 
   Future<void> importLessonsFromAsset(String assetPath, Track track) async {
     final raw = await rootBundle.loadString(assetPath);
@@ -236,16 +236,17 @@ class AppDatabase {
     return fallback;
   }
 
-  Future<void> seedFromAssets() async {
-    final prefs = await SharedPreferences.getInstance();
-    final seeded = prefs.getBool('seeded_v1') ?? false;
-    if (seeded) {
+  Future<void> seedFromAssets() {
+    return _seedFuture ??= _performSeed();
+  }
+
+  Future<void> _performSeed() async {
+    if (_lessons.isNotEmpty) {
       return;
     }
     await importLessonsFromAsset('assets/data/beginners_lessons.json', Track.beginners);
     await importLessonsFromAsset('assets/data/primary_pals_lessons.json', Track.primaryPals);
     await importLessonsFromAsset('assets/data/search_lessons.json', Track.search);
-    await prefs.setBool('seeded_v1', true);
   }
 
   Future<List<Lesson>> getLessonsByTrack(Track track) async {
