@@ -9,5 +9,6 @@ class BibleBook {
   final int number;
   final String name;
 
-  Testament get testament => number <= 39 ? Testament.old : Testament.new;
+  Testament get testament =>
+      number <= 39 ? Testament.old : Testament.newTestament;
 }
