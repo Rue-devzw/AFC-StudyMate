@@ -9,6 +9,8 @@ import 'features/home/home_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/settings/settings_screen.dart';
+import 'features/sunday_school/all_lessons/sunday_school_all_lessons_screen.dart';
+import 'features/sunday_school/all_lessons/sunday_school_lesson_detail_screen.dart';
 import 'features/sunday_school/sunday_school_screen.dart';
 import 'features/today/today_screen.dart';
 
@@ -43,6 +45,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/home/sunday-school',
                 name: SundaySchoolScreen.routeName,
                 builder: (BuildContext context, GoRouterState state) => const SundaySchoolScreen(),
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'all-lessons',
+                    name: SundaySchoolAllLessonsScreen.routeName,
+                    builder: (BuildContext context, GoRouterState state) =>
+                        const SundaySchoolAllLessonsScreen(),
+                  ),
+                  GoRoute(
+                    path: 'lessons/:lessonId',
+                    name: SundaySchoolLessonDetailScreen.routeName,
+                    builder: (BuildContext context, GoRouterState state) {
+                      final lessonId = state.pathParameters['lessonId'];
+                      if (lessonId == null) {
+                        return const SundaySchoolAllLessonsScreen();
+                      }
+                      return SundaySchoolLessonDetailScreen(lessonId: lessonId);
+                    },
+                  ),
+                ],
               ),
             ],
           ),
