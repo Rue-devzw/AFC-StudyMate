@@ -10,9 +10,18 @@ import '../../data/models/verse.dart';
 import '../../data/services/bible_service.dart';
 
 class BibleScreen extends HookConsumerWidget {
-  const BibleScreen({super.key});
+  const BibleScreen({
+    super.key,
+    this.initialBook,
+    this.initialChapter,
+    this.highlightVerse,
+  });
 
   static const String routeName = 'bible';
+
+  final String? initialBook;
+  final int? initialChapter;
+  final int? highlightVerse;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,9 +30,10 @@ class BibleScreen extends HookConsumerWidget {
 
     final translation = useState(Translation.kjv);
     final selectedBookNumber = useState<int?>(null);
-    final selectedChapter = useState(1);
+    final selectedChapter = useState(initialChapter ?? 1);
     final fontScale = useState(1.0);
     final readingFontStyle = useState(ReadingFontStyle.serif);
+    final hasAppliedInitialSelection = useRef<bool>(false);
 
     final booksFuture = useMemoized(
       () => bibleService.getBooks(translation.value),
@@ -31,6 +41,8 @@ class BibleScreen extends HookConsumerWidget {
     );
     final booksSnapshot = useFuture(booksFuture);
 
+    final normalizedInitialBook = initialBook?.toLowerCase();
+    final initialChapterNumber = initialChapter;
     useEffect(() {
       final books = booksSnapshot.data;
       if (books == null || books.isEmpty) {
@@ -38,13 +50,33 @@ class BibleScreen extends HookConsumerWidget {
         return null;
       }
 
-      final current = selectedBookNumber.value;
-      if (current == null || books.firstWhereOrNull((book) => book.number == current) == null) {
-        selectedBookNumber.value = books.first.number;
-        selectedChapter.value = 1;
+      if (!hasAppliedInitialSelection.value) {
+        if (normalizedInitialBook != null) {
+          final match = books.firstWhereOrNull(
+            (book) => book.name.toLowerCase() == normalizedInitialBook,
+          );
+          if (match != null) {
+            selectedBookNumber.value = match.number;
+            selectedChapter.value = initialChapterNumber ?? selectedChapter.value;
+            hasAppliedInitialSelection.value = true;
+            return null;
+          }
+        }
+
+        final current = selectedBookNumber.value;
+        if (current == null || books.firstWhereOrNull((book) => book.number == current) == null) {
+          selectedBookNumber.value = books.first.number;
+        }
+        hasAppliedInitialSelection.value = true;
+      } else {
+        final current = selectedBookNumber.value;
+        if (current == null || books.firstWhereOrNull((book) => book.number == current) == null) {
+          selectedBookNumber.value = books.first.number;
+          selectedChapter.value = 1;
+        }
       }
       return null;
-    }, <Object?>[booksSnapshot.data]);
+    }, <Object?>[booksSnapshot.data, normalizedInitialBook, initialChapterNumber]);
 
     final selectedBook = booksSnapshot.data?.firstWhereOrNull(
       (book) => book.number == selectedBookNumber.value,
@@ -193,11 +225,16 @@ class BibleScreen extends HookConsumerWidget {
                   color: theme.colorScheme.primary,
                 );
 
+                final highlightVerseNumber = highlightVerse;
+                final shouldHighlightBook = normalizedInitialBook != null &&
+                    selectedBook?.name.toLowerCase() == normalizedInitialBook &&
+                    (initialChapterNumber == null || selectedChapter.value == initialChapterNumber);
+
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
                   itemBuilder: (BuildContext context, int index) {
                     final verse = verses[index];
-                    return SelectableText.rich(
+                    final verseText = SelectableText.rich(
                       TextSpan(
                         children: <InlineSpan>[
                           WidgetSpan(
@@ -214,6 +251,17 @@ class BibleScreen extends HookConsumerWidget {
                           TextSpan(text: verse.text, style: textStyle),
                         ],
                       ),
+                    );
+                    if (highlightVerseNumber == null || !shouldHighlightBook || verse.verse != highlightVerseNumber) {
+                      return verseText;
+                    }
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: verseText,
                     );
                   },
                   separatorBuilder: (_, __) => const SizedBox(height: 16),
