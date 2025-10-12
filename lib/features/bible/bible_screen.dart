@@ -757,7 +757,7 @@ class _BibleSearchDelegate extends SearchDelegate<BibleRef?> {
   }
 
   BibleRef? _parseReference(String reference) {
-    final match = RegExp('^(.+)\s+(\d+):(\d+)$').firstMatch(reference.trim());
+    final match = RegExp(r'^(.+)\s+(\d+):(\d+)$').firstMatch(reference.trim());
     if (match == null) {
       return null;
     }
@@ -776,4 +776,3 @@ class _BibleSearchDelegate extends SearchDelegate<BibleRef?> {
 enum ReadingFontStyle { serif, sans }
 
 int _tabIndexFor(int bookNumber) => bookNumber <= 39 ? 0 : 1;
-
