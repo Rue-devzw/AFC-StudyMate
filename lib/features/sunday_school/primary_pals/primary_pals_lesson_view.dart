@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import '../../../data/models/lesson.dart';
@@ -24,14 +25,48 @@ class _PrimaryPalsLessonViewState extends State<PrimaryPalsLessonView> {
         .toList();
 
     final pages = <Widget>[
-      _StorySection(story: story),
-      ...activities.map((activity) => ActivityMatching(data: Map<String, String>.from(activity['data'] as Map? ?? {}))),
-      _ParentsCorner(payload: payload),
+      KeyedSubtree(key: const ValueKey('story'), child: _StorySection(story: story)),
+      ...activities.mapIndexed(
+        (index, activity) => KeyedSubtree(
+          key: ValueKey('activity_$index'),
+          child: ActivityMatching(
+            data: Map<String, String>.from(activity['data'] as Map? ?? {}),
+          ),
+        ),
+      ),
+      KeyedSubtree(key: const ValueKey('parents'), child: _ParentsCorner(payload: payload)),
     ];
+
+    final labels = <String>[
+      'Story adventure',
+      ...activities.map((activity) => activity['title'] as String? ?? 'Activity'),
+      'Parent connection',
+    ];
+    final total = pages.length;
+    if (total == 0) {
+      return const Center(child: Text('Lesson content will appear here soon.'));
+    }
+    final currentIndex = _index % total;
+    final currentLabel = labels[currentIndex];
 
     return Column(
       children: <Widget>[
-        Expanded(child: pages[_index % pages.length]),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              currentLabel,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+        ),
+        Expanded(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: pages[currentIndex],
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -40,7 +75,7 @@ class _PrimaryPalsLessonViewState extends State<PrimaryPalsLessonView> {
               ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    _index = (_index - 1) % pages.length;
+                    _index = (_index - 1) % total;
                   });
                 },
                 child: const Text('Back'),
@@ -48,7 +83,7 @@ class _PrimaryPalsLessonViewState extends State<PrimaryPalsLessonView> {
               ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    _index = (_index + 1) % pages.length;
+                    _index = (_index + 1) % total;
                   });
                 },
                 child: const Text('Next'),
@@ -62,30 +97,44 @@ class _PrimaryPalsLessonViewState extends State<PrimaryPalsLessonView> {
 }
 
 class _StorySection extends StatelessWidget {
-  const _StorySection({required this.story});
+  const _StorySection({required this.story, super.key});
 
   final List<String> story;
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    final paragraphs = story.where((paragraph) => paragraph.trim().isNotEmpty).toList();
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
-      itemCount: story.length,
-      itemBuilder: (BuildContext context, int index) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Text(
-            story[index],
-            style: Theme.of(context).textTheme.bodyLarge,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              for (final paragraph in paragraphs) ...<Widget>[
+                Text(
+                  paragraph,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (paragraphs.isEmpty)
+                Text(
+                  'Story content will be available soon.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
 
 class _ParentsCorner extends StatelessWidget {
-  const _ParentsCorner({required this.payload});
+  const _ParentsCorner({required this.payload, super.key});
 
   final Map<String, dynamic> payload;
 

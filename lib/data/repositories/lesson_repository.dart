@@ -21,19 +21,24 @@ class LessonRepository {
 
   Future<Lesson?> getCurrentSundayLesson(Track track) async {
     final lessons = await database.getLessonsByTrack(track);
-    final matchingLesson = lessons.firstWhereOrNull(
-      (lesson) => lesson.weekIndex == scheduleService.currentSundayWeekIndex,
+    if (lessons.isEmpty) {
+      return null;
+    }
+
+    final sortedLessons = lessons.toList()
+      ..sort((a, b) => (a.weekIndex ?? 0).compareTo(b.weekIndex ?? 0));
+    final targetWeek = scheduleService.weekIndexForTrack(track);
+
+    final matchingLesson = sortedLessons.firstWhereOrNull(
+      (lesson) => (lesson.weekIndex ?? -1) == targetWeek,
     );
 
     if (matchingLesson != null) {
       return matchingLesson;
     }
 
-    if (lessons.isEmpty) {
-      return null;
-    }
-
-    return lessons.first;
+    return sortedLessons.firstWhereOrNull((lesson) => (lesson.weekIndex ?? 0) > targetWeek) ??
+        sortedLessons.last;
   }
 
   Future<Lesson?> getDiscoveryLesson() async {

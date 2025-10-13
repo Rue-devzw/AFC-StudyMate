@@ -40,15 +40,22 @@ class AppDatabase {
         if (decoded is! List) {
           return <Lesson>[];
         }
-        final entries = decoded.whereType<Map<String, dynamic>>();
-        return entries.map(_mapBeginnersLesson).toList();
+        final entries = decoded.whereType<Map<String, dynamic>>().toList();
+        return <Lesson>[
+          for (var index = 0; index < entries.length; index++)
+            _mapBeginnersLesson(entries[index], index),
+        ];
       case Track.primaryPals:
         if (decoded is! Map<String, dynamic>) {
           return <Lesson>[];
         }
         final entries = (decoded['primary_pals_lessons'] as List<dynamic>? ?? <dynamic>[])
-            .whereType<Map<String, dynamic>>();
-        return entries.map(_mapPrimaryPalsLesson).toList();
+            .whereType<Map<String, dynamic>>()
+            .toList();
+        return <Lesson>[
+          for (var index = 0; index < entries.length; index++)
+            _mapPrimaryPalsLesson(entries[index], index),
+        ];
       case Track.answer:
         // Answer lessons are not yet available in the local dataset.
         return <Lesson>[];
@@ -56,8 +63,11 @@ class AppDatabase {
         if (decoded is! List) {
           return <Lesson>[];
         }
-        final entries = decoded.whereType<Map<String, dynamic>>();
-        return entries.map(_mapSearchLesson).toList();
+        final entries = decoded.whereType<Map<String, dynamic>>().toList();
+        return <Lesson>[
+          for (var index = 0; index < entries.length; index++)
+            _mapSearchLesson(entries[index], index),
+        ];
       case Track.discovery:
       case Track.daybreak:
         // Discovery and Daybreak lessons are sourced remotely and are not part of the
@@ -66,7 +76,7 @@ class AppDatabase {
     }
   }
 
-  Lesson _mapBeginnersLesson(Map<String, dynamic> raw) {
+  Lesson _mapBeginnersLesson(Map<String, dynamic> raw, int index) {
     final sections = (raw['lessonSections'] as List<dynamic>? ?? <dynamic>[])
         .whereType<Map<String, dynamic>>()
         .map((section) => <String, dynamic>{
@@ -88,12 +98,12 @@ class AppDatabase {
       title: _coerceString(raw['title'] ?? raw['lessonTitle'], 'Lesson'),
       bibleReferences: _parseBibleReferences(raw['bibleReference']),
       payload: payload,
-      weekIndex: raw['weekIndex'] as int?,
+      weekIndex: (raw['weekIndex'] as int?) ?? index,
       dayIndex: raw['dayIndex'] as int?,
     );
   }
 
-  Lesson _mapPrimaryPalsLesson(Map<String, dynamic> raw) {
+  Lesson _mapPrimaryPalsLesson(Map<String, dynamic> raw, int index) {
     final activities = (raw['activities'] as List<dynamic>? ?? <dynamic>[])
         .whereType<Map<String, dynamic>>()
         .map((activity) => <String, dynamic>{
@@ -130,12 +140,12 @@ class AppDatabase {
       title: _coerceString(raw['title'], 'Lesson'),
       bibleReferences: _parseBibleReferences(raw['bibleReference']),
       payload: payload,
-      weekIndex: raw['weekIndex'] as int?,
+      weekIndex: (raw['weekIndex'] as int?) ?? index,
       dayIndex: raw['dayIndex'] as int?,
     );
   }
 
-  Lesson _mapSearchLesson(Map<String, dynamic> raw) {
+  Lesson _mapSearchLesson(Map<String, dynamic> raw, int index) {
     final sections = (raw['lessonSections'] as List<dynamic>? ?? <dynamic>[])
         .whereType<Map<String, dynamic>>();
 
@@ -171,7 +181,7 @@ class AppDatabase {
       title: _coerceString(raw['title'] ?? raw['lessonTitle'], 'Lesson'),
       bibleReferences: _parseBibleReferences(raw['bibleReference']),
       payload: payload,
-      weekIndex: raw['weekIndex'] as int?,
+      weekIndex: (raw['weekIndex'] as int?) ?? index,
       dayIndex: raw['dayIndex'] as int?,
     );
   }

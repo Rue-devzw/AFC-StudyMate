@@ -44,18 +44,7 @@ class _SearchLessonViewState extends State<SearchLessonView> {
     return ListView(
       padding: const EdgeInsets.all(24),
       children: <Widget>[
-        Text(widget.lesson.title, style: textTheme.headlineSmall),
-        if (widget.lesson.weekIndex != null) ...<Widget>[
-          const SizedBox(height: 4),
-          Text(
-            'Lesson ${widget.lesson.weekIndex}',
-            style: textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-        const SizedBox(height: 24),
+        const SizedBox(height: 12),
         if (keyVerse.isNotEmpty) ...<Widget>[
           _KeyVerseBlock(text: keyVerse),
           const SizedBox(height: 24),
