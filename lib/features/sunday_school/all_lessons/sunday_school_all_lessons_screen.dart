@@ -286,9 +286,10 @@ class _LessonCard extends StatelessWidget {
     final summary = _lessonSummary(lesson);
     final topic = _topicForLesson(lesson);
 
+    final lessonNumber = (lesson.weekIndex ?? 0) + 1;
     final chips = <Widget>[
       Chip(label: Text(_trackLabel(lesson.track))),
-      if (lesson.weekIndex != null) Chip(label: Text('Week ${lesson.weekIndex}')),
+      Chip(label: Text('Lesson $lessonNumber')),
       ...lesson.bibleReferences.take(3).map((BibleRef ref) => Chip(label: Text(ref.displayText))),
       if ((lesson.bibleReferences.length) > 3)
         Chip(label: Text('+${lesson.bibleReferences.length - 3} refs')),
@@ -364,7 +365,7 @@ class _LessonCard extends StatelessWidget {
 
 String? _lessonSubtitle(Lesson lesson) {
   final parts = <String>[
-    if (lesson.weekIndex != null) 'Week ${lesson.weekIndex}',
+    'Lesson ${(lesson.weekIndex ?? 0) + 1}',
     if (lesson.bibleReferences.isNotEmpty)
       lesson.bibleReferences.map((ref) => ref.displayText).join(' • '),
   ].where((element) => element.isNotEmpty).toList();
