@@ -14,28 +14,38 @@ import 'features/sunday_school/all_lessons/sunday_school_lesson_detail_screen.da
 import 'features/sunday_school/sunday_school_screen.dart';
 import 'features/today/today_screen.dart';
 
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/onboarding',
     routes: <RouteBase>[
       GoRoute(
         path: '/onboarding',
         name: OnboardingScreen.routeName,
-        builder: (BuildContext context, GoRouterState state) {
-          return const OnboardingScreen();
-        },
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            const NoTransitionPage(
+              child: OnboardingScreen(),
+            ),
       ),
       StatefulShellRoute.indexedStack(
-        builder: (BuildContext context, GoRouterState state, StatefulNavigationShell shell) {
-          return HomeShell(shell: shell);
-        },
+        builder:
+            (
+              BuildContext context,
+              GoRouterState state,
+              StatefulNavigationShell shell,
+            ) {
+              return HomeShell(shell: shell);
+            },
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
                 path: '/home/today',
                 name: TodayScreen.routeName,
-                builder: (BuildContext context, GoRouterState state) => const TodayScreen(),
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    FadeTransitionPage(child: TodayScreen()),
               ),
             ],
           ),
@@ -44,7 +54,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/home/sunday-school',
                 name: SundaySchoolScreen.routeName,
-                builder: (BuildContext context, GoRouterState state) => const SundaySchoolScreen(),
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    FadeTransitionPage(child: SundaySchoolScreen()),
                 routes: <RouteBase>[
                   GoRoute(
                     path: 'all-lessons',
@@ -72,7 +83,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/home/discovery',
                 name: DiscoveryScreen.routeName,
-                builder: (BuildContext context, GoRouterState state) => const DiscoveryScreen(),
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    FadeTransitionPage(child: DiscoveryScreen()),
               ),
             ],
           ),
@@ -81,14 +93,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/home/bible',
                 name: BibleScreen.routeName,
-                builder: (BuildContext context, GoRouterState state) {
+                pageBuilder: (BuildContext context, GoRouterState state) {
                   final params = state.uri.queryParameters;
                   final chapter = int.tryParse(params['chapter'] ?? '');
                   final verse = int.tryParse(params['verse'] ?? '');
-                  return BibleScreen(
-                    initialBook: params['book'],
-                    initialChapter: chapter,
-                    highlightVerse: verse,
+                  return FadeTransitionPage(
+                    child: BibleScreen(
+                      initialBook: params['book'],
+                      initialChapter: chapter,
+                      highlightVerse: verse,
+                    ),
                   );
                 },
               ),
@@ -99,7 +113,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/home/profile',
                 name: ProfileScreen.routeName,
-                builder: (BuildContext context, GoRouterState state) => const ProfileScreen(),
+                pageBuilder: (BuildContext context, GoRouterState state) =>
+                    FadeTransitionPage(child: ProfileScreen()),
               ),
             ],
           ),
@@ -108,16 +123,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         name: SettingsScreen.routeName,
-        builder: (BuildContext context, GoRouterState state) => const SettingsScreen(),
+        builder: (BuildContext context, GoRouterState state) =>
+            const SettingsScreen(),
       ),
       GoRoute(
         path: '/daybreak/:date',
         name: DaybreakScreen.routeName,
         builder: (BuildContext context, GoRouterState state) {
-          final date = DateTime.tryParse(state.pathParameters['date'] ?? '') ?? DateTime.now();
+          final date =
+              DateTime.tryParse(state.pathParameters['date'] ?? '') ??
+              DateTime.now();
           return DaybreakScreen(date: date);
         },
       ),
     ],
   );
 });
+
+class FadeTransitionPage extends CustomTransitionPage<void> {
+  FadeTransitionPage({required Widget child})
+    : super(
+        child: child,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+      );
+}

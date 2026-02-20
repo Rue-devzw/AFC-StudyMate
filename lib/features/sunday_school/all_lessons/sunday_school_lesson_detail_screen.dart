@@ -15,22 +15,31 @@ class SundaySchoolLessonDetailScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncLesson = ref.watch(_lessonProvider(lessonId));
-    final lessonTitle = asyncLesson.maybeWhen(
-      data: (lesson) => lesson?.title,
-      orElse: () => null,
-    );
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text(lessonTitle ?? 'Lesson details')),
       body: asyncLesson.when(
         data: (lesson) {
           if (lesson == null) {
             return const Center(child: Text('Lesson not found.'));
           }
-          return SundaySchoolLessonView(lesson: lesson);
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar.medium(
+                title: Text(lesson.title),
+                stretch: true,
+                surfaceTintColor: theme.colorScheme.surface,
+              ),
+              SliverToBoxAdapter(
+                child: SundaySchoolLessonView(lesson: lesson),
+              ),
+              const SliverPadding(padding: EdgeInsets.only(bottom: 60)),
+            ],
+          );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('Something went wrong: $error')),
+        error: (error, stackTrace) =>
+            Center(child: Text('Something went wrong: $error')),
       ),
     );
   }

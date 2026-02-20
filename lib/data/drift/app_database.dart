@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/bible_ref.dart';
 import '../models/enums.dart';
@@ -21,8 +24,60 @@ class AppDatabase {
   final List<Progress> _progress = <Progress>[];
   final Map<String, Note> _notes = <String, Note>{};
   final Map<String, String> _settings = <String, String>{};
-  final Map<String, MemoryVerse> _memoryVerses = <String, MemoryVerse>{};
+  Map<String, MemoryVerse> _memoryVerses = <String, MemoryVerse>{};
   Future<void>? _seedFuture;
+  late SharedPreferences _prefs;
+  File? _dataFile;
+
+  Future<void> _ensureInitialized() async {
+    if (_dataFile != null) return;
+    final directory = await getApplicationDocumentsDirectory();
+    _dataFile = File('${directory.path}/user_data.json');
+    _prefs = await SharedPreferences.getInstance();
+
+    if (await _dataFile!.exists()) {
+      try {
+        final content = await _dataFile!.readAsString();
+        final data = jsonDecode(content) as Map<String, dynamic>;
+
+        final progressList = data['progress'] as List<dynamic>? ?? [];
+        _progress.clear();
+        _progress.addAll(
+          progressList.map((e) => Progress.fromJson(e as Map<String, dynamic>)),
+        );
+
+        final notesMap = data['notes'] as Map<String, dynamic>? ?? {};
+        _notes.clear();
+        _notes.addAll(
+          notesMap.map(
+            (k, v) => MapEntry(k, Note.fromJson(v as Map<String, dynamic>)),
+          ),
+        );
+
+        final memoryVersesMap =
+            data['memoryVerses'] as Map<String, dynamic>? ?? {};
+        _memoryVerses.clear();
+        _memoryVerses.addAll(
+          memoryVersesMap.map(
+            (k, v) =>
+                MapEntry(k, MemoryVerse.fromJson(v as Map<String, dynamic>)),
+          ),
+        );
+      } catch (e) {
+        // Silently fail or log error
+      }
+    }
+  }
+
+  Future<void> _saveToDisk() async {
+    if (_dataFile == null) await _ensureInitialized();
+    final data = {
+      'progress': _progress.map((e) => e.toJson()).toList(),
+      'notes': _notes.map((k, v) => MapEntry(k, v.toJson())),
+      'memoryVerses': _memoryVerses.map((k, v) => MapEntry(k, v.toJson())),
+    };
+    await _dataFile!.writeAsString(jsonEncode(data));
+  }
 
   Future<void> importLessonsFromAsset(String assetPath, Track track) async {
     final raw = await rootBundle.loadString(assetPath);
@@ -49,9 +104,10 @@ class AppDatabase {
         if (decoded is! Map<String, dynamic>) {
           return <Lesson>[];
         }
-        final entries = (decoded['primary_pals_lessons'] as List<dynamic>? ?? <dynamic>[])
-            .whereType<Map<String, dynamic>>()
-            .toList();
+        final entries =
+            (decoded['primary_pals_lessons'] as List<dynamic>? ?? <dynamic>[])
+                .whereType<Map<String, dynamic>>()
+                .toList();
         return <Lesson>[
           for (var index = 0; index < entries.length; index++)
             _mapPrimaryPalsLesson(entries[index], index),
@@ -79,12 +135,14 @@ class AppDatabase {
   Lesson _mapBeginnersLesson(Map<String, dynamic> raw, int index) {
     final sections = (raw['lessonSections'] as List<dynamic>? ?? <dynamic>[])
         .whereType<Map<String, dynamic>>()
-        .map((section) => <String, dynamic>{
-              'sectionTitle': section['sectionTitle'] ?? 'Story moment',
-              'sectionContent': section['sectionContent'] ?? '',
-              'sectionType': section['sectionType'] ?? 'text',
-              'imagePath': section['imagePath'],
-            })
+        .map(
+          (section) => <String, dynamic>{
+            'sectionTitle': section['sectionTitle'] ?? 'Story moment',
+            'sectionContent': section['sectionContent'] ?? '',
+            'sectionType': section['sectionType'] ?? 'text',
+            'imagePath': section['imagePath'],
+          },
+        )
         .toList();
 
     final payload = <String, dynamic>{
@@ -106,24 +164,34 @@ class AppDatabase {
   Lesson _mapPrimaryPalsLesson(Map<String, dynamic> raw, int index) {
     final activities = (raw['activities'] as List<dynamic>? ?? <dynamic>[])
         .whereType<Map<String, dynamic>>()
-        .map((activity) => <String, dynamic>{
-              'type': activity['type'] ?? 'Activity',
-              'title': activity['title'],
-              'instructions': activity['instructions'] ?? '',
-              'data': activity,
-            })
+        .map(
+          (activity) => <String, dynamic>{
+            'type': activity['type'] ?? 'Activity',
+            'title': activity['title'],
+            'instructions': activity['instructions'] ?? '',
+            'data': activity,
+          },
+        )
         .toList();
 
-    final parentGuideRaw = raw['parent_guide'] as Map<String, dynamic>? ?? <String, dynamic>{};
-    final parentCorner = (parentGuideRaw['parents_corner'] as Map<String, dynamic>? ?? <String, dynamic>{})['text'];
-    final familyDevotions = (parentGuideRaw['family_devotions'] as Map<String, dynamic>? ?? <String, dynamic>{});
-    final devotions = (familyDevotions['verses'] as List<dynamic>? ?? <dynamic>[])
-        .whereType<Map<String, dynamic>>()
-        .map((devotion) => <String, dynamic>{
-              'day': devotion['day'] ?? '',
-              'prompt': devotion['reference'] ?? '',
-            })
-        .toList();
+    final parentGuideRaw =
+        raw['parent_guide'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final parentCorner =
+        (parentGuideRaw['parents_corner'] as Map<String, dynamic>? ??
+        <String, dynamic>{})['text'];
+    final familyDevotions =
+        (parentGuideRaw['family_devotions'] as Map<String, dynamic>? ??
+        <String, dynamic>{});
+    final devotions =
+        (familyDevotions['verses'] as List<dynamic>? ?? <dynamic>[])
+            .whereType<Map<String, dynamic>>()
+            .map(
+              (devotion) => <String, dynamic>{
+                'day': devotion['day'] ?? '',
+                'prompt': devotion['reference'] ?? '',
+              },
+            )
+            .toList();
 
     final payload = <String, dynamic>{
       'story': (raw['story'] as List<dynamic>? ?? <dynamic>[]).cast<String>(),
@@ -200,7 +268,8 @@ class AppDatabase {
             return null;
           }
 
-          final verses = reference['verses'] as String? ?? reference['verse'] as String?;
+          final verses =
+              reference['verses'] as String? ?? reference['verse'] as String?;
           final range = _parseVerseRange(verses);
 
           return BibleRef(
@@ -219,7 +288,9 @@ class AppDatabase {
       return (null, null);
     }
 
-    final matches = RegExp(r'\d+').allMatches(value).map((match) => int.parse(match.group(0)!)).toList();
+    final matches = RegExp(
+      r'\d+',
+    ).allMatches(value).map((match) => int.parse(match.group(0)!)).toList();
     if (matches.isEmpty) {
       return (null, null);
     }
@@ -251,12 +322,22 @@ class AppDatabase {
   }
 
   Future<void> _performSeed() async {
+    await _ensureInitialized();
     if (_lessons.isNotEmpty) {
       return;
     }
-    await importLessonsFromAsset('assets/data/beginners_lessons.json', Track.beginners);
-    await importLessonsFromAsset('assets/data/primary_pals_lessons.json', Track.primaryPals);
-    await importLessonsFromAsset('assets/data/search_lessons.json', Track.search);
+    await importLessonsFromAsset(
+      'assets/data/beginners_lessons.json',
+      Track.beginners,
+    );
+    await importLessonsFromAsset(
+      'assets/data/primary_pals_lessons.json',
+      Track.primaryPals,
+    );
+    await importLessonsFromAsset(
+      'assets/data/search_lessons.json',
+      Track.search,
+    );
   }
 
   Future<List<Lesson>> getLessonsByTrack(Track track) async {
@@ -267,33 +348,57 @@ class AppDatabase {
   Future<Lesson?> getLesson(String id) async => _lessons[id];
 
   Future<void> upsertProgress(Progress progress) async {
-    _progress.removeWhere((item) => item.lessonId == progress.lessonId && item.userId == progress.userId);
+    await _ensureInitialized();
+    _progress.removeWhere(
+      (item) =>
+          item.lessonId == progress.lessonId && item.userId == progress.userId,
+    );
     _progress.add(progress);
+    await _saveToDisk();
   }
 
   Future<List<Progress>> getProgressForUser(String userId) async {
+    await _ensureInitialized();
     return _progress.where((item) => item.userId == userId).toList();
   }
 
   Future<void> upsertNote(Note note) async {
+    await _ensureInitialized();
     _notes[note.id] = note;
+    await _saveToDisk();
   }
 
   Future<List<Note>> getNotes(String userId, BibleRef ref) async {
+    await _ensureInitialized();
     return _notes.values
-        .where((note) => note.userId == userId && note.ref.book == ref.book && note.ref.chapter == ref.chapter)
+        .where(
+          (note) =>
+              note.userId == userId &&
+              note.ref.book == ref.book &&
+              note.ref.chapter == ref.chapter,
+        )
         .toList();
   }
 
   Future<void> upsertSetting(String key, String value) async {
+    await _ensureInitialized();
+    await _prefs.setString(key, value);
     _settings[key] = value;
   }
 
-  Future<String?> getSetting(String key) async => _settings[key];
-
-  Future<void> upsertMemoryVerse(MemoryVerse verse) async {
-    _memoryVerses[verse.id] = verse;
+  Future<String?> getSetting(String key) async {
+    await _ensureInitialized();
+    return _prefs.getString(key) ?? _settings[key];
   }
 
-  Future<List<MemoryVerse>> getMemoryVerses() async => _memoryVerses.values.toList();
+  Future<void> upsertMemoryVerse(MemoryVerse verse) async {
+    await _ensureInitialized();
+    _memoryVerses[verse.id] = verse;
+    await _saveToDisk();
+  }
+
+  Future<List<MemoryVerse>> getMemoryVerses() async {
+    await _ensureInitialized();
+    return _memoryVerses.values.toList();
+  }
 }
