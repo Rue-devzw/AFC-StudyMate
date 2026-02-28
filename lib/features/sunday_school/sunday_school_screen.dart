@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import '../../data/drift/app_database.dart';
+
 import '../../data/models/bible_ref.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/lesson.dart';
+import '../../data/models/user_profile.dart';
 import '../../data/repositories/lesson_repository.dart';
 import '../../widgets/design_system_widgets.dart';
 import '../../widgets/linked_verse.dart';
@@ -19,6 +22,8 @@ class SundaySchoolScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    const userId = 'local_user';
+    final asyncProfile = ref.watch(_userProfileProvider(userId));
     final asyncLessons = ref.watch(_currentLessonsProvider);
     final theme = Theme.of(context);
 
@@ -45,7 +50,18 @@ class SundaySchoolScreen extends HookConsumerWidget {
       body: SafeArea(
         child: asyncLessons.when(
           data: (lessons) {
-            final hasLesson = _sundaySchoolTracks.any(
+            final profile = asyncProfile.value;
+            final targetTrack = profile?.targetTrack ?? Track.search;
+            final isTeacher = profile?.role == Role.teacher;
+
+            // Reorder tracks to put targetTrack first
+            final orderedTracks = List<Track>.from(_sundaySchoolTracks);
+            if (orderedTracks.contains(targetTrack)) {
+              orderedTracks.remove(targetTrack);
+              orderedTracks.insert(0, targetTrack);
+            }
+
+            final hasLesson = orderedTracks.any(
               (track) => lessons[track] != null,
             );
             if (!hasLesson) {
@@ -60,15 +76,28 @@ class SundaySchoolScreen extends HookConsumerWidget {
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
               children: <Widget>[
+                if (isTeacher) ...[
+                  Text(
+                    'TEACHER\'S TOOLKIT',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: Colors.white70,
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _TeacherToolkitCard(),
+                  const SizedBox(height: 32),
+                ],
                 Text(
-                  'This week\'s Sunday School snapshot',
+                  isTeacher ? 'CLASS PREVIEWS' : 'MY LESSON SNAPSHOT',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 16),
-                ..._sundaySchoolTracks.map(
+                ...orderedTracks.map(
                   (track) => _LessonPreviewCard(
                     track: track,
                     lesson: lessons[track],
@@ -370,3 +399,107 @@ IconData _trackIcon(Track track) {
       return Icons.menu_book_outlined;
   }
 }
+
+class _TeacherToolkitCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return PremiumGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.school_rounded,
+                color: theme.colorScheme.primaryContainer,
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Class Management',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _ToolkitItem(
+            icon: Icons.description_outlined,
+            label: 'Teacher\'s Guides (PDF)',
+            subtitle: 'Access depth-material & hints',
+            onTap: () {
+              // TODO: Navigate to Teacher Guides browser/viewer
+            },
+          ),
+          const Divider(height: 24, color: Colors.white10),
+          _ToolkitItem(
+            icon: Icons.people_outline_rounded,
+            label: 'Class Roster',
+            subtitle: 'Track student attendance (Mock)',
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ToolkitItem extends StatelessWidget {
+  const _ToolkitItem({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white70, size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: Colors.white24),
+        ],
+      ),
+    );
+  }
+}
+
+final _userProfileProvider = FutureProvider.family<UserProfile?, String>((
+  ref,
+  userId,
+) {
+  return ref.read(appDatabaseProvider).getProfile(userId);
+});

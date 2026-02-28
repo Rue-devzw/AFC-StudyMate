@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/drift/app_database.dart';
 import '../../data/models/enums.dart';
+import '../../data/models/user_profile.dart';
 
 final onboardingControllerProvider =
     StateNotifierProvider<OnboardingController, OnboardingState>((ref) {
@@ -11,6 +12,7 @@ final onboardingControllerProvider =
 
 class OnboardingState {
   const OnboardingState({
+    this.name = '',
     this.role = Role.learner,
     this.track = Track.beginners,
     this.translation = Translation.kjv,
@@ -20,6 +22,7 @@ class OnboardingState {
     this.completed = false,
   });
 
+  final String name;
   final Role role;
   final Track track;
   final Translation translation;
@@ -29,6 +32,7 @@ class OnboardingState {
   final bool completed;
 
   OnboardingState copyWith({
+    String? name,
     Role? role,
     Track? track,
     Translation? translation,
@@ -38,6 +42,7 @@ class OnboardingState {
     bool? completed,
   }) {
     return OnboardingState(
+      name: name ?? this.name,
       role: role ?? this.role,
       track: track ?? this.track,
       translation: translation ?? this.translation,
@@ -55,6 +60,8 @@ class OnboardingController extends StateNotifier<OnboardingState> {
 
   final AppDatabase database;
 
+  void updateName(String name) => state = state.copyWith(name: name);
+
   void updateRole(Role role) => state = state.copyWith(role: role);
 
   void updateTrack(Track track) => state = state.copyWith(track: track);
@@ -71,6 +78,16 @@ class OnboardingController extends StateNotifier<OnboardingState> {
   void toggleDaily(bool value) => state = state.copyWith(dailyReminder: value);
 
   Future<void> complete() async {
+    final profile = UserProfile(
+      userId: 'local_user',
+      name: state.name.isEmpty ? 'Learner' : state.name,
+      role: state.role,
+      targetTrack: state.track,
+      translation: state.translation,
+    );
+    await database.upsertProfile(profile);
+
+    // Also keep loose settings for legacy/compatibility if needed
     await database.upsertSetting('role', state.role.name);
     await database.upsertSetting('track', state.track.name);
     await database.upsertSetting('translation', state.translation.name);

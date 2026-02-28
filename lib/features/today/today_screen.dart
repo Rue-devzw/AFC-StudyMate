@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../data/drift/app_database.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/lesson.dart';
+import '../../data/models/user_profile.dart';
 import '../../data/repositories/lesson_repository.dart';
 import '../../widgets/design_system_widgets.dart';
 
@@ -14,35 +15,39 @@ class DashboardData {
     this.daybreak,
     this.sundaySchool,
     this.discovery,
-    required this.userTrack,
+    required this.profile,
   });
   final Lesson? daybreak;
   final Lesson? sundaySchool;
   final Lesson? discovery;
-  final Track userTrack;
+  final UserProfile profile;
 }
 
 final _dashboardDataProvider = FutureProvider<DashboardData>((ref) async {
+  const userId = 'local_user';
   final db = ref.read(appDatabaseProvider);
   final repo = ref.read(lessonRepositoryProvider);
 
   final daybreak = await repo.getDaybreakLesson();
 
-  final trackSetting = await db.getSetting('track');
-  final trackName = trackSetting ?? Track.search.name;
-  final track = Track.values.firstWhere(
-    (t) => t.name == trackName,
-    orElse: () => Track.search,
-  );
+  final profile =
+      await db.getProfile(userId) ??
+      const UserProfile(
+        userId: userId,
+        name: 'Learner',
+        role: Role.learner,
+        targetTrack: Track.search,
+        translation: Translation.kjv,
+      );
 
-  final sundaySchool = await repo.getCurrentSundayLesson(track);
+  final sundaySchool = await repo.getCurrentSundayLesson(profile.targetTrack);
   final discovery = await repo.getDiscoveryLesson();
 
   return DashboardData(
     daybreak: daybreak,
     sundaySchool: sundaySchool,
     discovery: discovery,
-    userTrack: track,
+    profile: profile,
   );
 });
 
@@ -130,7 +135,9 @@ class TodayScreen extends HookConsumerWidget {
                   const SizedBox(height: 12),
                   _ActionCard(
                     title: 'Sunday School',
-                    subtitle: data.sundaySchool?.title ?? 'This week\'s lesson',
+                    subtitle: data.sundaySchool != null
+                        ? '${_trackLabel(data.profile.targetTrack)}: ${data.sundaySchool!.title}'
+                        : 'This week\'s lesson',
                     icon: Icons.school_rounded,
                     color: Colors.blueAccent.shade200,
                     onTap: () {
@@ -176,6 +183,19 @@ class TodayScreen extends HookConsumerWidget {
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
+  }
+
+  String _trackLabel(Track track) {
+    switch (track) {
+      case Track.beginners:
+        return 'Beginners';
+      case Track.primaryPals:
+        return 'Primary Pals';
+      case Track.search:
+        return 'Search';
+      default:
+        return track.name[0].toUpperCase() + track.name.substring(1);
+    }
   }
 }
 

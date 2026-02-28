@@ -375,6 +375,64 @@ class PremiumGlassCard extends StatelessWidget {
   }
 }
 
+class PremiumTextField extends StatelessWidget {
+  const PremiumTextField({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    this.hint,
+    this.keyboardType,
+  });
+
+  final String label;
+  final String value;
+  final ValueChanged<String> onChanged;
+  final String? hint;
+  final TextInputType? keyboardType;
+
+  @override
+  Widget build(BuildContext context) {
+    return PremiumGlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              letterSpacing: 1.2,
+              color: Colors.white70,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            onChanged: onChanged,
+            keyboardType: keyboardType,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+            controller: TextEditingController(text: value)
+              ..selection = TextSelection.fromPosition(
+                TextPosition(offset: value.length),
+              ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class PremiumScaffold extends StatelessWidget {
   const PremiumScaffold({
     super.key,

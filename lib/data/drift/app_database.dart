@@ -13,6 +13,7 @@ import '../models/memory_verse.dart';
 import '../models/note.dart';
 import '../models/progress.dart';
 import '../models/journal_entry.dart';
+import '../models/user_profile.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
@@ -26,6 +27,7 @@ class AppDatabase {
   final Map<String, Note> _notes = <String, Note>{};
   final Map<String, JournalEntry> _journalEntries = <String, JournalEntry>{};
   final Map<String, String> _settings = <String, String>{};
+  UserProfile? _profile;
   Map<String, MemoryVerse> _memoryVerses = <String, MemoryVerse>{};
   Future<void>? _seedFuture;
   late SharedPreferences _prefs;
@@ -75,6 +77,12 @@ class AppDatabase {
                 MapEntry(k, JournalEntry.fromJson(v as Map<String, dynamic>)),
           ),
         );
+
+        if (data['profile'] != null) {
+          _profile = UserProfile.fromJson(
+            data['profile'] as Map<String, dynamic>,
+          );
+        }
       } catch (e) {
         // Silently fail or log error
       }
@@ -88,6 +96,7 @@ class AppDatabase {
       'notes': _notes.map((k, v) => MapEntry(k, v.toJson())),
       'memoryVerses': _memoryVerses.map((k, v) => MapEntry(k, v.toJson())),
       'journalEntries': _journalEntries.map((k, v) => MapEntry(k, v.toJson())),
+      'profile': _profile?.toJson(),
     };
     await _dataFile!.writeAsString(jsonEncode(data));
   }
@@ -507,5 +516,16 @@ class AppDatabase {
     final sorted = entries.toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return sorted;
+  }
+
+  Future<void> upsertProfile(UserProfile profile) async {
+    await _ensureInitialized();
+    _profile = profile;
+    await _saveToDisk();
+  }
+
+  Future<UserProfile?> getProfile(String userId) async {
+    await _ensureInitialized();
+    return _profile;
   }
 }

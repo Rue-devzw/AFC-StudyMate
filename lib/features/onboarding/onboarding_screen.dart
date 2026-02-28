@@ -91,13 +91,21 @@ class OnboardingScreen extends HookConsumerWidget {
                               'Help us tailor the content for your journey.',
                           child: Column(
                             children: [
+                              PremiumTextField(
+                                label: 'What is your name?',
+                                value: state.name,
+                                onChanged: (val) => controller.updateName(val),
+                                hint: 'e.g. Brother John',
+                              ),
+                              const SizedBox(height: 16),
                               _DropdownCard<Role>(
                                 label: 'Who are you?',
                                 value: state.role,
                                 items: Role.values,
                                 labelBuilder: (role) =>
                                     _formatRoleName(role.name),
-                                onChanged: (val) => controller.updateRole(val!),
+                                onChanged: (Role? val) =>
+                                    controller.updateRole(val!),
                               ),
                               const SizedBox(height: 16),
                               _DropdownCard<Track>(
