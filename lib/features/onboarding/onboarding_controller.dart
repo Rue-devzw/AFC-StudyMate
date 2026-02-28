@@ -1,11 +1,13 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/drift/app_database.dart';
 import '../../data/models/enums.dart';
 
-final onboardingControllerProvider = StateNotifierProvider<OnboardingController, OnboardingState>((ref) {
-  return OnboardingController(database: ref.read(appDatabaseProvider));
-});
+final onboardingControllerProvider =
+    StateNotifierProvider<OnboardingController, OnboardingState>((ref) {
+      return OnboardingController(database: ref.read(appDatabaseProvider));
+    });
 
 class OnboardingState {
   const OnboardingState({
@@ -48,7 +50,8 @@ class OnboardingState {
 }
 
 class OnboardingController extends StateNotifier<OnboardingState> {
-  OnboardingController({required this.database}) : super(const OnboardingState());
+  OnboardingController({required this.database})
+    : super(const OnboardingState());
 
   final AppDatabase database;
 
@@ -56,11 +59,14 @@ class OnboardingController extends StateNotifier<OnboardingState> {
 
   void updateTrack(Track track) => state = state.copyWith(track: track);
 
-  void updateTranslation(Translation translation) => state = state.copyWith(translation: translation);
+  void updateTranslation(Translation translation) =>
+      state = state.copyWith(translation: translation);
 
-  void toggleSunday(bool value) => state = state.copyWith(sundayReminder: value);
+  void toggleSunday(bool value) =>
+      state = state.copyWith(sundayReminder: value);
 
-  void toggleDiscovery(bool value) => state = state.copyWith(discoveryReminder: value);
+  void toggleDiscovery(bool value) =>
+      state = state.copyWith(discoveryReminder: value);
 
   void toggleDaily(bool value) => state = state.copyWith(dailyReminder: value);
 
@@ -68,6 +74,10 @@ class OnboardingController extends StateNotifier<OnboardingState> {
     await database.upsertSetting('role', state.role.name);
     await database.upsertSetting('track', state.track.name);
     await database.upsertSetting('translation', state.translation.name);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasCompletedSetup', true);
+
     state = state.copyWith(completed: true);
   }
 }

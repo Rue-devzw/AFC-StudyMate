@@ -37,7 +37,9 @@ class LessonRepository {
       return matchingLesson;
     }
 
-    return sortedLessons.firstWhereOrNull((lesson) => (lesson.weekIndex ?? 0) > targetWeek) ??
+    return sortedLessons.firstWhereOrNull(
+          (lesson) => (lesson.weekIndex ?? 0) > targetWeek,
+        ) ??
         sortedLessons.last;
   }
 
@@ -60,8 +62,12 @@ class LessonRepository {
 
   Future<Lesson?> getDaybreakLesson() async {
     final lessons = await database.getLessonsByTrack(Track.daybreak);
+    if (lessons.isEmpty) {
+      return null;
+    }
+    final targetIndex = scheduleService.daybreakIndex % lessons.length;
     final matchingLesson = lessons.firstWhereOrNull(
-      (lesson) => lesson.dayIndex == scheduleService.daybreakIndex,
+      (lesson) => lesson.dayIndex == targetIndex,
     );
 
     if (matchingLesson != null) {
@@ -75,7 +81,8 @@ class LessonRepository {
     return lessons.first;
   }
 
-  Future<List<Lesson>> getLessonsForTrack(Track track) => database.getLessonsByTrack(track);
+  Future<List<Lesson>> getLessonsForTrack(Track track) =>
+      database.getLessonsByTrack(track);
 
   Future<Lesson?> getLessonById(String id) => database.getLesson(id);
 }

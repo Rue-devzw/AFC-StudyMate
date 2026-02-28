@@ -452,6 +452,12 @@
       "languageVersion": "2.18"
     },
     {
+      "name": "google_fonts",
+      "rootUri": "file:///Users/Strive/.pub-cache/hosted/pub.dev/google_fonts-8.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.9"
+    },
+    {
       "name": "graphs",
       "rootUri": "file:///Users/Strive/.pub-cache/hosted/pub.dev/graphs-2.3.2",
       "packageUri": "lib/",
@@ -981,7 +987,7 @@
     },
     {
       "name": "uuid",
-      "rootUri": "file:///Users/Strive/.pub-cache/hosted/pub.dev/uuid-4.5.2",
+      "rootUri": "file:///Users/Strive/.pub-cache/hosted/pub.dev/uuid-4.5.3",
       "packageUri": "lib/",
       "languageVersion": "3.0"
     },

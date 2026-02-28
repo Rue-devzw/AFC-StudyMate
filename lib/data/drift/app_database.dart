@@ -12,6 +12,7 @@ import '../models/lesson.dart';
 import '../models/memory_verse.dart';
 import '../models/note.dart';
 import '../models/progress.dart';
+import '../models/journal_entry.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
@@ -23,6 +24,7 @@ class AppDatabase {
   final Map<String, Lesson> _lessons = <String, Lesson>{};
   final List<Progress> _progress = <Progress>[];
   final Map<String, Note> _notes = <String, Note>{};
+  final Map<String, JournalEntry> _journalEntries = <String, JournalEntry>{};
   final Map<String, String> _settings = <String, String>{};
   Map<String, MemoryVerse> _memoryVerses = <String, MemoryVerse>{};
   Future<void>? _seedFuture;
@@ -63,6 +65,16 @@ class AppDatabase {
                 MapEntry(k, MemoryVerse.fromJson(v as Map<String, dynamic>)),
           ),
         );
+
+        final journalEntriesMap =
+            data['journalEntries'] as Map<String, dynamic>? ?? {};
+        _journalEntries.clear();
+        _journalEntries.addAll(
+          journalEntriesMap.map(
+            (k, v) =>
+                MapEntry(k, JournalEntry.fromJson(v as Map<String, dynamic>)),
+          ),
+        );
       } catch (e) {
         // Silently fail or log error
       }
@@ -75,6 +87,7 @@ class AppDatabase {
       'progress': _progress.map((e) => e.toJson()).toList(),
       'notes': _notes.map((k, v) => MapEntry(k, v.toJson())),
       'memoryVerses': _memoryVerses.map((k, v) => MapEntry(k, v.toJson())),
+      'journalEntries': _journalEntries.map((k, v) => MapEntry(k, v.toJson())),
     };
     await _dataFile!.writeAsString(jsonEncode(data));
   }
@@ -125,10 +138,23 @@ class AppDatabase {
             _mapSearchLesson(entries[index], index),
         ];
       case Track.discovery:
+        if (decoded is! List) {
+          return <Lesson>[];
+        }
+        final entries = decoded.whereType<Map<String, dynamic>>().toList();
+        return <Lesson>[
+          for (var index = 0; index < entries.length; index++)
+            _mapDiscoveryLesson(entries[index], index),
+        ];
       case Track.daybreak:
-        // Discovery and Daybreak lessons are sourced remotely and are not part of the
-        // bundled assets yet, so we return an empty collection for now.
-        return <Lesson>[];
+        if (decoded is! List) {
+          return <Lesson>[];
+        }
+        final entries = decoded.whereType<Map<String, dynamic>>().toList();
+        return <Lesson>[
+          for (var index = 0; index < entries.length; index++)
+            _mapDaybreakLesson(entries[index], index),
+        ];
     }
   }
 
@@ -158,6 +184,7 @@ class AppDatabase {
       payload: payload,
       weekIndex: (raw['weekIndex'] as int?) ?? index,
       dayIndex: raw['dayIndex'] as int?,
+      displayNumber: _parseLessonNumber(raw['id'] ?? raw['lesson_id']),
     );
   }
 
@@ -210,6 +237,7 @@ class AppDatabase {
       payload: payload,
       weekIndex: (raw['weekIndex'] as int?) ?? index,
       dayIndex: raw['dayIndex'] as int?,
+      displayNumber: _parseLessonNumber(raw['id'] ?? raw['lesson_id']),
     );
   }
 
@@ -251,6 +279,48 @@ class AppDatabase {
       payload: payload,
       weekIndex: (raw['weekIndex'] as int?) ?? index,
       dayIndex: raw['dayIndex'] as int?,
+      displayNumber: _parseLessonNumber(raw['id'] ?? raw['lesson_id']),
+    );
+  }
+
+  Lesson _mapDiscoveryLesson(Map<String, dynamic> raw, int index) {
+    final payload = <String, dynamic>{
+      'background': raw['background'] ?? '',
+      'conclusion': raw['conclusion'] ?? '',
+      'keyVerse': raw['keyVerse'] ?? '',
+      'questions': raw['questions'] ?? <dynamic>[],
+    };
+
+    return Lesson(
+      id: _coerceString(raw['id'], 'discovery_lesson_$index'),
+      track: Track.discovery,
+      title: _coerceString(raw['title'], 'Discovery Lesson'),
+      bibleReferences: _parseBibleReferences(raw['bibleReference']),
+      payload: payload,
+      weekIndex: (raw['weekIndex'] as int?) ?? index,
+      dayIndex: raw['dayIndex'] as int?,
+      displayNumber: _parseLessonNumber(raw['id']),
+    );
+  }
+
+  Lesson _mapDaybreakLesson(Map<String, dynamic> raw, int index) {
+    final payload = <String, dynamic>{
+      'devotion': raw['devotion'] ?? '',
+      'background': raw['background'] ?? '',
+      'amplifiedOutline': raw['amplifiedOutline'] ?? '',
+      'aCloserLook': raw['aCloserLook'] ?? <dynamic>[],
+      'conclusion': raw['conclusion'] ?? '',
+    };
+
+    return Lesson(
+      id: _coerceString(raw['id'], 'daybreak_lesson_$index'),
+      track: Track.daybreak,
+      title: _coerceString(raw['title'], 'Daybreak Devotion'),
+      bibleReferences: _parseBibleReferences(raw['bibleReference']),
+      payload: payload,
+      weekIndex: raw['weekIndex'] as int?,
+      dayIndex: (raw['dayIndex'] as int?) ?? index,
+      displayNumber: _parseLessonNumber(raw['id']),
     );
   }
 
@@ -317,6 +387,15 @@ class AppDatabase {
     return fallback;
   }
 
+  int? _parseLessonNumber(dynamic id) {
+    if (id is! String) return null;
+    final match = RegExp(r'(\d+)').firstMatch(id);
+    if (match != null) {
+      return int.tryParse(match.group(1)!);
+    }
+    return null;
+  }
+
   Future<void> seedFromAssets() {
     return _seedFuture ??= _performSeed();
   }
@@ -337,6 +416,14 @@ class AppDatabase {
     await importLessonsFromAsset(
       'assets/data/search_lessons.json',
       Track.search,
+    );
+    await importLessonsFromAsset(
+      'assets/data/discovery_lessons.json',
+      Track.discovery,
+    );
+    await importLessonsFromAsset(
+      'assets/data/daybreak_lessons.json',
+      Track.daybreak,
     );
   }
 
@@ -400,5 +487,25 @@ class AppDatabase {
   Future<List<MemoryVerse>> getMemoryVerses() async {
     await _ensureInitialized();
     return _memoryVerses.values.toList();
+  }
+
+  Future<void> upsertJournalEntry(JournalEntry entry) async {
+    await _ensureInitialized();
+    _journalEntries[entry.id] = entry;
+    await _saveToDisk();
+  }
+
+  Future<List<JournalEntry>> getJournalEntries(
+    String userId, {
+    Track? track,
+  }) async {
+    await _ensureInitialized();
+    var entries = _journalEntries.values.where((e) => e.userId == userId);
+    if (track != null) {
+      entries = entries.where((e) => e.sourceTrack == track);
+    }
+    final sorted = entries.toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return sorted;
   }
 }

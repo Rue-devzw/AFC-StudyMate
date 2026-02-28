@@ -28,7 +28,8 @@ class SundaySchoolAllLessonsScreen extends HookConsumerWidget {
           return _LessonsExplorer(lessonsByTrack: value);
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(child: Text('Something went wrong: $error')),
+        error: (error, stackTrace) =>
+            Center(child: Text('Something went wrong: $error')),
       ),
     );
   }
@@ -40,7 +41,9 @@ const List<Track> _sundaySchoolTracks = <Track>[
   Track.search,
 ];
 
-final _allSundayLessonsProvider = FutureProvider<Map<Track, List<Lesson>>>((ref) async {
+final _allSundayLessonsProvider = FutureProvider<Map<Track, List<Lesson>>>((
+  ref,
+) async {
   final repository = ref.read(lessonRepositoryProvider);
   final entries = await Future.wait(
     _sundaySchoolTracks.map((Track track) async {
@@ -112,11 +115,13 @@ class _LessonsExplorer extends HookConsumerWidget {
       () {
         final query = searchQuery.value.trim().toLowerCase();
         return allLessons.where((lesson) {
-          if (selectedTrack.value != null && lesson.track != selectedTrack.value) {
+          if (selectedTrack.value != null &&
+              lesson.track != selectedTrack.value) {
             return false;
           }
           final quarter = _quarterForLesson(lesson);
-          if (selectedQuarter.value != null && quarter != selectedQuarter.value) {
+          if (selectedQuarter.value != null &&
+              quarter != selectedQuarter.value) {
             return false;
           }
           final topic = _topicForLesson(lesson);
@@ -128,18 +133,29 @@ class _LessonsExplorer extends HookConsumerWidget {
           }
           final summary = _lessonSummary(lesson) ?? '';
           final topicText = topic ?? '';
-          final referenceText = lesson.bibleReferences.map((ref) => ref.displayText).join(' ');
-          final haystack = '${lesson.title} $summary $topicText $referenceText'.toLowerCase();
+          final referenceText = lesson.bibleReferences
+              .map((ref) => ref.displayText)
+              .join(' ');
+          final haystack = '${lesson.title} $summary $topicText $referenceText'
+              .toLowerCase();
           return haystack.contains(query);
         }).toList();
       },
-      <Object?>[allLessons, searchQuery.value, selectedTrack.value, selectedQuarter.value, selectedTopic.value],
+      <Object?>[
+        allLessons,
+        searchQuery.value,
+        selectedTrack.value,
+        selectedQuarter.value,
+        selectedTopic.value,
+      ],
     );
 
     filteredLessons.sort((a, b) {
-      final trackComparison = _sundaySchoolTracks.indexOf(a.track).compareTo(
-        _sundaySchoolTracks.indexOf(b.track),
-      );
+      final trackComparison = _sundaySchoolTracks
+          .indexOf(a.track)
+          .compareTo(
+            _sundaySchoolTracks.indexOf(b.track),
+          );
       if (trackComparison != 0) {
         return trackComparison;
       }
@@ -157,7 +173,9 @@ class _LessonsExplorer extends HookConsumerWidget {
             decoration: InputDecoration(
               hintText: 'Search by title, topic, or scripture',
               prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
@@ -261,7 +279,9 @@ class _LessonsExplorer extends HookConsumerWidget {
                       onTap: () {
                         context.pushNamed(
                           SundaySchoolLessonDetailScreen.routeName,
-                          pathParameters: <String, String>{'lessonId': lesson.id},
+                          pathParameters: <String, String>{
+                            'lessonId': lesson.id,
+                          },
                         );
                       },
                     );
@@ -286,11 +306,13 @@ class _LessonCard extends StatelessWidget {
     final summary = _lessonSummary(lesson);
     final topic = _topicForLesson(lesson);
 
-    final lessonNumber = (lesson.weekIndex ?? 0) + 1;
+    final lessonNumber = lesson.displayNumber ?? ((lesson.weekIndex ?? 0) + 1);
     final chips = <Widget>[
       Chip(label: Text(_trackLabel(lesson.track))),
       Chip(label: Text('Lesson $lessonNumber')),
-      ...lesson.bibleReferences.take(3).map((BibleRef ref) => Chip(label: Text(ref.displayText))),
+      ...lesson.bibleReferences
+          .take(3)
+          .map((BibleRef ref) => Chip(label: Text(ref.displayText))),
       if ((lesson.bibleReferences.length) > 3)
         Chip(label: Text('+${lesson.bibleReferences.length - 3} refs')),
       if (topic != null && topic.isNotEmpty) Chip(label: Text(topic)),
@@ -365,7 +387,7 @@ class _LessonCard extends StatelessWidget {
 
 String? _lessonSubtitle(Lesson lesson) {
   final parts = <String>[
-    'Lesson ${(lesson.weekIndex ?? 0) + 1}',
+    'Lesson ${lesson.displayNumber ?? ((lesson.weekIndex ?? 0) + 1)}',
     if (lesson.bibleReferences.isNotEmpty)
       lesson.bibleReferences.map((ref) => ref.displayText).join(' • '),
   ].where((element) => element.isNotEmpty).toList();
@@ -462,4 +484,3 @@ String _trackLabel(Track track) {
       return name[0].toUpperCase() + name.substring(1);
   }
 }
-

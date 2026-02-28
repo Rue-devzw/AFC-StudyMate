@@ -8,6 +8,7 @@ import '../../data/models/bible_ref.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/verse.dart';
 import '../../data/services/bible_service.dart';
+import '../../widgets/design_system_widgets.dart';
 
 class BibleScreen extends HookConsumerWidget {
   const BibleScreen({
@@ -43,40 +44,52 @@ class BibleScreen extends HookConsumerWidget {
 
     final normalizedInitialBook = initialBook?.toLowerCase();
     final initialChapterNumber = initialChapter;
-    useEffect(() {
-      final books = booksSnapshot.data;
-      if (books == null || books.isEmpty) {
-        selectedBookNumber.value = null;
-        return null;
-      }
+    useEffect(
+      () {
+        final books = booksSnapshot.data;
+        if (books == null || books.isEmpty) {
+          selectedBookNumber.value = null;
+          return null;
+        }
 
-      if (!hasAppliedInitialSelection.value) {
-        if (normalizedInitialBook != null) {
-          final match = books.firstWhereOrNull(
-            (book) => book.name.toLowerCase() == normalizedInitialBook,
-          );
-          if (match != null) {
-            selectedBookNumber.value = match.number;
-            selectedChapter.value = initialChapterNumber ?? selectedChapter.value;
-            hasAppliedInitialSelection.value = true;
-            return null;
+        if (!hasAppliedInitialSelection.value) {
+          if (normalizedInitialBook != null) {
+            final match = books.firstWhereOrNull(
+              (book) => book.name.toLowerCase() == normalizedInitialBook,
+            );
+            if (match != null) {
+              selectedBookNumber.value = match.number;
+              selectedChapter.value =
+                  initialChapterNumber ?? selectedChapter.value;
+              hasAppliedInitialSelection.value = true;
+              return null;
+            }
+          }
+
+          final current = selectedBookNumber.value;
+          if (current == null ||
+              books.firstWhereOrNull((book) => book.number == current) ==
+                  null) {
+            selectedBookNumber.value = books.first.number;
+          }
+          hasAppliedInitialSelection.value = true;
+        } else {
+          final current = selectedBookNumber.value;
+          if (current == null ||
+              books.firstWhereOrNull((book) => book.number == current) ==
+                  null) {
+            selectedBookNumber.value = books.first.number;
+            selectedChapter.value = 1;
           }
         }
-
-        final current = selectedBookNumber.value;
-        if (current == null || books.firstWhereOrNull((book) => book.number == current) == null) {
-          selectedBookNumber.value = books.first.number;
-        }
-        hasAppliedInitialSelection.value = true;
-      } else {
-        final current = selectedBookNumber.value;
-        if (current == null || books.firstWhereOrNull((book) => book.number == current) == null) {
-          selectedBookNumber.value = books.first.number;
-          selectedChapter.value = 1;
-        }
-      }
-      return null;
-    }, <Object?>[booksSnapshot.data, normalizedInitialBook, initialChapterNumber]);
+        return null;
+      },
+      <Object?>[
+        booksSnapshot.data,
+        normalizedInitialBook,
+        initialChapterNumber,
+      ],
+    );
 
     final selectedBook = booksSnapshot.data?.firstWhereOrNull(
       (book) => book.number == selectedBookNumber.value,
@@ -111,59 +124,91 @@ class BibleScreen extends HookConsumerWidget {
         if (book == null) {
           return Future<List<Verse>>.value(<Verse>[]);
         }
-        return bibleService.getChapter(book.name, selectedChapter.value, translation.value);
+        return bibleService.getChapter(
+          book.name,
+          selectedChapter.value,
+          translation.value,
+        );
       },
       <Object?>[selectedBook?.number, selectedChapter.value, translation.value],
     );
     final passageSnapshot = useFuture(passageFuture);
 
     final verses = passageSnapshot.data ?? <Verse>[];
-    final isLoading = booksSnapshot.connectionState != ConnectionState.done ||
+    final isLoading =
+        booksSnapshot.connectionState != ConnectionState.done ||
         chapterCountSnapshot.connectionState != ConnectionState.done ||
         passageSnapshot.connectionState != ConnectionState.done;
 
-    final title = selectedBook != null ? '${selectedBook.name} ${selectedChapter.value}' : 'Bible';
+    final title = selectedBook != null
+        ? '${selectedBook.name} ${selectedChapter.value}'
+        : 'Bible';
 
-    return Scaffold(
+    return PremiumScaffold(
+      backgroundAsset: 'assets/images/bg_bible.png',
       appBar: AppBar(
-        title: Text(title),
+        title: Text(title, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: <Widget>[
-          TextButton.icon(
-            onPressed: booksSnapshot.hasData && (booksSnapshot.data?.isNotEmpty ?? false)
-                ? () async {
-                    final books = booksSnapshot.data;
-                    if (books == null || books.isEmpty) {
-                      return;
-                    }
-                    final result = await showModalBottomSheet<_PassageSelectionResult>(
-                      context: context,
-                      isScrollControlled: true,
-                      useSafeArea: true,
-                      builder: (BuildContext context) {
-                        return _PassageSelectorSheet(
-                          books: books,
-                          initialBookNumber: selectedBookNumber.value,
-                          initialChapter: selectedChapter.value,
-                          translation: translation.value,
-                          bibleService: bibleService,
-                        );
-                      },
-                    );
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            child: PremiumGlassCard(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap:
+                    booksSnapshot.hasData &&
+                        (booksSnapshot.data?.isNotEmpty ?? false)
+                    ? () async {
+                        final books = booksSnapshot.data;
+                        if (books == null || books.isEmpty) {
+                          return;
+                        }
+                        final result =
+                            await showModalBottomSheet<_PassageSelectionResult>(
+                              context: context,
+                              isScrollControlled: true,
+                              useSafeArea: true,
+                              builder: (BuildContext context) {
+                                return _PassageSelectorSheet(
+                                  books: books,
+                                  initialBookNumber: selectedBookNumber.value,
+                                  initialChapter: selectedChapter.value,
+                                  translation: translation.value,
+                                  bibleService: bibleService,
+                                );
+                              },
+                            );
 
-                    if (result != null) {
-                      selectedBookNumber.value = result.book.number;
-                      selectedChapter.value = result.chapter;
-                    }
-                  }
-                : null,
-            icon: const Icon(Icons.menu_book_outlined),
-            label: const Text('Passage'),
-            style: TextButton.styleFrom(
-              foregroundColor: theme.colorScheme.onPrimary,
+                        if (result != null) {
+                          selectedBookNumber.value = result.book.number;
+                          selectedChapter.value = result.chapter;
+                        }
+                      }
+                    : null,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.menu_book_outlined,
+                      size: 20,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Passage',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search, color: Colors.white),
             tooltip: 'Search Bible',
             onPressed: () async {
               final result = await showSearch<BibleRef?>(
@@ -184,7 +229,11 @@ class BibleScreen extends HookConsumerWidget {
 
               if (match == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Unable to open ${result.book} in this translation.')),
+                  SnackBar(
+                    content: Text(
+                      'Unable to open ${result.book} in this translation.',
+                    ),
+                  ),
                 );
                 return;
               }
@@ -202,7 +251,9 @@ class BibleScreen extends HookConsumerWidget {
             child: Builder(
               builder: (BuildContext context) {
                 if (booksSnapshot.hasError) {
-                  return _CenteredMessage('Unable to load books: ${booksSnapshot.error}');
+                  return _CenteredMessage(
+                    'Unable to load books: ${booksSnapshot.error}',
+                  );
                 }
                 if (chapterCountSnapshot.hasError) {
                   return _CenteredMessage(
@@ -210,28 +261,40 @@ class BibleScreen extends HookConsumerWidget {
                   );
                 }
                 if (passageSnapshot.hasError) {
-                  return _CenteredMessage('Unable to load passage: ${passageSnapshot.error}');
+                  return _CenteredMessage(
+                    'Unable to load passage: ${passageSnapshot.error}',
+                  );
                 }
                 if ((booksSnapshot.data?.isEmpty ?? true)) {
-                  return const _CenteredMessage('No books available for this translation.');
+                  return const _CenteredMessage(
+                    'No books available for this translation.',
+                  );
                 }
                 if (verses.isEmpty) {
-                  return const _CenteredMessage('Select a passage to begin reading.');
+                  return const _CenteredMessage(
+                    'Select a passage to begin reading.',
+                  );
                 }
 
-                final textStyle = _readingTextStyle(context, fontScale.value, readingFontStyle.value);
+                final textStyle = _readingTextStyle(
+                  context,
+                  fontScale.value,
+                  readingFontStyle.value,
+                );
                 final verseNumberStyle = textStyle.copyWith(
                   fontWeight: FontWeight.w600,
                   color: theme.colorScheme.primary,
                 );
 
                 final highlightVerseNumber = highlightVerse;
-                final shouldHighlightBook = normalizedInitialBook != null &&
+                final shouldHighlightBook =
+                    normalizedInitialBook != null &&
                     selectedBook?.name.toLowerCase() == normalizedInitialBook &&
-                    (initialChapterNumber == null || selectedChapter.value == initialChapterNumber);
+                    (initialChapterNumber == null ||
+                        selectedChapter.value == initialChapterNumber);
 
                 return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 100),
                   itemBuilder: (BuildContext context, int index) {
                     final verse = verses[index];
                     final verseText = SelectableText.rich(
@@ -241,30 +304,38 @@ class BibleScreen extends HookConsumerWidget {
                             baseline: TextBaseline.alphabetic,
                             alignment: PlaceholderAlignment.aboveBaseline,
                             child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.only(right: 12),
                               child: Text(
                                 '${verse.verse}',
-                                style: verseNumberStyle,
+                                style: verseNumberStyle.copyWith(
+                                  color: Colors.white.withOpacity(0.5),
+                                  fontSize: (textStyle.fontSize ?? 16) * 0.8,
+                                ),
                               ),
                             ),
                           ),
-                          TextSpan(text: verse.text, style: textStyle),
+                          TextSpan(
+                            text: verse.text,
+                            style: textStyle.copyWith(color: Colors.white),
+                          ),
                         ],
                       ),
                     );
-                    if (highlightVerseNumber == null || !shouldHighlightBook || verse.verse != highlightVerseNumber) {
+                    if (highlightVerseNumber == null ||
+                        !shouldHighlightBook ||
+                        verse.verse != highlightVerseNumber) {
                       return verseText;
                     }
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(12),
+                    return PremiumGlassCard(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      borderRadius: BorderRadius.circular(16),
                       child: verseText,
                     );
                   },
-                  separatorBuilder: (_, __) => const SizedBox(height: 16),
+                  separatorBuilder: (_, __) => const SizedBox(height: 24),
                   itemCount: verses.length,
                 );
               },
@@ -300,8 +371,14 @@ class BibleScreen extends HookConsumerWidget {
   }
 }
 
-TextStyle _readingTextStyle(BuildContext context, double scale, ReadingFontStyle style) {
-  final base = Theme.of(context).textTheme.bodyLarge ?? const TextStyle(fontSize: 16, height: 1.5);
+TextStyle _readingTextStyle(
+  BuildContext context,
+  double scale,
+  ReadingFontStyle style,
+) {
+  final base =
+      Theme.of(context).textTheme.bodyLarge ??
+      const TextStyle(fontSize: 16, height: 1.5);
   final baseSize = base.fontSize ?? 16;
   final fontFamilyFallback = style == ReadingFontStyle.serif
       ? const <String>['Noto Serif', 'Merriweather', 'Times New Roman', 'serif']
@@ -326,7 +403,9 @@ class _CenteredMessage extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Text(
           message,
-          style: Theme.of(context).textTheme.bodyLarge,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(color: Colors.white70),
           textAlign: TextAlign.center,
         ),
       ),
@@ -343,10 +422,30 @@ class _DisplayOptionsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      child: FilledButton.tonalIcon(
-        onPressed: onPressed,
-        icon: const Icon(Icons.text_fields),
-        label: const Text('Display options'),
+      child: PremiumGlassCard(
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.text_fields, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  'Display options',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -406,8 +505,14 @@ class _DisplayOptionsSheetState extends State<_DisplayOptionsSheet> {
           const SizedBox(height: 8),
           SegmentedButton<ReadingFontStyle>(
             segments: const <ButtonSegment<ReadingFontStyle>>[
-              ButtonSegment(value: ReadingFontStyle.serif, label: Text('Serif')),
-              ButtonSegment(value: ReadingFontStyle.sans, label: Text('Sans-serif')),
+              ButtonSegment(
+                value: ReadingFontStyle.serif,
+                label: Text('Serif'),
+              ),
+              ButtonSegment(
+                value: ReadingFontStyle.sans,
+                label: Text('Sans-serif'),
+              ),
             ],
             selected: <ReadingFontStyle>{_fontStyle},
             onSelectionChanged: (selection) {
@@ -471,10 +576,17 @@ class _PassageSelectorSheet extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final activeBookNumber = useState<int?>(initialBookNumber ?? books.first.number);
+    final activeBookNumber = useState<int?>(
+      initialBookNumber ?? books.first.number,
+    );
 
-    final initialTabIndex = _tabIndexFor(activeBookNumber.value ?? books.first.number);
-    final tabController = useTabController(initialLength: 2, initialIndex: initialTabIndex);
+    final initialTabIndex = _tabIndexFor(
+      activeBookNumber.value ?? books.first.number,
+    );
+    final tabController = useTabController(
+      initialLength: 2,
+      initialIndex: initialTabIndex,
+    );
 
     useEffect(() {
       final bookNumber = activeBookNumber.value;
@@ -498,7 +610,11 @@ class _PassageSelectorSheet extends HookWidget {
       return null;
     }, <Object?>[activeBookNumber.value]);
 
-    final activeBook = books.firstWhereOrNull((book) => book.number == activeBookNumber.value) ?? books.first;
+    final activeBook =
+        books.firstWhereOrNull(
+          (book) => book.number == activeBookNumber.value,
+        ) ??
+        books.first;
 
     final chapterCountFuture = useMemoized(
       () => bibleService.getChapterCount(activeBook.name, translation),
@@ -511,8 +627,9 @@ class _PassageSelectorSheet extends HookWidget {
       <Object?>[books],
     );
     final newTestamentBooks = useMemoized(
-      () =>
-          books.where((book) => book.testament == Testament.newTestament).toList(),
+      () => books
+          .where((book) => book.testament == Testament.newTestament)
+          .toList(),
       <Object?>[books],
     );
 
@@ -554,12 +671,14 @@ class _PassageSelectorSheet extends HookWidget {
                         _BookGrid(
                           books: oldTestamentBooks,
                           activeBook: activeBook,
-                          onSelected: (book) => activeBookNumber.value = book.number,
+                          onSelected: (book) =>
+                              activeBookNumber.value = book.number,
                         ),
                         _BookGrid(
                           books: newTestamentBooks,
                           activeBook: activeBook,
-                          onSelected: (book) => activeBookNumber.value = book.number,
+                          onSelected: (book) =>
+                              activeBookNumber.value = book.number,
                         ),
                       ],
                     ),
@@ -594,13 +713,18 @@ class _PassageSelectorSheet extends HookWidget {
                               ),
                             );
                           }
-                          if (chapterCountSnapshot.connectionState != ConnectionState.done) {
-                            return const Center(child: CircularProgressIndicator());
+                          if (chapterCountSnapshot.connectionState !=
+                              ConnectionState.done) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
                           }
 
                           final count = chapterCountSnapshot.data ?? 0;
                           if (count == 0) {
-                            return const Center(child: Text('No chapters available.'));
+                            return const Center(
+                              child: Text('No chapters available.'),
+                            );
                           }
 
                           return _ChapterGrid(
@@ -608,7 +732,10 @@ class _PassageSelectorSheet extends HookWidget {
                             selectedChapter: selectedChapter.value,
                             onSelected: (chapter) {
                               Navigator.of(context).pop(
-                                _PassageSelectionResult(book: activeBook, chapter: chapter),
+                                _PassageSelectionResult(
+                                  book: activeBook,
+                                  chapter: chapter,
+                                ),
                               );
                             },
                           );
@@ -660,8 +787,12 @@ class _BookGrid extends StatelessWidget {
         final isSelected = activeBook.number == book.number;
         return OutlinedButton(
           style: OutlinedButton.styleFrom(
-            backgroundColor: isSelected ? theme.colorScheme.primaryContainer : null,
-            foregroundColor: isSelected ? theme.colorScheme.onPrimaryContainer : null,
+            backgroundColor: isSelected
+                ? theme.colorScheme.primaryContainer
+                : null,
+            foregroundColor: isSelected
+                ? theme.colorScheme.onPrimaryContainer
+                : null,
           ),
           onPressed: () => onSelected(book),
           child: Text(
@@ -721,7 +852,7 @@ class _PassageSelectionResult {
 
 class _BibleSearchDelegate extends SearchDelegate<BibleRef?> {
   _BibleSearchDelegate({required this.bibleService, required this.translation})
-      : super(searchFieldLabel: 'Search Bible');
+    : super(searchFieldLabel: 'Search Bible');
 
   final BibleService bibleService;
   final Translation translation;
@@ -764,43 +895,46 @@ class _BibleSearchDelegate extends SearchDelegate<BibleRef?> {
 
     return FutureBuilder<List<VerseSearchHit>>(
       future: bibleService.search(trimmedQuery, translation),
-      builder: (BuildContext context, AsyncSnapshot<List<VerseSearchHit>> snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Search failed: ${snapshot.error}'));
-        }
-        final results = snapshot.data ?? <VerseSearchHit>[];
-        if (results.isEmpty) {
-          return const Center(child: Text('No verses found.'));
-        }
-        return ListView.separated(
-          itemCount: results.length,
-          separatorBuilder: (_, __) => const Divider(height: 1),
-          itemBuilder: (BuildContext context, int index) {
-            final hit = results[index];
-            return ListTile(
-              title: Text(hit.reference),
-              subtitle: Text(
-                hit.preview,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              onTap: () {
-                final reference = _parseReference(hit.reference);
-                if (reference == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Unable to open ${hit.reference}')),
-                  );
-                  return;
-                }
-                close(context, reference);
+      builder:
+          (BuildContext context, AsyncSnapshot<List<VerseSearchHit>> snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.hasError) {
+              return Center(child: Text('Search failed: ${snapshot.error}'));
+            }
+            final results = snapshot.data ?? <VerseSearchHit>[];
+            if (results.isEmpty) {
+              return const Center(child: Text('No verses found.'));
+            }
+            return ListView.separated(
+              itemCount: results.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (BuildContext context, int index) {
+                final hit = results[index];
+                return ListTile(
+                  title: Text(hit.reference),
+                  subtitle: Text(
+                    hit.preview,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () {
+                    final reference = _parseReference(hit.reference);
+                    if (reference == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Unable to open ${hit.reference}'),
+                        ),
+                      );
+                      return;
+                    }
+                    close(context, reference);
+                  },
+                );
               },
             );
           },
-        );
-      },
     );
   }
 
@@ -817,7 +951,12 @@ class _BibleSearchDelegate extends SearchDelegate<BibleRef?> {
     }
 
     final verse = int.tryParse(match.group(3)!);
-    return BibleRef(book: book, chapter: chapter, verseStart: verse, verseEnd: verse);
+    return BibleRef(
+      book: book,
+      chapter: chapter,
+      verseStart: verse,
+      verseEnd: verse,
+    );
   }
 }
 

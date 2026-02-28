@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+import 'data/services/app_bootstrap_service.dart';
 import 'features/bible/bible_screen.dart';
 import 'features/daybreak/daybreak_screen.dart';
 import 'features/discovery/discovery_screen.dart';
+import 'features/journal/journal_screen.dart';
 import 'features/home/home_shell.dart';
 import 'features/onboarding/onboarding_screen.dart';
 import 'features/profile/profile_screen.dart';
@@ -17,9 +19,11 @@ import 'features/today/today_screen.dart';
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final isFirstRun = ref.read(appBootstrapServiceProvider).isFirstRun;
+
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/onboarding',
+    initialLocation: isFirstRun ? '/onboarding' : '/home/today',
     routes: <RouteBase>[
       GoRoute(
         path: '/onboarding',
@@ -81,10 +85,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: '/home/discovery',
-                name: DiscoveryScreen.routeName,
+                path: '/home/journal',
+                name: JournalScreen.routeName,
                 pageBuilder: (BuildContext context, GoRouterState state) =>
-                    FadeTransitionPage(child: DiscoveryScreen()),
+                    FadeTransitionPage(child: JournalScreen()),
               ),
             ],
           ),
@@ -135,6 +139,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               DateTime.now();
           return DaybreakScreen(date: date);
         },
+      ),
+      GoRoute(
+        path: '/discovery',
+        name: DiscoveryScreen.routeName,
+        builder: (BuildContext context, GoRouterState state) =>
+            const DiscoveryScreen(),
       ),
     ],
   );

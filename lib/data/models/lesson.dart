@@ -1,7 +1,6 @@
+import 'package:afc_studymate/data/models/bible_ref.dart';
+import 'package:afc_studymate/data/models/enums.dart';
 import 'package:meta/meta.dart';
-
-import 'bible_ref.dart';
-import 'enums.dart';
 
 @immutable
 class Lesson {
@@ -13,6 +12,7 @@ class Lesson {
     required this.payload,
     this.weekIndex,
     this.dayIndex,
+    this.displayNumber,
   });
 
   final String id;
@@ -22,6 +22,7 @@ class Lesson {
   final Map<String, dynamic> payload;
   final int? weekIndex;
   final int? dayIndex;
+  final int? displayNumber;
 
   Lesson copyWith({
     String? id,
@@ -31,6 +32,7 @@ class Lesson {
     Map<String, dynamic>? payload,
     int? weekIndex,
     int? dayIndex,
+    int? displayNumber,
   }) {
     return Lesson(
       id: id ?? this.id,
@@ -40,18 +42,20 @@ class Lesson {
       payload: payload ?? this.payload,
       weekIndex: weekIndex ?? this.weekIndex,
       dayIndex: dayIndex ?? this.dayIndex,
+      displayNumber: displayNumber ?? this.displayNumber,
     );
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'track': track.name,
-        'title': title,
-        'bibleReferences': bibleReferences.map((ref) => ref.toJson()).toList(),
-        'payload': payload,
-        'weekIndex': weekIndex,
-        'dayIndex': dayIndex,
-      };
+    'id': id,
+    'track': track.name,
+    'title': title,
+    'bibleReferences': bibleReferences.map((ref) => ref.toJson()).toList(),
+    'payload': payload,
+    'weekIndex': weekIndex,
+    'dayIndex': dayIndex,
+    'displayNumber': displayNumber,
+  };
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     return Lesson(
@@ -59,11 +63,14 @@ class Lesson {
       track: Track.values.firstWhere((value) => value.name == json['track']),
       title: json['title'] as String,
       bibleReferences: (json['bibleReferences'] as List<dynamic>)
-          .map((dynamic item) => BibleRef.fromJson(item as Map<String, dynamic>))
+          .map(
+            (dynamic item) => BibleRef.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       payload: Map<String, dynamic>.from(json['payload'] as Map),
       weekIndex: json['weekIndex'] as int?,
       dayIndex: json['dayIndex'] as int?,
+      displayNumber: json['displayNumber'] as int?,
     );
   }
 
@@ -76,9 +83,12 @@ class Lesson {
       track,
       title,
       Object.hashAll(bibleReferences),
-      Object.hashAll(sortedPayloadEntries.map((e) => Object.hash(e.key, e.value))),
+      Object.hashAll(
+        sortedPayloadEntries.map((e) => Object.hash(e.key, e.value)),
+      ),
       weekIndex,
       dayIndex,
+      displayNumber,
     );
   }
 
@@ -91,7 +101,8 @@ class Lesson {
         _listEquals(other.bibleReferences, bibleReferences) &&
         _mapEquals(other.payload, payload) &&
         other.weekIndex == weekIndex &&
-        other.dayIndex == dayIndex;
+        other.dayIndex == dayIndex &&
+        other.displayNumber == displayNumber;
   }
 }
 
@@ -144,11 +155,11 @@ class BeginnersSection {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'sectionTitle': sectionTitle,
-        'sectionContent': sectionContent,
-        'sectionType': sectionType,
-        'imagePath': imagePath,
-      };
+    'sectionTitle': sectionTitle,
+    'sectionContent': sectionContent,
+    'sectionType': sectionType,
+    'imagePath': imagePath,
+  };
 
   factory BeginnersSection.fromJson(Map<String, dynamic> json) {
     return BeginnersSection(
@@ -171,13 +182,16 @@ class BeginnersLessonPayload {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'sections': sections.map((section) => section.toJson()).toList(),
-      };
+    'sections': sections.map((section) => section.toJson()).toList(),
+  };
 
   factory BeginnersLessonPayload.fromJson(Map<String, dynamic> json) {
     return BeginnersLessonPayload(
       sections: (json['sections'] as List<dynamic>)
-          .map((dynamic item) => BeginnersSection.fromJson(item as Map<String, dynamic>))
+          .map(
+            (dynamic item) =>
+                BeginnersSection.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
     );
   }
@@ -208,10 +222,10 @@ class PrimaryPalsActivity {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'type': type,
-        'instructions': instructions,
-        'data': data,
-      };
+    'type': type,
+    'instructions': instructions,
+    'data': data,
+  };
 
   factory PrimaryPalsActivity.fromJson(Map<String, dynamic> json) {
     return PrimaryPalsActivity(
@@ -243,10 +257,10 @@ class FamilyDevotion {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'day': day,
-        'prompt': prompt,
-        'reading': reading.toJson(),
-      };
+    'day': day,
+    'prompt': prompt,
+    'reading': reading.toJson(),
+  };
 
   factory FamilyDevotion.fromJson(Map<String, dynamic> json) {
     return FamilyDevotion(
@@ -286,20 +300,27 @@ class PrimaryPalsParentGuide {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'parentsCorner': parentsCorner,
-        'familyDevotions': familyDevotions.map((devotion) => devotion.toJson()).toList(),
-        'bibleText': bibleText.toJson(),
-        'memoryVerse': memoryVerse.toJson(),
-      };
+    'parentsCorner': parentsCorner,
+    'familyDevotions': familyDevotions
+        .map((devotion) => devotion.toJson())
+        .toList(),
+    'bibleText': bibleText.toJson(),
+    'memoryVerse': memoryVerse.toJson(),
+  };
 
   factory PrimaryPalsParentGuide.fromJson(Map<String, dynamic> json) {
     return PrimaryPalsParentGuide(
       parentsCorner: json['parentsCorner'] as String,
       familyDevotions: (json['familyDevotions'] as List<dynamic>)
-          .map((dynamic item) => FamilyDevotion.fromJson(item as Map<String, dynamic>))
+          .map(
+            (dynamic item) =>
+                FamilyDevotion.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       bibleText: BibleRef.fromJson(json['bibleText'] as Map<String, dynamic>),
-      memoryVerse: BibleRef.fromJson(json['memoryVerse'] as Map<String, dynamic>),
+      memoryVerse: BibleRef.fromJson(
+        json['memoryVerse'] as Map<String, dynamic>,
+      ),
     );
   }
 }
@@ -329,18 +350,23 @@ class PrimaryPalsLessonPayload {
   }
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'story': story,
-        'activities': activities.map((activity) => activity.toJson()).toList(),
-        'parentGuide': parentGuide.toJson(),
-      };
+    'story': story,
+    'activities': activities.map((activity) => activity.toJson()).toList(),
+    'parentGuide': parentGuide.toJson(),
+  };
 
   factory PrimaryPalsLessonPayload.fromJson(Map<String, dynamic> json) {
     return PrimaryPalsLessonPayload(
       story: (json['story'] as List<dynamic>).cast<String>(),
       activities: (json['activities'] as List<dynamic>)
-          .map((dynamic item) => PrimaryPalsActivity.fromJson(item as Map<String, dynamic>))
+          .map(
+            (dynamic item) =>
+                PrimaryPalsActivity.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
-      parentGuide: PrimaryPalsParentGuide.fromJson(json['parentGuide'] as Map<String, dynamic>),
+      parentGuide: PrimaryPalsParentGuide.fromJson(
+        json['parentGuide'] as Map<String, dynamic>,
+      ),
     );
   }
 }
@@ -356,9 +382,9 @@ class PromptQuestion {
   final String prompt;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'prompt': prompt,
-      };
+    'id': id,
+    'prompt': prompt,
+  };
 
   factory PromptQuestion.fromJson(Map<String, dynamic> json) {
     return PromptQuestion(
@@ -385,23 +411,29 @@ class SearchLessonPayload {
   final String? conclusion;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'keyVerse': keyVerse,
-        'supplementalScripture':
-            supplementalScripture.map((reference) => reference.toJson()).toList(),
-        'exposition': exposition,
-        'questions': questions.map((question) => question.toJson()).toList(),
-        'conclusion': conclusion,
-      };
+    'keyVerse': keyVerse,
+    'supplementalScripture': supplementalScripture
+        .map((reference) => reference.toJson())
+        .toList(),
+    'exposition': exposition,
+    'questions': questions.map((question) => question.toJson()).toList(),
+    'conclusion': conclusion,
+  };
 
   factory SearchLessonPayload.fromJson(Map<String, dynamic> json) {
     return SearchLessonPayload(
       keyVerse: json['keyVerse'] as String,
       supplementalScripture: (json['supplementalScripture'] as List<dynamic>)
-          .map((dynamic item) => BibleRef.fromJson(item as Map<String, dynamic>))
+          .map(
+            (dynamic item) => BibleRef.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       exposition: (json['exposition'] as List<dynamic>).cast<String>(),
       questions: (json['questions'] as List<dynamic>)
-          .map((dynamic item) => PromptQuestion.fromJson(item as Map<String, dynamic>))
+          .map(
+            (dynamic item) =>
+                PromptQuestion.fromJson(item as Map<String, dynamic>),
+          )
           .toList(),
       conclusion: json['conclusion'] as String?,
     );

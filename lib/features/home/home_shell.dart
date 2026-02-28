@@ -9,7 +9,7 @@ class HomeShell extends StatelessWidget {
   static const List<_NavItem> _navItems = <_NavItem>[
     _NavItem(label: 'Today', icon: Icons.wb_sunny_outlined),
     _NavItem(label: 'Sunday School', icon: Icons.school_outlined),
-    _NavItem(label: 'Discovery', icon: Icons.explore_outlined),
+    _NavItem(label: 'Journal', icon: Icons.auto_stories_outlined),
     _NavItem(label: 'Bible', icon: Icons.menu_book_outlined),
     _NavItem(label: 'Profile', icon: Icons.person_outline),
   ];

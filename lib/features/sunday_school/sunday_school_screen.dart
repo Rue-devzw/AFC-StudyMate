@@ -7,6 +7,7 @@ import '../../data/models/bible_ref.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/lesson.dart';
 import '../../data/repositories/lesson_repository.dart';
+import '../../widgets/design_system_widgets.dart';
 import '../../widgets/linked_verse.dart';
 import 'all_lessons/sunday_school_all_lessons_screen.dart';
 import 'all_lessons/sunday_school_lesson_detail_screen.dart';
@@ -19,26 +20,41 @@ class SundaySchoolScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncLessons = ref.watch(_currentLessonsProvider);
+    final theme = Theme.of(context);
 
-    void openAllLessons() => context.pushNamed(SundaySchoolAllLessonsScreen.routeName);
+    void openAllLessons() =>
+        context.pushNamed(SundaySchoolAllLessonsScreen.routeName);
 
-    return Scaffold(
+    return PremiumScaffold(
+      backgroundAsset: 'assets/images/bg_sunday_school.png',
       appBar: AppBar(
-        title: const Text('Sunday School'),
+        title: const Text(
+          'Sunday School',
+          style: TextStyle(color: Colors.white),
+        ),
         actions: <Widget>[
           IconButton(
             tooltip: 'View all lessons',
-            icon: const Icon(Icons.library_books_outlined),
+            icon: const Icon(Icons.library_books_outlined, color: Colors.white),
             onPressed: openAllLessons,
           ),
         ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: SafeArea(
         child: asyncLessons.when(
           data: (lessons) {
-            final hasLesson = _sundaySchoolTracks.any((track) => lessons[track] != null);
+            final hasLesson = _sundaySchoolTracks.any(
+              (track) => lessons[track] != null,
+            );
             if (!hasLesson) {
-              return const Center(child: Text('Weekly lessons will appear here soon.'));
+              return const Center(
+                child: Text(
+                  'Weekly lessons will appear here soon.',
+                  style: TextStyle(color: Colors.white),
+                ),
+              );
             }
 
             return ListView(
@@ -46,7 +62,10 @@ class SundaySchoolScreen extends HookConsumerWidget {
               children: <Widget>[
                 Text(
                   'This week\'s Sunday School snapshot',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 ..._sundaySchoolTracks.map(
@@ -66,17 +85,49 @@ class SundaySchoolScreen extends HookConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-                FilledButton.icon(
-                  onPressed: openAllLessons,
-                  icon: const Icon(Icons.library_books_outlined),
-                  label: const Text('View all lessons'),
-                  style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(48)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: PremiumGlassCard(
+                    padding: EdgeInsets.zero,
+                    borderRadius: BorderRadius.circular(16),
+                    child: InkWell(
+                      onTap: openAllLessons,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.library_books_outlined,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'View all lessons',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stackTrace) => Center(child: Text('Something went wrong: $error')),
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
+          error: (error, stackTrace) => Center(
+            child: Text(
+              'Something went wrong: $error',
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
         ),
       ),
     );
@@ -89,7 +140,9 @@ const List<Track> _sundaySchoolTracks = <Track>[
   Track.search,
 ];
 
-final _currentLessonsProvider = FutureProvider<Map<Track, Lesson?>>((ref) async {
+final _currentLessonsProvider = FutureProvider<Map<Track, Lesson?>>((
+  ref,
+) async {
   final repository = ref.read(lessonRepositoryProvider);
   final entries = await Future.wait(
     _sundaySchoolTracks.map((track) async {
@@ -110,8 +163,9 @@ class _LessonPreviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final titleStyle = theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700);
-    final background = theme.colorScheme.surfaceVariant.withOpacity(0.4);
+    final titleStyle = theme.textTheme.titleMedium?.copyWith(
+      fontWeight: FontWeight.w700,
+    );
 
     if (lesson == null) {
       return Card(
@@ -133,76 +187,97 @@ class _LessonPreviewCard extends StatelessWidget {
       );
     }
 
-    final lessonNumber = (lesson!.weekIndex ?? 0) + 1;
+    final lessonNumber =
+        lesson!.displayNumber ?? ((lesson!.weekIndex ?? 0) + 1);
     final snippet = _lessonPreviewSnippet(lesson!);
     final references = lesson!.bibleReferences;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: background,
-                  child: Icon(_trackIcon(track), color: theme.colorScheme.primary),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      _TrackChip(track: track),
-                      const SizedBox(height: 8),
-                      Text('Lesson $lessonNumber', style: theme.textTheme.labelLarge),
-                      const SizedBox(height: 4),
-                      Text(lesson!.title, style: titleStyle),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (references.isNotEmpty) ...<Widget>[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: references
-                    .map(
-                      (BibleRef ref) => Chip(
-                        label: LinkedVerse(
-                          reference: ref,
-                          style: theme.textTheme.bodySmall,
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+    return PremiumGlassCard(
+      borderRadius: BorderRadius.circular(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.white.withOpacity(0.2),
+                child: Icon(_trackIcon(track), color: Colors.white),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _TrackChip(track: track),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Lesson $lessonNumber',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: Colors.white70,
                       ),
-                    )
-                    .toList(),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      lesson!.title,
+                      style: titleStyle?.copyWith(color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
             ],
-            if (snippet.isNotEmpty) ...<Widget>[
-              const SizedBox(height: 12),
-              Text(
-                snippet,
-                style: theme.textTheme.bodyMedium,
-              ),
-            ],
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FilledButton.icon(
-                onPressed: onOpen,
-                icon: const Icon(Icons.menu_book_rounded),
-                label: const Text('Open full lesson'),
+          ),
+          if (references.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: references
+                  .map(
+                    (BibleRef ref) => Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: LinkedVerse(
+                        reference: ref,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+          if (snippet.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 12),
+            Text(
+              snippet,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.white.withOpacity(0.8),
               ),
             ),
           ],
-        ),
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              onPressed: onOpen,
+              icon: const Icon(Icons.menu_book_rounded),
+              label: const Text('Open full lesson'),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -218,13 +293,13 @@ class _TrackChip extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withOpacity(0.1),
+        color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(999),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Text(
         _trackLabel(track),
-        style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.primary),
+        style: theme.textTheme.labelSmall?.copyWith(color: Colors.white),
       ),
     );
   }
@@ -242,12 +317,17 @@ String _lessonPreviewSnippet(Lesson lesson) {
           .firstWhereOrNull((value) => value.trim().isNotEmpty);
       break;
     case Track.primaryPals:
-      final story = (payload['story'] as List<dynamic>? ?? <dynamic>[]).cast<String>();
+      final story = (payload['story'] as List<dynamic>? ?? <dynamic>[])
+          .cast<String>();
       raw = story.firstWhereOrNull((paragraph) => paragraph.trim().isNotEmpty);
       break;
     case Track.search:
-      final exposition = (payload['exposition'] as List<dynamic>? ?? <dynamic>[]).cast<String>();
-      raw = exposition.firstWhereOrNull((paragraph) => paragraph.trim().isNotEmpty);
+      final exposition =
+          (payload['exposition'] as List<dynamic>? ?? <dynamic>[])
+              .cast<String>();
+      raw = exposition.firstWhereOrNull(
+        (paragraph) => paragraph.trim().isNotEmpty,
+      );
       break;
     default:
       raw = null;

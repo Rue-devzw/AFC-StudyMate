@@ -1,4 +1,6 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,123 +28,199 @@ class OnboardingScreen extends HookConsumerWidget {
     });
 
     final theme = Theme.of(context);
+    final bgImages = [
+      'assets/images/onboard_1.png',
+      'assets/images/onboard_2.png',
+      'assets/images/onboard_3.png',
+      'assets/images/onboard_4.png',
+    ];
+    final bgImage = bgImages[currentPage.value];
 
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          fit: StackFit.expand,
           children: [
-            Expanded(
-              child: PageView(
-                controller: pageController,
-                onPageChanged: (index) => currentPage.value = index,
+            // Background Image
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              child: Image.asset(
+                bgImage,
+                key: ValueKey<int>(currentPage.value),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+
+            // Subtle Dark Gradient Overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.3),
+                    Colors.black.withOpacity(0.6),
+                    Colors.black.withOpacity(0.9),
+                  ],
+                  stops: const [0.0, 0.4, 1.0],
+                ),
+              ),
+            ),
+
+            SafeArea(
+              child: Column(
                 children: [
-                  _OnboardingStep(
-                    title: 'Welcome to\nStudyMate',
-                    subtitle:
-                        'Your companion for Sunday School and daily devotion.',
-                    child: Center(
-                      child: Icon(
-                        Icons.auto_stories_rounded,
-                        size: 160,
-                        color: theme.colorScheme.primary.withOpacity(0.2),
-                      ),
-                    ),
-                  ),
-                  _OnboardingStep(
-                    title: 'Personalize\nYour Profile',
-                    subtitle: 'Help us tailor the content for your journey.',
-                    child: Column(
+                  Expanded(
+                    child: PageView(
+                      controller: pageController,
+                      onPageChanged: (index) => currentPage.value = index,
                       children: [
-                        _DropdownCard<Role>(
-                          label: 'Who are you?',
-                          value: state.role,
-                          items: Role.values,
-                          labelBuilder: (role) => _formatRoleName(role.name),
-                          onChanged: (val) => controller.updateRole(val!),
+                        _OnboardingStep(
+                          title: 'Welcome to\nStudyMate',
+                          subtitle:
+                              'Your companion for Sunday School and daily devotion.',
+                          child: const SizedBox.shrink(),
                         ),
-                        const SizedBox(height: 16),
-                        _DropdownCard<Track>(
-                          label: 'Select your class',
-                          value: state.track,
-                          items: Track.values
-                              .where(
-                                (t) =>
-                                    t != Track.discovery && t != Track.daybreak,
-                              )
-                              .toList(),
-                          labelBuilder: _trackLabel,
-                          onChanged: (val) => controller.updateTrack(val!),
+                        _OnboardingStep(
+                          title: 'Personalize\nYour Profile',
+                          subtitle:
+                              'Help us tailor the content for your journey.',
+                          child: Column(
+                            children: [
+                              _DropdownCard<Role>(
+                                label: 'Who are you?',
+                                value: state.role,
+                                items: Role.values,
+                                labelBuilder: (role) =>
+                                    _formatRoleName(role.name),
+                                onChanged: (val) => controller.updateRole(val!),
+                              ),
+                              const SizedBox(height: 16),
+                              _DropdownCard<Track>(
+                                label: 'Select your class',
+                                value: state.track,
+                                items: Track.values
+                                    .where(
+                                      (t) =>
+                                          t != Track.discovery &&
+                                          t != Track.daybreak,
+                                    )
+                                    .toList(),
+                                labelBuilder: _trackLabel,
+                                onChanged: (val) =>
+                                    controller.updateTrack(val!),
+                              ),
+                            ],
+                          ),
+                        ),
+                        _OnboardingStep(
+                          title: 'Bible\nPreferences',
+                          subtitle:
+                              'Choose your default translation for lookups.',
+                          child: _DropdownCard<Translation>(
+                            label: 'Preferred Translation',
+                            value: state.translation,
+                            items: Translation.values,
+                            labelBuilder: (t) => t == Translation.kjv
+                                ? 'King James Version'
+                                : 'Shona',
+                            onChanged: (val) =>
+                                controller.updateTranslation(val!),
+                          ),
+                        ),
+                        _OnboardingStep(
+                          title: 'Stay\nConsistent',
+                          subtitle:
+                              'Enable gentle reminders for your devotion and lessons.',
+                          child: _GlassCard(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _ReminderSwitch(
+                                  title: 'Daily Daybreak',
+                                  subtitle: 'Devotion reminder at 06:00',
+                                  value: state.dailyReminder,
+                                  onChanged: controller.toggleDaily,
+                                ),
+                                Divider(height: 24, color: Colors.white24),
+                                _ReminderSwitch(
+                                  title: 'Sunday School',
+                                  subtitle: 'Lesson reminder at 08:00',
+                                  value: state.sundayReminder,
+                                  onChanged: controller.toggleSunday,
+                                ),
+                                Divider(height: 24, color: Colors.white24),
+                                _ReminderSwitch(
+                                  title: 'Discovery',
+                                  subtitle: 'Mid-week unlock reminder',
+                                  value: state.discoveryReminder,
+                                  onChanged: controller.toggleDiscovery,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  _OnboardingStep(
-                    title: 'Bible\nPreferences',
-                    subtitle: 'Choose your default translation for lookups.',
-                    child: _DropdownCard<Translation>(
-                      label: 'Preferred Translation',
-                      value: state.translation,
-                      items: Translation.values,
-                      labelBuilder: (t) =>
-                          t == Translation.kjv ? 'King James Version' : 'Shona',
-                      onChanged: (val) => controller.updateTranslation(val!),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 32,
+                    ),
+                    child: Row(
+                      children: [
+                        _PageIndicator(count: 4, current: currentPage.value),
+                        const Spacer(),
+                        if (currentPage.value < 3)
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                            ),
+                            onPressed: () => pageController.nextPage(
+                              duration: const Duration(milliseconds: 600),
+                              curve: Curves.fastOutSlowIn,
+                            ),
+                            child: const Text(
+                              'Next',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          )
+                        else
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
+                            ),
+                            icon: const Icon(Icons.explore_rounded),
+                            label: const Text(
+                              'Get Started',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            onPressed: () => controller.complete(),
+                          ),
+                      ],
                     ),
                   ),
-                  _OnboardingStep(
-                    title: 'Notifications',
-                    subtitle: 'Stay consistent with gentle reminders.',
-                    child: AppCard(
-                      child: Column(
-                        children: [
-                          _ReminderSwitch(
-                            title: 'Daily Daybreak',
-                            subtitle: 'Devotion reminder at 06:00',
-                            value: state.dailyReminder,
-                            onChanged: controller.toggleDaily,
-                          ),
-                          const Divider(height: 32),
-                          _ReminderSwitch(
-                            title: 'Sunday School',
-                            subtitle: 'Lesson reminder at 08:00',
-                            value: state.sundayReminder,
-                            onChanged: controller.toggleSunday,
-                          ),
-                          const Divider(height: 32),
-                          _ReminderSwitch(
-                            title: 'Discovery',
-                            subtitle: 'Mid-week unlock reminder',
-                            value: state.discoveryReminder,
-                            onChanged: controller.toggleDiscovery,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: Row(
-                children: [
-                  _PageIndicator(count: 4, current: currentPage.value),
-                  const Spacer(),
-                  if (currentPage.value < 3)
-                    AppButton(
-                      label: 'Next',
-                      isFullWidth: false,
-                      onPressed: () => pageController.nextPage(
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeInOutExpo,
-                      ),
-                    )
-                  else
-                    AppButton(
-                      label: 'Get Started',
-                      isFullWidth: false,
-                      icon: Icons.explore_rounded,
-                      onPressed: () => controller.complete(),
-                    ),
                 ],
               ),
             ),
@@ -187,33 +265,75 @@ class _OnboardingStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          const SizedBox(height: 40),
+          Expanded(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: child,
+            ),
+          ),
+          const SizedBox(height: 32),
           Text(
             title,
-            style: theme.textTheme.displayMedium?.copyWith(
+            style: const TextStyle(
+              fontSize: 40,
               fontWeight: FontWeight.w900,
-              color: theme.colorScheme.onBackground,
+              color: Colors.white,
               height: 1.1,
-              letterSpacing: -1,
+              letterSpacing: -1.0,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             subtitle,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onBackground.withOpacity(0.6),
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.white.withOpacity(0.85),
               height: 1.4,
+              fontWeight: FontWeight.w400,
             ),
           ),
-          const SizedBox(height: 48),
-          Expanded(child: child),
+          const SizedBox(height: 24),
         ],
+      ),
+    );
+  }
+}
+
+class _GlassCard extends StatelessWidget {
+  const _GlassCard({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 16,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: child,
+        ),
       ),
     );
   }
@@ -236,25 +356,41 @@ class _DropdownCard<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
+    return _GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: Theme.of(context).textTheme.labelLarge),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              letterSpacing: 1.2,
+              color: Colors.white70,
+            ),
+          ),
           const SizedBox(height: 8),
-          DropdownButton<T>(
-            value: value,
-            isExpanded: true,
-            underline: const SizedBox(),
-            onChanged: onChanged,
-            items: items
-                .map(
-                  (item) => DropdownMenuItem<T>(
-                    value: item,
-                    child: Text(labelBuilder(item)),
-                  ),
-                )
-                .toList(),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<T>(
+              value: value,
+              isExpanded: true,
+              dropdownColor: const Color(0xFF2C2C2E),
+              icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+              onChanged: onChanged,
+              items: items
+                  .map(
+                    (item) => DropdownMenuItem<T>(
+                      value: item,
+                      child: Text(labelBuilder(item)),
+                    ),
+                  )
+                  .toList(),
+            ),
           ),
         ],
       ),
@@ -283,12 +419,33 @@ class _ReminderSwitch extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
             ],
           ),
         ),
-        Switch.adaptive(value: value, onChanged: onChanged),
+        Switch.adaptive(
+          value: value,
+          onChanged: onChanged,
+          activeColor: Colors.white,
+          activeTrackColor: Theme.of(context).colorScheme.primary,
+          inactiveThumbColor: Colors.white54,
+          inactiveTrackColor: Colors.white.withOpacity(0.2),
+        ),
       ],
     );
   }
@@ -302,19 +459,16 @@ class _PageIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Row(
       children: List.generate(count, (index) {
         final active = index == current;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           margin: const EdgeInsets.only(right: 8),
-          height: 8,
-          width: active ? 24 : 8,
+          height: 6,
+          width: active ? 24 : 6,
           decoration: BoxDecoration(
-            color: active
-                ? theme.colorScheme.primary
-                : theme.colorScheme.primary.withOpacity(0.2),
+            color: active ? Colors.white : Colors.white.withOpacity(0.3),
             borderRadius: BorderRadius.circular(4),
           ),
         );

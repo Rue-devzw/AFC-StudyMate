@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../data/drift/app_database.dart';
+import '../../../data/models/enums.dart';
+import '../../../data/models/journal_entry.dart';
 import '../../../data/models/lesson.dart';
 import '../../../data/services/progress_service.dart';
 import '../../../utils/scripture_reference_parser.dart';
 import '../../../widgets/design_system_widgets.dart';
 import '../../../widgets/linked_verse.dart';
+import 'package:uuid/uuid.dart';
 
 class SearchLessonView extends StatefulHookConsumerWidget {
   const SearchLessonView({required this.lesson, super.key});
@@ -48,22 +52,91 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
     final theme = Theme.of(context);
     final textTheme = theme.textTheme;
 
+    // Use the stored display number, or parse from ID as fallback
+    final lessonNumber =
+        widget.lesson.displayNumber?.toString() ??
+        widget.lesson.id.replaceAll('lesson_', '');
+    final unitTopic = (payload['unitTopic'] as String?)?.isNotEmpty == true
+        ? payload['unitTopic'] as String
+        : 'Search Unit';
+
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          if (keyVerse.isNotEmpty) ...<Widget>[
-            _KeyVerseBlock(text: keyVerse),
-            const SizedBox(height: 32),
-          ],
-          AppSectionTitle(title: 'Lesson Exposition'),
+          // Unit Topic, Lesson Number & Lesson Topic
+          Text(
+            unitTopic.toUpperCase(),
+            style: textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.primary,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'LESSON $lessonNumber',
+            style: textTheme.titleSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 1.2,
+            ),
+          ),
           const SizedBox(height: 12),
-          ..._buildExposition(context, exposition),
-          if (supplementalScripture.isNotEmpty) ...<Widget>[
-            const SizedBox(height: 32),
-            AppSectionTitle(title: 'Supplemental Scriptures'),
+          Text(
+            widget.lesson.title,
+            style: textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          if (keyVerse.isNotEmpty) ...<Widget>[
+            Text(
+              'KEY VERSE',
+              style: textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+                color: theme.colorScheme.primary,
+              ),
+            ),
             const SizedBox(height: 12),
+            _KeyVerseBlock(text: keyVerse),
+            const SizedBox(height: 40),
+          ],
+
+          Text(
+            'LESSON EXPOSITION',
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Divider(
+            thickness: 1,
+            color: theme.colorScheme.outline.withOpacity(0.3),
+          ),
+          const SizedBox(height: 16),
+
+          ..._buildExposition(context, exposition),
+
+          if (supplementalScripture.isNotEmpty) ...<Widget>[
+            const SizedBox(height: 40),
+            Text(
+              'SUPPLEMENTAL SCRIPTURES',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Divider(
+              thickness: 1,
+              color: theme.colorScheme.outline.withOpacity(0.3),
+            ),
+            const SizedBox(height: 16),
             Wrap(
               spacing: 12,
               runSpacing: 12,
@@ -80,60 +153,97 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
                   .toList(),
             ),
           ],
+
           if (resourceMaterial.isNotEmpty) ...<Widget>[
-            const SizedBox(height: 32),
-            AppSectionTitle(title: 'Resource Material'),
-            const SizedBox(height: 12),
+            const SizedBox(height: 40),
+            Text(
+              'RESOURCE MATERIAL',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Divider(
+              thickness: 1,
+              color: theme.colorScheme.outline.withOpacity(0.3),
+            ),
+            const SizedBox(height: 16),
             AppCard(
               child: Text(resourceMaterial, style: textTheme.bodyLarge),
             ),
           ],
+
           if (questions.isNotEmpty) ...<Widget>[
             const SizedBox(height: 48),
-            AppSectionTitle(
-              title: 'Interactive Reflection',
-              trailing: IconButton(
-                icon: const Icon(Icons.share_outlined),
-                onPressed: _shareReflections,
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'INTERACTIVE REFLECTION',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.share_outlined),
+                  onPressed: _shareReflections,
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            ...questions.map((question) {
+            Divider(
+              thickness: 1,
+              color: theme.colorScheme.outline.withOpacity(0.3),
+            ),
+            const SizedBox(height: 16),
+            ...questions.asMap().entries.map((entry) {
+              final index = entry.key;
+              final question = entry.value;
               final id = question['id'] as String? ?? 'q';
               final controller = _responses.putIfAbsent(
                 id,
                 () => TextEditingController(),
               );
-              return AppCard(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    _LinkedText(
-                      question['prompt'] as String? ??
-                          'Reflect on this question',
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: controller,
-                      maxLines: null,
-                      decoration: InputDecoration(
-                        hintText: 'Capture your thoughts here',
-                        filled: true,
-                        fillColor: theme.colorScheme.surfaceVariant.withOpacity(
-                          0.3,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: AppCard(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${index + 1}. ',
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Expanded(
+                            child: _LinkedText(
+                              question['prompt'] as String? ??
+                                  'Reflect on this question',
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      _JournalQuestionInput(
+                        lessonId: widget.lesson.id,
+                        questionId: id,
+                        prompt:
+                            question['prompt'] as String? ??
+                            'Reflect on this question',
+                        controller: controller,
+                      ),
+                    ],
+                  ),
                 ),
               );
             }),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
             AppButton(
               label: 'Share My Reflections',
               isFullWidth: true,
@@ -258,6 +368,152 @@ class _LinkedText extends StatelessWidget {
           style,
         ),
       ),
+    );
+  }
+}
+
+class _JournalQuestionInput extends StatefulHookConsumerWidget {
+  const _JournalQuestionInput({
+    required this.lessonId,
+    required this.questionId,
+    required this.prompt,
+    required this.controller,
+  });
+
+  final String lessonId;
+  final String questionId;
+  final String prompt;
+  final TextEditingController controller;
+
+  @override
+  ConsumerState<_JournalQuestionInput> createState() =>
+      _JournalQuestionInputState();
+}
+
+class _JournalQuestionInputState extends ConsumerState<_JournalQuestionInput> {
+  bool _hasAttemptedLoad = false;
+  bool _isSaving = false;
+  bool _saved = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    if (!_hasAttemptedLoad) {
+      _hasAttemptedLoad = true;
+      Future.microtask(() async {
+        final db = ref.read(appDatabaseProvider);
+        final entries = await db.getJournalEntries(
+          'local_user',
+          track: Track.search,
+        );
+        final myEntry = entries.firstWhere(
+          (e) =>
+              e.relatedLessonId == widget.lessonId &&
+              e.prompt == widget.questionId,
+          orElse: () => throw StateError('Not found'),
+        );
+        widget.controller.text = myEntry.response;
+      }).catchError((_) {
+        // No existing entry
+      });
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: widget.controller,
+          maxLines: null,
+          minLines: 3,
+          decoration: InputDecoration(
+            hintText: 'Capture your thoughts here',
+            filled: true,
+            fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
+              alpha: 0.3,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          onChanged: (_) {
+            if (_saved) setState(() => _saved = false);
+          },
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: _isSaving
+                ? null
+                : () async {
+                    if (widget.controller.text.trim().isEmpty) return;
+
+                    setState(() {
+                      _isSaving = true;
+                    });
+
+                    final db = ref.read(appDatabaseProvider);
+                    final uuid = const Uuid().v4();
+
+                    // We try to find existing entry to keep the same ID and createdAt
+                    String entryId = uuid;
+                    DateTime createdAt = DateTime.now();
+
+                    try {
+                      final entries = await db.getJournalEntries(
+                        'local_user',
+                        track: Track.search,
+                      );
+                      final existing = entries.firstWhere(
+                        (e) =>
+                            e.relatedLessonId == widget.lessonId &&
+                            e.prompt == widget.questionId,
+                      );
+                      entryId = existing.id;
+                      createdAt = existing.createdAt;
+                    } catch (_) {}
+
+                    await db.upsertJournalEntry(
+                      JournalEntry(
+                        id: entryId,
+                        userId: 'local_user',
+                        relatedLessonId: widget.lessonId,
+                        sourceTrack: Track.search,
+                        prompt: widget.questionId,
+                        response: widget.controller.text.trim(),
+                        createdAt: createdAt,
+                        updatedAt: DateTime.now(),
+                      ),
+                    );
+
+                    if (mounted) {
+                      setState(() {
+                        _isSaving = false;
+                        _saved = true;
+                      });
+
+                      Future.delayed(const Duration(seconds: 2), () {
+                        if (mounted) {
+                          setState(() {
+                            _saved = false;
+                          });
+                        }
+                      });
+                    }
+                  },
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(_saved ? Icons.check_circle : Icons.save),
+            label: Text(_saved ? 'Saved' : 'Save'),
+          ),
+        ),
+      ],
     );
   }
 }

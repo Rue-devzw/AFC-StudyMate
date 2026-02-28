@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../models/enums.dart';
 
@@ -15,15 +14,14 @@ class ScheduleService {
   int get currentSundayWeekIndex => weekIndexForTrack(Track.beginners);
 
   int get discoveryWeekIndex {
-    final now = today;
-    final weekday = now.weekday;
-    final wednesday = now.subtract(Duration(days: (weekday - DateTime.wednesday) % DateTime.daysPerWeek));
-    final startOfYear = DateTime(now.year, 1, 1);
-    final diff = wednesday.difference(startOfYear).inDays;
-    return diff ~/ DateTime.daysPerWeek;
+    return _weekIndexFromAnchor(DateTime(2023, 10, 5));
   }
 
-  int get daybreakIndex => int.parse(DateFormat('yyyyDDD').format(today));
+  int get daybreakIndex {
+    final anchor = DateTime(2026, 2, 21);
+    final normalizedToday = DateTime(today.year, today.month, today.day);
+    return max(0, normalizedToday.difference(anchor).inDays);
+  }
 
   Track trackForRole(Track preferred) => preferred;
 
@@ -31,7 +29,7 @@ class ScheduleService {
     switch (track) {
       case Track.search:
       case Track.primaryPals:
-        return _weekIndexFromAnchor(DateTime(2024, 9, 1));
+        return _weekIndexFromAnchor(DateTime(2024, 8, 25));
       default:
         final anchor = DateTime(today.year, 1, 1);
         return _weekIndexFromAnchor(anchor);

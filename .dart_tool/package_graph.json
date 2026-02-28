@@ -26,6 +26,7 @@
         "flutter_tts",
         "freezed_annotation",
         "go_router",
+        "google_fonts",
         "hooks_riverpod",
         "intl",
         "json_annotation",
@@ -217,6 +218,16 @@
       ]
     },
     {
+      "name": "google_fonts",
+      "version": "8.0.2",
+      "dependencies": [
+        "crypto",
+        "flutter",
+        "http",
+        "path_provider"
+      ]
+    },
+    {
       "name": "meta",
       "version": "1.17.0",
       "dependencies": []
@@ -289,11 +300,10 @@
     },
     {
       "name": "uuid",
-      "version": "4.5.2",
+      "version": "4.5.3",
       "dependencies": [
         "crypto",
-        "fixnum",
-        "meta"
+        "fixnum"
       ]
     },
     {
@@ -1019,6 +1029,16 @@
       ]
     },
     {
+      "name": "http",
+      "version": "1.6.0",
+      "dependencies": [
+        "async",
+        "http_parser",
+        "meta",
+        "web"
+      ]
+    },
+    {
       "name": "web",
       "version": "1.1.1",
       "dependencies": []
@@ -1045,16 +1065,6 @@
         "archive",
         "meta",
         "xml"
-      ]
-    },
-    {
-      "name": "http",
-      "version": "1.6.0",
-      "dependencies": [
-        "async",
-        "http_parser",
-        "meta",
-        "web"
       ]
     },
     {

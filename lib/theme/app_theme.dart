@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 final appThemeProvider = Provider<AppTheme>((ref) {
   return AppTheme();
@@ -27,16 +28,43 @@ class AppTheme {
       background: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
     );
 
+    // Create a base text theme using a Serif font for body
+    final serifTextTheme = GoogleFonts.crimsonTextTextTheme(
+      Typography.englishLike2021,
+    );
+
+    // Create a sans-serif text theme for headings
+    final sansSerifTextTheme = GoogleFonts.interTextTheme(
+      Typography.englishLike2021,
+    );
+
+    // Merge them: display and title use sans-serif, body uses serif
+    final customTextTheme = serifTextTheme
+        .copyWith(
+          displayLarge: sansSerifTextTheme.displayLarge,
+          displayMedium: sansSerifTextTheme.displayMedium,
+          displaySmall: sansSerifTextTheme.displaySmall,
+          headlineLarge: sansSerifTextTheme.headlineLarge,
+          headlineMedium: sansSerifTextTheme.headlineMedium,
+          headlineSmall: sansSerifTextTheme.headlineSmall,
+          titleLarge: sansSerifTextTheme.titleLarge,
+          titleMedium: sansSerifTextTheme.titleMedium,
+          titleSmall: sansSerifTextTheme.titleSmall,
+          labelLarge: sansSerifTextTheme.labelLarge,
+          labelMedium: sansSerifTextTheme.labelMedium,
+          labelSmall: sansSerifTextTheme.labelSmall,
+        )
+        .apply(
+          bodyColor: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF1E293B),
+          displayColor: isDark ? Colors.white : const Color(0xFF0F172A),
+        );
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: colorScheme.background,
       visualDensity: VisualDensity.adaptivePlatformDensity,
-      textTheme: Typography.englishLike2021.apply(
-        fontFamily: 'Inter',
-        bodyColor: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF1E293B),
-        displayColor: isDark ? Colors.white : const Color(0xFF0F172A),
-      ),
+      textTheme: customTextTheme,
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -52,7 +80,7 @@ class AppTheme {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.inter(
           fontSize: 24,
           fontWeight: FontWeight.w800,
           color: isDark ? Colors.white : const Color(0xFF0F172A),
@@ -65,7 +93,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.inter(
             fontWeight: FontWeight.bold,
             letterSpacing: 0.2,
           ),

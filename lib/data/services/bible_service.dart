@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/services.dart' show AssetBundle, rootBundle;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -19,13 +18,17 @@ final bibleServiceProvider = Provider<BibleService>((ref) {
 });
 
 class BibleService {
-  BibleService({AssetBundle? bundle, Future<Directory> Function()? supportDirectoryBuilder})
-      : _bundle = bundle ?? rootBundle,
-        _supportDirectoryBuilder = supportDirectoryBuilder ?? getApplicationSupportDirectory;
+  BibleService({
+    AssetBundle? bundle,
+    Future<Directory> Function()? supportDirectoryBuilder,
+  }) : _bundle = bundle ?? rootBundle,
+       _supportDirectoryBuilder =
+           supportDirectoryBuilder ?? getApplicationSupportDirectory;
 
   final AssetBundle _bundle;
   final Future<Directory> Function() _supportDirectoryBuilder;
-  final Map<Translation, Future<Database>> _databaseCache = <Translation, Future<Database>>{};
+  final Map<Translation, Future<Database>> _databaseCache =
+      <Translation, Future<Database>>{};
 
   Future<List<BibleBook>> getBooks(Translation translation) async {
     final db = await _databaseFor(translation);
@@ -61,7 +64,11 @@ class BibleService {
     return 0;
   }
 
-  Future<List<Verse>> getChapter(String book, int chapter, Translation translation) async {
+  Future<List<Verse>> getChapter(
+    String book,
+    int chapter,
+    Translation translation,
+  ) async {
     final db = await _databaseFor(translation);
     final result = db.select(
       'SELECT book_name_text, chapter, verse, text FROM bible_verses '
@@ -69,19 +76,23 @@ class BibleService {
       <Object?>[book, chapter],
     );
     return result
-        .map((row) => Verse(
-              row['book_name_text'] as String,
-              row['chapter'] as int,
-              row['verse'] as int,
-              row['text'] as String,
-            ))
+        .map(
+          (row) => Verse(
+            row['book_name_text'] as String,
+            row['chapter'] as int,
+            row['verse'] as int,
+            row['text'] as String,
+          ),
+        )
         .toList();
   }
 
   Future<List<Verse>> getPassage(BibleRef ref, Translation translation) async {
     final db = await _databaseFor(translation);
     final start = ref.verseStart ?? 1;
-    final end = ref.verseEnd ?? await _maxVerseInChapter(db, ref.book, ref.chapter, start);
+    final end =
+        ref.verseEnd ??
+        await _maxVerseInChapter(db, ref.book, ref.chapter, start);
     final result = db.select(
       'SELECT book_name_text, chapter, verse, text FROM bible_verses '
       'WHERE book_name_text = ? AND chapter = ? AND verse BETWEEN ? AND ? '
@@ -89,16 +100,21 @@ class BibleService {
       <Object?>[ref.book, ref.chapter, start, end],
     );
     return result
-        .map((row) => Verse(
-              row['book_name_text'] as String,
-              row['chapter'] as int,
-              row['verse'] as int,
-              row['text'] as String,
-            ))
+        .map(
+          (row) => Verse(
+            row['book_name_text'] as String,
+            row['chapter'] as int,
+            row['verse'] as int,
+            row['text'] as String,
+          ),
+        )
         .toList();
   }
 
-  Future<List<VerseSearchHit>> search(String query, Translation translation) async {
+  Future<List<VerseSearchHit>> search(
+    String query,
+    Translation translation,
+  ) async {
     final db = await _databaseFor(translation);
     final likeQuery = '%${query.trim()}%';
     final result = db.select(
@@ -109,7 +125,8 @@ class BibleService {
     return result
         .map(
           (row) => VerseSearchHit(
-            reference: '${row['book_name_text']} ${row['chapter']}:${row['verse']}',
+            reference:
+                '${row['book_name_text']} ${row['chapter']}:${row['verse']}',
             preview: row['text'] as String,
           ),
         )
@@ -125,7 +142,10 @@ class BibleService {
 
       if (!await file.exists()) {
         final data = await _bundle.load(assetPath);
-        final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+        final bytes = data.buffer.asUint8List(
+          data.offsetInBytes,
+          data.lengthInBytes,
+        );
         await file.create(recursive: true);
         await file.writeAsBytes(bytes, flush: true);
       }
@@ -134,7 +154,12 @@ class BibleService {
     });
   }
 
-  Future<int> _maxVerseInChapter(Database db, String book, int chapter, int fallback) async {
+  Future<int> _maxVerseInChapter(
+    Database db,
+    String book,
+    int chapter,
+    int fallback,
+  ) async {
     final result = db.select(
       'SELECT MAX(verse) AS maxVerse FROM bible_verses WHERE book_name_text = ? AND chapter = ?',
       <Object?>[book, chapter],
