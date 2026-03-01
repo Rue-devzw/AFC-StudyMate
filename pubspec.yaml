@@ -1,5 +1,5 @@
 name: afc_studymate
-description: "AFC StudyMate"
+description: "AFM SEAR StudyMate"
 version: 1.0.0+1
 publish_to: "none"
 
@@ -45,6 +45,7 @@ dependencies:
   printing: ^5.12.0
   meta: ^1.16.0
   google_fonts: ^8.0.2
+  syncfusion_flutter_pdfviewer: ^28.1.33
 
 flutter:
   uses-material-design: true
@@ -52,6 +53,12 @@ flutter:
     - assets/data/
     - assets/db/
     - assets/images/
+    - assets/pdfs/answer/
+    - assets/pdfs/answer_teachers/
+    - assets/pdfs/primary_pals_teachers/
+    - assets/pdfs/discovery_teachers/
+    - assets/images/discovery/
+    - assets/pdfs/daybreak/
 
 analyzer:
   exclude:
@@ -61,6 +68,7 @@ analyzer:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.13.1
   flutter_lints: ^6.0.0
   very_good_analysis: ^10.0.0
   build_runner: ^2.4.11
@@ -71,3 +79,9 @@ dev_dependencies:
   mocktail: ^1.0.4
   integration_test:
     sdk: flutter
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  min_sdk_android: 21

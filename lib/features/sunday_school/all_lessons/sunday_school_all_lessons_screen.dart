@@ -38,7 +38,9 @@ class SundaySchoolAllLessonsScreen extends HookConsumerWidget {
 const List<Track> _sundaySchoolTracks = <Track>[
   Track.beginners,
   Track.primaryPals,
+  Track.answer,
   Track.search,
+  Track.discovery,
 ];
 
 final _allSundayLessonsProvider = FutureProvider<Map<Track, List<Lesson>>>((
@@ -270,7 +272,12 @@ class _LessonsExplorer extends HookConsumerWidget {
           child: filteredLessons.isEmpty
               ? const Center(child: Text('No lessons match your filters yet.'))
               : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  padding: const EdgeInsets.fromLTRB(
+                    16,
+                    8,
+                    16,
+                    120,
+                  ), // Clear floating bottom bar
                   itemCount: filteredLessons.length,
                   itemBuilder: (BuildContext context, int index) {
                     final lesson = filteredLessons[index];
@@ -479,6 +486,8 @@ String _trackLabel(Track track) {
       return 'Answer (4th–8th)';
     case Track.search:
       return 'Search (High School–Adults)';
+    case Track.discovery:
+      return 'Discovery';
     default:
       final name = track.name;
       return name[0].toUpperCase() + name.substring(1);

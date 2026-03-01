@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'drop_cap_text.dart';
+import '../data/models/enums.dart';
 
 class AppCard extends StatelessWidget {
   const AppCard({
@@ -464,5 +465,41 @@ class PremiumScaffold extends StatelessWidget {
       bottomNavigationBar: bottomNavigationBar,
       floatingActionButton: floatingActionButton,
     );
+  }
+}
+
+extension TrackThemeExtension on Track {
+  Color get color {
+    switch (this) {
+      case Track.discovery:
+        return const Color(0xFF2ECC71); // Emerald
+      case Track.primaryPals:
+        return const Color(0xFF3498DB); // Blue
+      case Track.answer:
+        return const Color(0xFF9B59B6); // Amethyst
+      case Track.search:
+        return const Color(0xFF1ABC9C); // Turquoise
+      case Track.beginners:
+        return const Color(0xFFF1C40F); // Yellow
+      case Track.daybreak:
+        return const Color(0xFFE67E22); // Orange
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case Track.beginners:
+        return 'Beginners';
+      case Track.primaryPals:
+        return 'Primary Pals';
+      case Track.answer:
+        return 'The Answer';
+      case Track.search:
+        return 'Search';
+      case Track.discovery:
+        return 'Discovery';
+      case Track.daybreak:
+        return 'Daybreak';
+    }
   }
 }

@@ -74,7 +74,12 @@ class SundaySchoolScreen extends HookConsumerWidget {
             }
 
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                24,
+                16,
+                120,
+              ), // Clear floating bottom bar
               children: <Widget>[
                 if (isTeacher) ...[
                   Text(
@@ -86,7 +91,9 @@ class SundaySchoolScreen extends HookConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _TeacherToolkitCard(),
+                  _TeacherToolkitCard(
+                    currentDiscoveryLesson: lessons[Track.discovery],
+                  ),
                   const SizedBox(height: 32),
                 ],
                 Text(
@@ -101,6 +108,8 @@ class SundaySchoolScreen extends HookConsumerWidget {
                   (track) => _LessonPreviewCard(
                     track: track,
                     lesson: lessons[track],
+                    isTargetTrack: track == targetTrack,
+                    isTeacher: isTeacher,
                     onOpen: lessons[track] == null
                         ? null
                         : () {
@@ -166,31 +175,47 @@ class SundaySchoolScreen extends HookConsumerWidget {
 const List<Track> _sundaySchoolTracks = <Track>[
   Track.beginners,
   Track.primaryPals,
+  Track.answer,
   Track.search,
+  Track.discovery,
 ];
 
 final _currentLessonsProvider = FutureProvider<Map<Track, Lesson?>>((
   ref,
 ) async {
   final repository = ref.read(lessonRepositoryProvider);
+  final tracks = [
+    ..._sundaySchoolTracks,
+    Track.discovery,
+  ];
   final entries = await Future.wait(
-    _sundaySchoolTracks.map((track) async {
-      final lesson = await repository.getCurrentSundayLesson(track);
+    tracks.map((track) async {
+      final lesson = track == Track.discovery
+          ? await repository.getDiscoveryLesson()
+          : await repository.getCurrentSundayLesson(track);
       return MapEntry(track, lesson);
     }),
   );
   return Map<Track, Lesson?>.fromEntries(entries);
 });
 
-class _LessonPreviewCard extends StatelessWidget {
-  const _LessonPreviewCard({required this.track, this.lesson, this.onOpen});
+class _LessonPreviewCard extends ConsumerWidget {
+  const _LessonPreviewCard({
+    required this.track,
+    this.lesson,
+    this.onOpen,
+    this.isTargetTrack = false,
+    this.isTeacher = false,
+  });
 
   final Track track;
   final Lesson? lesson;
   final VoidCallback? onOpen;
+  final bool isTargetTrack;
+  final bool isTeacher;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final titleStyle = theme.textTheme.titleMedium?.copyWith(
       fontWeight: FontWeight.w700,
@@ -223,6 +248,7 @@ class _LessonPreviewCard extends StatelessWidget {
 
     return PremiumGlassCard(
       borderRadius: BorderRadius.circular(20),
+      borderOpacity: isTargetTrack ? 0.8 : 0.3,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -231,8 +257,8 @@ class _LessonPreviewCard extends StatelessWidget {
             children: <Widget>[
               CircleAvatar(
                 radius: 24,
-                backgroundColor: Colors.white.withOpacity(0.2),
-                child: Icon(_trackIcon(track), color: Colors.white),
+                backgroundColor: track.color.withOpacity(0.2),
+                child: Icon(_trackIcon(track), color: track.color),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -294,17 +320,50 @@ class _LessonPreviewCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton.icon(
-              onPressed: onOpen,
-              icon: const Icon(Icons.menu_book_rounded),
-              label: const Text('Open full lesson'),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: theme.colorScheme.primary,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (isTeacher && lesson != null)
+                FutureBuilder(
+                  future: ref
+                      .read(appDatabaseProvider)
+                      .getTeacherGuide(lesson!.id),
+                  builder: (context, snapshot) {
+                    final guide = snapshot.data;
+                    if (guide == null) return const SizedBox.shrink();
+
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: IconButton.filledTonal(
+                        onPressed: () {
+                          context.pushNamed(
+                            'teacher-guide',
+                            extra: guide,
+                            queryParameters: {
+                              'title': "${lesson!.title} Guide",
+                            },
+                          );
+                        },
+                        icon: const Icon(Icons.school_rounded),
+                        tooltip: "Teacher's Guide",
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white.withOpacity(0.15),
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              FilledButton.icon(
+                onPressed: onOpen,
+                icon: const Icon(Icons.menu_book_rounded),
+                label: const Text('Open full lesson'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: theme.colorScheme.primary,
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -327,7 +386,7 @@ class _TrackChip extends StatelessWidget {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Text(
-        _trackLabel(track),
+        track.label,
         style: theme.textTheme.labelSmall?.copyWith(color: Colors.white),
       ),
     );
@@ -346,6 +405,11 @@ String _lessonPreviewSnippet(Lesson lesson) {
           .firstWhereOrNull((value) => value.trim().isNotEmpty);
       break;
     case Track.primaryPals:
+      final story = (payload['story'] as List<dynamic>? ?? <dynamic>[])
+          .cast<String>();
+      raw = story.firstWhereOrNull((paragraph) => paragraph.trim().isNotEmpty);
+      break;
+    case Track.answer:
       final story = (payload['story'] as List<dynamic>? ?? <dynamic>[])
           .cast<String>();
       raw = story.firstWhereOrNull((paragraph) => paragraph.trim().isNotEmpty);
@@ -374,25 +438,14 @@ String _lessonPreviewSnippet(Lesson lesson) {
   return '${collapsed.substring(0, 217).trimRight()}…';
 }
 
-String _trackLabel(Track track) {
-  switch (track) {
-    case Track.beginners:
-      return 'Beginners';
-    case Track.primaryPals:
-      return 'Primary Pals';
-    case Track.search:
-      return 'Search';
-    default:
-      return track.name;
-  }
-}
-
 IconData _trackIcon(Track track) {
   switch (track) {
     case Track.beginners:
       return Icons.auto_awesome;
     case Track.primaryPals:
       return Icons.palette_outlined;
+    case Track.answer:
+      return Icons.auto_stories_outlined;
     case Track.search:
       return Icons.travel_explore_outlined;
     default:
@@ -400,10 +453,14 @@ IconData _trackIcon(Track track) {
   }
 }
 
-class _TeacherToolkitCard extends StatelessWidget {
+class _TeacherToolkitCard extends ConsumerWidget {
+  const _TeacherToolkitCard({this.currentDiscoveryLesson});
+  final Lesson? currentDiscoveryLesson;
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+
     return PremiumGlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,7 +473,7 @@ class _TeacherToolkitCard extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               const Text(
-                'Class Management',
+                'Teacher\'s Toolkit',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -428,10 +485,10 @@ class _TeacherToolkitCard extends StatelessWidget {
           const SizedBox(height: 16),
           _ToolkitItem(
             icon: Icons.description_outlined,
-            label: 'Teacher\'s Guides (PDF)',
-            subtitle: 'Access depth-material & hints',
+            label: 'Teacher\'s Guides',
+            subtitle: 'Access guides for all classes',
             onTap: () {
-              // TODO: Navigate to Teacher Guides browser/viewer
+              context.pushNamed('teacherGuides');
             },
           ),
           const Divider(height: 24, color: Colors.white10),

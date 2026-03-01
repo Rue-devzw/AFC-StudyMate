@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../data/drift/app_database.dart';
 import '../../../data/models/enums.dart';
+import '../../../data/services/progress_service.dart';
 import '../../../data/models/journal_entry.dart';
 import '../../../data/models/lesson.dart';
-import '../../../data/services/progress_service.dart';
 import '../../../utils/scripture_reference_parser.dart';
 import '../../../widgets/design_system_widgets.dart';
 import '../../../widgets/linked_verse.dart';
-import 'package:uuid/uuid.dart';
 
 class SearchLessonView extends StatefulHookConsumerWidget {
   const SearchLessonView({required this.lesson, super.key});
@@ -63,8 +63,10 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          // ... rest of the children are fine
           // Unit Topic, Lesson Number & Lesson Topic
           Text(
             unitTopic.toUpperCase(),
@@ -84,11 +86,16 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
             ),
           ),
           const SizedBox(height: 12),
-          Text(
-            widget.lesson.title,
-            style: textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.w900,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  widget.lesson.title,
+                  style: textTheme.headlineMedium?.copyWith(),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 32),
 
@@ -270,7 +277,6 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
               }
             },
           ),
-          const SizedBox(height: 32),
         ],
       ),
     );

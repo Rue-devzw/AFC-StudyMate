@@ -1,6 +1,6 @@
-# AFC StudyMate
+# AFM SEAR StudyMate
 
-AFC StudyMate is an offline-first Flutter application designed to support Apostolic Faith Church Sunday School learners across Beginners, Primary Pals, Answer, Search, Discovery, and Daybreak tracks. The app bundles curriculum content and Scripture locally, providing a gentle British English interface with accessible, large-tap experiences.
+AFM SEAR StudyMate is an offline-first Flutter application designed to support Apostolic Faith Church Sunday School learners across Beginners, Primary Pals, Answer, Search, Discovery, and Daybreak tracks. The app bundles curriculum content and Scripture locally, providing a gentle British English interface with accessible, large-tap experiences.
 
 ## Getting started
 

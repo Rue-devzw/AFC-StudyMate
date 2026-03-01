@@ -12,9 +12,13 @@ import 'features/onboarding/onboarding_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/sunday_school/all_lessons/sunday_school_all_lessons_screen.dart';
+import 'widgets/pdf_viewer_screen.dart';
 import 'features/sunday_school/all_lessons/sunday_school_lesson_detail_screen.dart';
 import 'features/sunday_school/sunday_school_screen.dart';
 import 'features/today/today_screen.dart';
+import 'features/sunday_school/teacher_guide_view.dart';
+import 'features/sunday_school/teacher_guides_screen.dart';
+import 'data/models/teacher_guide.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -77,6 +81,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                       }
                       return SundaySchoolLessonDetailScreen(lessonId: lessonId);
                     },
+                  ),
+                  GoRoute(
+                    path: 'teacher-guides',
+                    name: TeacherGuidesScreen.routeName,
+                    builder: (BuildContext context, GoRouterState state) =>
+                        const TeacherGuidesScreen(),
                   ),
                 ],
               ),
@@ -145,6 +155,39 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: DiscoveryScreen.routeName,
         builder: (BuildContext context, GoRouterState state) =>
             const DiscoveryScreen(),
+      ),
+      GoRoute(
+        path: '/pdf-viewer',
+        name: PdfViewerScreen.routeName,
+        builder: (BuildContext context, GoRouterState state) {
+          final pdfPath = state.uri.queryParameters['path'] ?? '';
+          final title = state.uri.queryParameters['title'];
+          final pageStr = state.uri.queryParameters['page'];
+          final initialPage = int.tryParse(pageStr ?? '');
+          return PdfViewerScreen(
+            pdfPath: pdfPath,
+            title: title,
+            initialPage: initialPage,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/teacher-guide',
+        name: 'teacher-guide',
+        builder: (BuildContext context, GoRouterState state) {
+          final guide = state.extra as TeacherGuide?;
+          final title =
+              state.uri.queryParameters['title'] ?? 'Teacher\'s Guide';
+          if (guide == null) {
+            return const Scaffold(
+              body: Center(child: Text('Error loading guide')),
+            );
+          }
+          return TeacherGuideView(
+            guide: guide,
+            title: title,
+          );
+        },
       ),
     ],
   );

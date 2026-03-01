@@ -14,6 +14,7 @@ import '../models/note.dart';
 import '../models/progress.dart';
 import '../models/journal_entry.dart';
 import '../models/user_profile.dart';
+import '../models/teacher_guide.dart';
 
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
@@ -27,6 +28,7 @@ class AppDatabase {
   final Map<String, Note> _notes = <String, Note>{};
   final Map<String, JournalEntry> _journalEntries = <String, JournalEntry>{};
   final Map<String, String> _settings = <String, String>{};
+  final Map<String, TeacherGuide> _teacherGuides = <String, TeacherGuide>{};
   UserProfile? _profile;
   Map<String, MemoryVerse> _memoryVerses = <String, MemoryVerse>{};
   Future<void>? _seedFuture;
@@ -111,6 +113,49 @@ class AppDatabase {
     }
   }
 
+  Future<void> importTeacherGuidesFromAsset(String assetPath) async {
+    final raw = await rootBundle.loadString(assetPath);
+    final decoded = jsonDecode(raw);
+    if (decoded is List) {
+      final entries = decoded.whereType<Map<String, dynamic>>().toList();
+      for (final rawGuide in entries) {
+        final guide = TeacherGuide.fromJson(rawGuide);
+        _teacherGuides[guide.lessonId] = guide;
+      }
+    }
+  }
+
+  Future<TeacherGuide?> getTeacherGuide(String lessonId) async {
+    await _ensureInitialized();
+    if (_seedFuture != null) await _seedFuture;
+
+    // Search track shares Answer track's guides
+    // Answer lessons have id 'answer_lesson_X', Search lessons have 'search_lesson_X'
+    // But the payload id for Answer is actually `answer_1` or `answer_lesson_1`?
+    // Let's resolve the underlying ID. Our generated JSON has `primary_pals_1`, `answer_1`.
+
+    // First, check direct hit
+    if (_teacherGuides.containsKey(lessonId)) {
+      return _teacherGuides[lessonId];
+    }
+
+    // Try regex matching to adapt 'primary_pals_lesson_1' to 'primary_pals_1'
+    final match = RegExp(
+      r'(primary_pals|answer|discovery|search)_.*?(\d+)',
+    ).firstMatch(lessonId);
+    if (match != null) {
+      var trackPrefix = match.group(1);
+      final numStr = match.group(2);
+      if (trackPrefix == 'search') {
+        trackPrefix = 'answer';
+      }
+      final mappedId = '${trackPrefix}_$numStr';
+      return _teacherGuides[mappedId];
+    }
+
+    return null;
+  }
+
   List<Lesson> _parseLessonsForTrack(dynamic decoded, Track track) {
     switch (track) {
       case Track.beginners:
@@ -135,8 +180,14 @@ class AppDatabase {
             _mapPrimaryPalsLesson(entries[index], index),
         ];
       case Track.answer:
-        // Answer lessons are not yet available in the local dataset.
-        return <Lesson>[];
+        if (decoded is! List) {
+          return <Lesson>[];
+        }
+        final entries = decoded.whereType<Map<String, dynamic>>().toList();
+        return <Lesson>[
+          for (var index = 0; index < entries.length; index++)
+            _mapAnswerLesson(entries[index], index),
+        ];
       case Track.search:
         if (decoded is! List) {
           return <Lesson>[];
@@ -243,6 +294,49 @@ class AppDatabase {
       track: Track.primaryPals,
       title: _coerceString(raw['title'], 'Lesson'),
       bibleReferences: _parseBibleReferences(raw['bibleReference']),
+      payload: payload,
+      weekIndex: (raw['weekIndex'] as int?) ?? index,
+      dayIndex: raw['dayIndex'] as int?,
+      displayNumber: _parseLessonNumber(raw['id'] ?? raw['lesson_id']),
+    );
+  }
+
+  Lesson _mapAnswerLesson(Map<String, dynamic> raw, int index) {
+    final activities = (raw['activities'] as List<dynamic>? ?? <dynamic>[])
+        .whereType<Map<String, dynamic>>()
+        .map(
+          (activity) => <String, dynamic>{
+            'type': activity['type'] ?? 'Activity',
+            'title': activity['title'],
+            'instructions': activity['instructions'] ?? '',
+            'data': activity,
+          },
+        )
+        .toList();
+
+    final keyVerseRaw = raw['key_verse'];
+    Map<String, dynamic>? keyVerse;
+    if (keyVerseRaw is Map<String, dynamic>) {
+      keyVerse = keyVerseRaw;
+    } else if (keyVerseRaw is String) {
+      keyVerse = {'title': 'KEY VERSE', 'text': keyVerseRaw};
+    }
+
+    final payload = <String, dynamic>{
+      'story': (raw['story'] as List<dynamic>? ?? <dynamic>[]).cast<String>(),
+      if (keyVerse != null) 'keyVerse': keyVerse,
+      'activities': activities,
+    };
+
+    return Lesson(
+      id: _coerceString(raw['id'] ?? raw['lesson_id'], 'answer_lesson_$index'),
+      track: Track.answer,
+      title: _coerceString(raw['title'], 'The Answer Lesson'),
+      bibleReferences: _parseBibleReferences(
+        [
+          {'verses': raw['bible_text']},
+        ],
+      ), // Temporary parse logic for direct string if needed, or structured later
       payload: payload,
       weekIndex: (raw['weekIndex'] as int?) ?? index,
       dayIndex: raw['dayIndex'] as int?,
@@ -423,6 +517,10 @@ class AppDatabase {
       Track.primaryPals,
     );
     await importLessonsFromAsset(
+      'assets/data/the_answer_lessons.json',
+      Track.answer,
+    );
+    await importLessonsFromAsset(
       'assets/data/search_lessons.json',
       Track.search,
     );
@@ -433,6 +531,16 @@ class AppDatabase {
     await importLessonsFromAsset(
       'assets/data/daybreak_lessons.json',
       Track.daybreak,
+    );
+
+    await importTeacherGuidesFromAsset(
+      'assets/data/primary_pals_teacher_guides.json',
+    );
+    await importTeacherGuidesFromAsset(
+      'assets/data/answer_teacher_guides.json',
+    );
+    await importTeacherGuidesFromAsset(
+      'assets/data/discovery_teacher_guides.json',
     );
   }
 

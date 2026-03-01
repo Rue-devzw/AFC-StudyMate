@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:afc_studymate/app_router.dart';
 import 'package:afc_studymate/data/services/app_bootstrap_service.dart';
+import 'package:afc_studymate/features/splash/splash_screen.dart';
+import 'package:go_router/go_router.dart';
 import 'package:afc_studymate/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,10 +22,12 @@ Future<void> main() async {
   final container = ProviderContainer();
   await container.read(appBootstrapServiceProvider).bootstrap();
 
-  runApp(UncontrolledProviderScope(
-    container: container,
-    child: const StudyMateApp(),
-  ));
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const StudyMateApp(),
+    ),
+  );
 }
 
 class StudyMateApp extends HookConsumerWidget {
@@ -34,13 +38,12 @@ class StudyMateApp extends HookConsumerWidget {
     final router = ref.watch(appRouterProvider);
     final theme = ref.watch(appThemeProvider);
 
-    return MaterialApp.router(
-      title: 'AFC StudyMate',
+    return MaterialApp(
+      title: 'AFM SEAR StudyMate',
       debugShowCheckedModeBanner: false,
       themeMode: ref.watch(theme.themeModeProvider),
       theme: theme.lightTheme,
       darkTheme: theme.darkTheme,
-      routerConfig: router,
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         GlobalMaterialLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
@@ -49,6 +52,36 @@ class StudyMateApp extends HookConsumerWidget {
       supportedLocales: const <Locale>[
         Locale('en', 'GB'),
       ],
+      home: _SplashWrapper(router: router),
+    );
+  }
+}
+
+/// Shows [SplashScreen] first, then hands off to the GoRouter-powered app.
+class _SplashWrapper extends StatefulWidget {
+  const _SplashWrapper({required this.router});
+  final GoRouter router;
+
+  @override
+  State<_SplashWrapper> createState() => _SplashWrapperState();
+}
+
+class _SplashWrapperState extends State<_SplashWrapper> {
+  bool _showSplash = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showSplash) {
+      return SplashScreen(
+        onComplete: () => setState(() => _showSplash = false),
+      );
+    }
+
+    return Router<Object?>(
+      routerDelegate: widget.router.routerDelegate,
+      routeInformationParser: widget.router.routeInformationParser,
+      routeInformationProvider: widget.router.routeInformationProvider,
+      backButtonDispatcher: widget.router.backButtonDispatcher,
     );
   }
 }

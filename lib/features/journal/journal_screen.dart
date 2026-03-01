@@ -7,6 +7,7 @@ import '../../data/drift/app_database.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/journal_entry.dart';
 import '../../data/repositories/lesson_repository.dart';
+import '../../data/providers/user_providers.dart';
 import '../../widgets/design_system_widgets.dart';
 
 final _journalEntriesProvider =
@@ -65,17 +66,25 @@ class _JournalScreenState extends ConsumerState<JournalScreen>
           ),
           indicatorColor: Colors.white,
           indicatorWeight: 3,
-          tabs: const [
-            Tab(text: 'Daybreak'),
-            Tab(text: 'Search'),
+          tabs: [
+            const Tab(text: 'Daybreak'),
+            Tab(
+              text:
+                  ref.watch(userProfileProvider).value?.targetTrack.label ??
+                  'Class',
+            ),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
-          _JournalList(track: Track.daybreak),
-          _JournalList(track: Track.search),
+        children: [
+          const _JournalList(track: Track.daybreak),
+          _JournalList(
+            track:
+                ref.watch(userProfileProvider).value?.targetTrack ??
+                Track.search,
+          ),
         ],
       ),
     );
@@ -133,7 +142,12 @@ class _JournalList extends ConsumerWidget {
         }
 
         return ListView.separated(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            120,
+          ), // Clear floating bottom bar
           itemCount: entries.length,
           separatorBuilder: (_, __) => const SizedBox(height: 16),
           itemBuilder: (context, index) {

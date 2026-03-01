@@ -31,44 +31,50 @@ class _ActivityMatchingState extends State<ActivityMatching> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Match the pairs', style: Theme.of(context).textTheme.titleLarge),
+          Text(
+            'Match the pairs',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const SizedBox(height: 16),
-          Expanded(
-            child: ListView.builder(
-              itemCount: targets.length,
-              itemBuilder: (BuildContext context, int index) {
-                final key = targets[index];
-                return Card(
-                  child: ListTile(
-                    title: Text(key),
-                    subtitle: DropdownButton<String>(
-                      isExpanded: true,
-                      value: _answers[key],
-                      hint: const Text('Select'),
-                      onChanged: (String? value) {
-                        setState(() {
-                          _answers[key] = value;
-                          _showResult = false;
-                        });
-                      },
-                      items: options
-                          .map(
-                            (option) => DropdownMenuItem<String>(
-                              value: option,
-                              child: Text(option),
-                            ),
-                          )
-                          .toList(),
-                    ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: targets.length,
+            itemBuilder: (BuildContext context, int index) {
+              final key = targets[index];
+              return Card(
+                child: ListTile(
+                  title: Text(key),
+                  subtitle: DropdownButton<String>(
+                    isExpanded: true,
+                    value: _answers[key],
+                    hint: const Text('Select'),
+                    onChanged: (String? value) {
+                      setState(() {
+                        _answers[key] = value;
+                        _showResult = false;
+                      });
+                    },
+                    items: options
+                        .map(
+                          (option) => DropdownMenuItem<String>(
+                            value: option,
+                            child: Text(option),
+                          ),
+                        )
+                        .toList(),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
           ),
           if (_showResult)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Text(_resultText(), style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                _resultText(),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
           ElevatedButton(
             onPressed: () {

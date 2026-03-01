@@ -17,48 +17,134 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   final Logger _logger = Logger();
 
+  static const String _channelId = 'studymate_reminders';
+  static const String _channelName = 'Daily Reminders';
+
+  static const NotificationDetails _details = NotificationDetails(
+    android: AndroidNotificationDetails(
+      _channelId,
+      _channelName,
+      channelDescription: 'Daily study and devotion reminders',
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    ),
+    iOS: DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    ),
+  );
+
   Future<void> initialise() async {
-    const initializationSettings = InitializationSettings(
+    const initSettings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      iOS: DarwinInitializationSettings(),
+      iOS: DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      ),
     );
     await _notifications.initialize(
-      settings: initializationSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: (response) {
         final payload = response.payload;
         if (payload != null && payload.isNotEmpty) {
-          _logger.i('Notification payload: $payload');
-          // Navigate to the lesson or screen specified in the payload
+          _logger.i('Notification tapped: $payload');
           rootNavigatorKey.currentContext?.go(payload);
         }
       },
     );
   }
 
-  Future<void> scheduleWeeklyReminder({
+  Future<bool> requestPermission() async {
+    final android = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    final ios = _notifications
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+
+    final androidGranted =
+        await android?.requestNotificationsPermission() ?? true;
+    final iosGranted =
+        await ios?.requestPermissions(alert: true, badge: true, sound: true) ??
+        true;
+
+    return androidGranted && iosGranted;
+  }
+
+  /// Schedule a daily repeating reminder at [hour]:[minute] local time.
+  Future<void> scheduleDaily({
     required int hour,
     required int minute,
-    required String id,
-    required String title,
-    required String body,
-    required DateTime firstInstance,
+    String title = 'AFC StudyMate',
+    String body = 'Time for your daily devotion and study! 📖',
   }) async {
+    await _notifications.cancelAll();
+
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
     await _notifications.zonedSchedule(
-      id: id.hashCode,
+      id: 0,
+      scheduledDate: scheduledDate,
+      notificationDetails: _details,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       title: title,
       body: body,
-      scheduledDate: tz.TZDateTime.from(firstInstance, tz.local).add(
-        Duration(
-          hours: hour - firstInstance.hour,
-          minutes: minute - firstInstance.minute,
-        ),
-      ),
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails('studyMate', 'Reminders'),
-        iOS: DarwinNotificationDetails(),
-      ),
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+    _logger.i('Daily reminder scheduled at $hour:$minute');
+  }
+
+  /// Schedule a weekly Sunday School reminder.
+  Future<void> scheduleWeeklySundayReminder({
+    required int hour,
+    required int minute,
+  }) async {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduledDate = tz.TZDateTime(
+      tz.local,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
+    while (scheduledDate.weekday != DateTime.sunday) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 7));
+    }
+
+    await _notifications.zonedSchedule(
+      id: 1,
+      scheduledDate: scheduledDate,
+      notificationDetails: _details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      title: 'Sunday School Today!',
+      body: 'Your weekly lesson is ready. Tap to study! 🎓',
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
+    _logger.i('Weekly Sunday reminder scheduled at $hour:$minute');
+  }
+
+  Future<void> cancelAll() async {
+    await _notifications.cancelAll();
+    _logger.i('All notifications cancelled');
   }
 }

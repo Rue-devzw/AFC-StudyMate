@@ -294,7 +294,12 @@ class BibleScreen extends HookConsumerWidget {
                         selectedChapter.value == initialChapterNumber);
 
                 return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(20, 32, 20, 100),
+                  padding: const EdgeInsets.fromLTRB(
+                    20,
+                    32,
+                    20,
+                    120,
+                  ), // Clear floating bottom bar
                   itemBuilder: (BuildContext context, int index) {
                     final verse = verses[index];
                     final verseText = SelectableText.rich(

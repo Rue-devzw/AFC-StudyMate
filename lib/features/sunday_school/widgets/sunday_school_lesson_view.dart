@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../data/models/enums.dart';
 import '../../../data/models/lesson.dart';
+import '../answer/answer_lesson_view.dart';
 import '../beginners/beginners_lesson_view.dart';
+import '../discovery/discovery_lesson_view.dart';
 import '../primary_pals/primary_pals_lesson_view.dart';
 import '../search/search_lesson_view.dart';
 
@@ -16,7 +18,9 @@ class SundaySchoolLessonView extends StatelessWidget {
     return switch (lesson.track) {
       Track.beginners => BeginnersLessonView(lesson: lesson),
       Track.primaryPals => PrimaryPalsLessonView(lesson: lesson),
+      Track.answer => AnswerLessonView(lesson: lesson),
       Track.search => SearchLessonView(lesson: lesson),
+      Track.discovery => DiscoveryLessonView(lesson: lesson),
       _ => _ComingSoonPlaceholder(lesson: lesson),
     };
   }

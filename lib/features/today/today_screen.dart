@@ -61,7 +61,6 @@ class TodayScreen extends HookConsumerWidget {
     final asyncData = ref.watch(_dashboardDataProvider);
     final theme = Theme.of(context);
     final now = DateTime.now();
-    final greeting = _getGreeting(now.hour);
     final dateString = DateFormat('EEEE, MMM d').format(now);
 
     return PremiumScaffold(
@@ -71,26 +70,42 @@ class TodayScreen extends HookConsumerWidget {
           SliverAppBar.large(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  greeting,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
+            title: asyncData.when(
+              data: (data) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _getGreeting(now.hour, data.profile.name),
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                Text(
-                  dateString,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: Colors.white.withOpacity(0.7),
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.0,
+                  Text(
+                    dateString,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.0,
+                    ),
                   ),
+                ],
+              ),
+              loading: () => Text(
+                _getGreeting(now.hour, ''),
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
                 ),
-              ],
+              ),
+              error: (_, __) => Text(
+                _getGreeting(now.hour, ''),
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                ),
+              ),
             ),
             stretch: true,
             surfaceTintColor: Colors.transparent,
@@ -136,10 +151,10 @@ class TodayScreen extends HookConsumerWidget {
                   _ActionCard(
                     title: 'Sunday School',
                     subtitle: data.sundaySchool != null
-                        ? '${_trackLabel(data.profile.targetTrack)}: ${data.sundaySchool!.title}'
+                        ? '${data.profile.targetTrack.label}: ${data.sundaySchool!.title}'
                         : 'This week\'s lesson',
                     icon: Icons.school_rounded,
-                    color: Colors.blueAccent.shade200,
+                    color: data.profile.targetTrack.color,
                     onTap: () {
                       context.go('/home/sunday-school');
                     },
@@ -156,7 +171,9 @@ class TodayScreen extends HookConsumerWidget {
                       context.pushNamed('discovery');
                     },
                   ),
-                  const SizedBox(height: 60),
+                  const SizedBox(
+                    height: 120,
+                  ), // Clear the floating glass bottom bar
                 ]),
               ),
               loading: () => const SliverFillRemaining(
@@ -179,23 +196,14 @@ class TodayScreen extends HookConsumerWidget {
     );
   }
 
-  String _getGreeting(int hour) {
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  }
-
-  String _trackLabel(Track track) {
-    switch (track) {
-      case Track.beginners:
-        return 'Beginners';
-      case Track.primaryPals:
-        return 'Primary Pals';
-      case Track.search:
-        return 'Search';
-      default:
-        return track.name[0].toUpperCase() + track.name.substring(1);
-    }
+  String _getGreeting(int hour, String name) {
+    final firstName = name.split(' ').first;
+    final suffix = firstName.isNotEmpty && firstName != 'Learner'
+        ? ', $firstName!'
+        : '!';
+    if (hour < 12) return 'Good morning$suffix';
+    if (hour < 17) return 'Good afternoon$suffix';
+    return 'Good evening$suffix';
   }
 }
 

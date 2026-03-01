@@ -29,35 +29,48 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
 
   @override
   Widget build(BuildContext context) {
-    final sections = (widget.lesson.payload['sections'] as List<dynamic>? ?? <dynamic>[])
-        .map((dynamic e) => e as Map<String, dynamic>)
-        .toList();
+    final sections =
+        (widget.lesson.payload['sections'] as List<dynamic>? ?? <dynamic>[])
+            .map((dynamic e) => e as Map<String, dynamic>)
+            .toList();
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Expanded(
-          child: PageView.builder(
-            controller: _controller,
-            itemCount: sections.length,
-            onPageChanged: (value) => setState(() => _index = value),
-            itemBuilder: (BuildContext context, int index) {
-              final section = sections[index];
-              final type = (section['sectionType'] as String? ?? 'text').toLowerCase();
-              final title = section['sectionTitle'] as String? ?? 'Story moment';
-              final content = section['sectionContent'] as String? ?? 'Content coming soon.';
-              final imagePath = section['imagePath'] as String?;
+        SizedBox(
+          height: 700,
+          child: Semantics(
+            explicitChildNodes: true,
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: sections.length,
+              onPageChanged: (value) => setState(() => _index = value),
+              itemBuilder: (BuildContext context, int index) {
+                final section = sections[index];
+                final type = (section['sectionType'] as String? ?? 'text')
+                    .toLowerCase();
+                final title =
+                    section['sectionTitle'] as String? ?? 'Story moment';
+                final content =
+                    section['sectionContent'] as String? ??
+                    'Content coming soon.';
+                final imagePath = section['imagePath'] as String?;
 
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(title, style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: Card(
+                return SingleChildScrollView(
+                  primary: false,
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 16),
+                      Card(
                         clipBehavior: Clip.antiAlias,
-                        child: SingleChildScrollView(
+                        child: Padding(
                           padding: const EdgeInsets.all(24),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,7 +80,10 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
                                   padding: const EdgeInsets.only(bottom: 16),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
-                                    child: Image.asset(imagePath, fit: BoxFit.cover),
+                                    child: Image.asset(
+                                      imagePath,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 ),
                               Text(
@@ -79,19 +95,29 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
                                 const SizedBox(height: 16),
                                 Container(
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary.withOpacity(0.08),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   padding: const EdgeInsets.all(16),
                                   child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: <Widget>[
-                                      Icon(Icons.question_answer,
-                                          color: Theme.of(context).colorScheme.primary),
+                                      Icon(
+                                        Icons.question_answer,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                      ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Text(
                                           'Ask this question to spark a conversation!',
-                                          style: Theme.of(context).textTheme.bodyMedium,
+                                          style: Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium,
                                         ),
                                       ),
                                     ],
@@ -102,11 +128,11 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
                           ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ),
         if (sections.length > 1)
@@ -130,8 +156,9 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
                 label: const Text('Previous'),
               ),
               OutlinedButton.icon(
-                onPressed:
-                    sections.length <= 1 ? null : () => _goRelative(sections.length, 1),
+                onPressed: sections.length <= 1
+                    ? null
+                    : () => _goRelative(sections.length, 1),
                 icon: const Icon(Icons.arrow_forward_ios),
                 label: const Text('Next'),
               ),

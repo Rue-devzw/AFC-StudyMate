@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../data/drift/app_database.dart';
@@ -26,6 +27,35 @@ class DiscoveryScreen extends HookConsumerWidget {
         title: const Text('Discovery', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: discoveryAsync.valueOrNull != null
+            ? [
+                FutureBuilder(
+                  future: ref
+                      .read(appDatabaseProvider)
+                      .getTeacherGuide(discoveryAsync.valueOrNull!.id),
+                  builder: (context, snapshot) {
+                    final guide = snapshot.data;
+                    if (guide == null) {
+                      return const SizedBox.shrink();
+                    }
+                    return IconButton(
+                      icon: const Icon(Icons.school, color: Colors.white),
+                      tooltip: "View Teacher's Guide",
+                      onPressed: () {
+                        context.pushNamed(
+                          'teacher-guide',
+                          extra: guide,
+                          queryParameters: {
+                            'title':
+                                "${discoveryAsync.valueOrNull!.title} Teacher's Guide",
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+              ]
+            : null,
       ),
       body: discoveryAsync.when(
         data: (lesson) => lesson == null
