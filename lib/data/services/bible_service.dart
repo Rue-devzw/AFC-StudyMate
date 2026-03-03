@@ -1,15 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:afc_studymate/data/models/bible_book.dart';
+import 'package:afc_studymate/data/models/bible_ref.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/verse.dart';
 import 'package:flutter/services.dart' show AssetBundle, rootBundle;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqlite3/sqlite3.dart';
-
-import '../models/bible_book.dart';
-import '../models/bible_ref.dart';
-import '../models/enums.dart';
-import '../models/verse.dart';
 
 final bibleServiceProvider = Provider<BibleService>((ref) {
   final service = BibleService();

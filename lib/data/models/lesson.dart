@@ -15,6 +15,23 @@ class Lesson {
     this.displayNumber,
   });
 
+  factory Lesson.fromJson(Map<String, dynamic> json) {
+    return Lesson(
+      id: json['id'] as String,
+      track: Track.values.firstWhere((value) => value.name == json['track']),
+      title: json['title'] as String,
+      bibleReferences: (json['bibleReferences'] as List<dynamic>)
+          .map(
+            (dynamic item) => BibleRef.fromJson(item as Map<String, dynamic>),
+          )
+          .toList(),
+      payload: Map<String, dynamic>.from(json['payload'] as Map),
+      weekIndex: json['weekIndex'] as int?,
+      dayIndex: json['dayIndex'] as int?,
+      displayNumber: json['displayNumber'] as int?,
+    );
+  }
+
   final String id;
   final Track track;
   final String title;
@@ -56,23 +73,6 @@ class Lesson {
     'dayIndex': dayIndex,
     'displayNumber': displayNumber,
   };
-
-  factory Lesson.fromJson(Map<String, dynamic> json) {
-    return Lesson(
-      id: json['id'] as String,
-      track: Track.values.firstWhere((value) => value.name == json['track']),
-      title: json['title'] as String,
-      bibleReferences: (json['bibleReferences'] as List<dynamic>)
-          .map(
-            (dynamic item) => BibleRef.fromJson(item as Map<String, dynamic>),
-          )
-          .toList(),
-      payload: Map<String, dynamic>.from(json['payload'] as Map),
-      weekIndex: json['weekIndex'] as int?,
-      dayIndex: json['dayIndex'] as int?,
-      displayNumber: json['displayNumber'] as int?,
-    );
-  }
 
   @override
   int get hashCode {
@@ -135,6 +135,15 @@ class BeginnersSection {
     this.imagePath,
   });
 
+  factory BeginnersSection.fromJson(Map<String, dynamic> json) {
+    return BeginnersSection(
+      sectionTitle: json['sectionTitle'] as String,
+      sectionContent: json['sectionContent'] as String,
+      sectionType: json['sectionType'] as String,
+      imagePath: json['imagePath'] as String?,
+    );
+  }
+
   final String sectionTitle;
   final String sectionContent;
   final String sectionType;
@@ -160,30 +169,11 @@ class BeginnersSection {
     'sectionType': sectionType,
     'imagePath': imagePath,
   };
-
-  factory BeginnersSection.fromJson(Map<String, dynamic> json) {
-    return BeginnersSection(
-      sectionTitle: json['sectionTitle'] as String,
-      sectionContent: json['sectionContent'] as String,
-      sectionType: json['sectionType'] as String,
-      imagePath: json['imagePath'] as String?,
-    );
-  }
 }
 
 @immutable
 class BeginnersLessonPayload {
   const BeginnersLessonPayload({required this.sections});
-
-  final List<BeginnersSection> sections;
-
-  BeginnersLessonPayload copyWith({List<BeginnersSection>? sections}) {
-    return BeginnersLessonPayload(sections: sections ?? this.sections);
-  }
-
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'sections': sections.map((section) => section.toJson()).toList(),
-  };
 
   factory BeginnersLessonPayload.fromJson(Map<String, dynamic> json) {
     return BeginnersLessonPayload(
@@ -195,6 +185,16 @@ class BeginnersLessonPayload {
           .toList(),
     );
   }
+
+  final List<BeginnersSection> sections;
+
+  BeginnersLessonPayload copyWith({List<BeginnersSection>? sections}) {
+    return BeginnersLessonPayload(sections: sections ?? this.sections);
+  }
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'sections': sections.map((section) => section.toJson()).toList(),
+  };
 }
 
 @immutable
@@ -204,6 +204,14 @@ class PrimaryPalsActivity {
     required this.instructions,
     this.data,
   });
+
+  factory PrimaryPalsActivity.fromJson(Map<String, dynamic> json) {
+    return PrimaryPalsActivity(
+      type: json['type'] as String,
+      instructions: json['instructions'] as String,
+      data: (json['data'] as Map?)?.cast<String, dynamic>(),
+    );
+  }
 
   final String type;
   final String instructions;
@@ -226,14 +234,6 @@ class PrimaryPalsActivity {
     'instructions': instructions,
     'data': data,
   };
-
-  factory PrimaryPalsActivity.fromJson(Map<String, dynamic> json) {
-    return PrimaryPalsActivity(
-      type: json['type'] as String,
-      instructions: json['instructions'] as String,
-      data: (json['data'] as Map?)?.cast<String, dynamic>(),
-    );
-  }
 }
 
 @immutable
@@ -243,6 +243,14 @@ class FamilyDevotion {
     required this.prompt,
     required this.reading,
   });
+
+  factory FamilyDevotion.fromJson(Map<String, dynamic> json) {
+    return FamilyDevotion(
+      day: json['day'] as String,
+      prompt: json['prompt'] as String,
+      reading: BibleRef.fromJson(json['reading'] as Map<String, dynamic>),
+    );
+  }
 
   final String day;
   final String prompt;
@@ -261,14 +269,6 @@ class FamilyDevotion {
     'prompt': prompt,
     'reading': reading.toJson(),
   };
-
-  factory FamilyDevotion.fromJson(Map<String, dynamic> json) {
-    return FamilyDevotion(
-      day: json['day'] as String,
-      prompt: json['prompt'] as String,
-      reading: BibleRef.fromJson(json['reading'] as Map<String, dynamic>),
-    );
-  }
 }
 
 @immutable
@@ -279,6 +279,22 @@ class PrimaryPalsParentGuide {
     required this.bibleText,
     required this.memoryVerse,
   });
+
+  factory PrimaryPalsParentGuide.fromJson(Map<String, dynamic> json) {
+    return PrimaryPalsParentGuide(
+      parentsCorner: json['parentsCorner'] as String,
+      familyDevotions: (json['familyDevotions'] as List<dynamic>)
+          .map(
+            (dynamic item) =>
+                FamilyDevotion.fromJson(item as Map<String, dynamic>),
+          )
+          .toList(),
+      bibleText: BibleRef.fromJson(json['bibleText'] as Map<String, dynamic>),
+      memoryVerse: BibleRef.fromJson(
+        json['memoryVerse'] as Map<String, dynamic>,
+      ),
+    );
+  }
 
   final String parentsCorner;
   final List<FamilyDevotion> familyDevotions;
@@ -307,22 +323,6 @@ class PrimaryPalsParentGuide {
     'bibleText': bibleText.toJson(),
     'memoryVerse': memoryVerse.toJson(),
   };
-
-  factory PrimaryPalsParentGuide.fromJson(Map<String, dynamic> json) {
-    return PrimaryPalsParentGuide(
-      parentsCorner: json['parentsCorner'] as String,
-      familyDevotions: (json['familyDevotions'] as List<dynamic>)
-          .map(
-            (dynamic item) =>
-                FamilyDevotion.fromJson(item as Map<String, dynamic>),
-          )
-          .toList(),
-      bibleText: BibleRef.fromJson(json['bibleText'] as Map<String, dynamic>),
-      memoryVerse: BibleRef.fromJson(
-        json['memoryVerse'] as Map<String, dynamic>,
-      ),
-    );
-  }
 }
 
 @immutable
@@ -332,6 +332,21 @@ class PrimaryPalsLessonPayload {
     required this.activities,
     required this.parentGuide,
   });
+
+  factory PrimaryPalsLessonPayload.fromJson(Map<String, dynamic> json) {
+    return PrimaryPalsLessonPayload(
+      story: (json['story'] as List<dynamic>).cast<String>(),
+      activities: (json['activities'] as List<dynamic>)
+          .map(
+            (dynamic item) =>
+                PrimaryPalsActivity.fromJson(item as Map<String, dynamic>),
+          )
+          .toList(),
+      parentGuide: PrimaryPalsParentGuide.fromJson(
+        json['parentGuide'] as Map<String, dynamic>,
+      ),
+    );
+  }
 
   final List<String> story;
   final List<PrimaryPalsActivity> activities;
@@ -354,21 +369,6 @@ class PrimaryPalsLessonPayload {
     'activities': activities.map((activity) => activity.toJson()).toList(),
     'parentGuide': parentGuide.toJson(),
   };
-
-  factory PrimaryPalsLessonPayload.fromJson(Map<String, dynamic> json) {
-    return PrimaryPalsLessonPayload(
-      story: (json['story'] as List<dynamic>).cast<String>(),
-      activities: (json['activities'] as List<dynamic>)
-          .map(
-            (dynamic item) =>
-                PrimaryPalsActivity.fromJson(item as Map<String, dynamic>),
-          )
-          .toList(),
-      parentGuide: PrimaryPalsParentGuide.fromJson(
-        json['parentGuide'] as Map<String, dynamic>,
-      ),
-    );
-  }
 }
 
 @immutable
@@ -378,6 +378,13 @@ class PromptQuestion {
     required this.prompt,
   });
 
+  factory PromptQuestion.fromJson(Map<String, dynamic> json) {
+    return PromptQuestion(
+      id: json['id'] as String,
+      prompt: json['prompt'] as String,
+    );
+  }
+
   final String id;
   final String prompt;
 
@@ -385,13 +392,6 @@ class PromptQuestion {
     'id': id,
     'prompt': prompt,
   };
-
-  factory PromptQuestion.fromJson(Map<String, dynamic> json) {
-    return PromptQuestion(
-      id: json['id'] as String,
-      prompt: json['prompt'] as String,
-    );
-  }
 }
 
 @immutable
@@ -403,22 +403,6 @@ class SearchLessonPayload {
     required this.questions,
     this.conclusion,
   });
-
-  final String keyVerse;
-  final List<BibleRef> supplementalScripture;
-  final List<String> exposition;
-  final List<PromptQuestion> questions;
-  final String? conclusion;
-
-  Map<String, dynamic> toJson() => <String, dynamic>{
-    'keyVerse': keyVerse,
-    'supplementalScripture': supplementalScripture
-        .map((reference) => reference.toJson())
-        .toList(),
-    'exposition': exposition,
-    'questions': questions.map((question) => question.toJson()).toList(),
-    'conclusion': conclusion,
-  };
 
   factory SearchLessonPayload.fromJson(Map<String, dynamic> json) {
     return SearchLessonPayload(
@@ -438,4 +422,20 @@ class SearchLessonPayload {
       conclusion: json['conclusion'] as String?,
     );
   }
+
+  final String keyVerse;
+  final List<BibleRef> supplementalScripture;
+  final List<String> exposition;
+  final List<PromptQuestion> questions;
+  final String? conclusion;
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'keyVerse': keyVerse,
+    'supplementalScripture': supplementalScripture
+        .map((reference) => reference.toJson())
+        .toList(),
+    'exposition': exposition,
+    'questions': questions.map((question) => question.toJson()).toList(),
+    'conclusion': conclusion,
+  };
 }

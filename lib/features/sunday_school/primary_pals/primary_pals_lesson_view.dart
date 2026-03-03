@@ -1,12 +1,11 @@
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/utils/scripture_reference_parser.dart';
+import 'package:afc_studymate/widgets/activity_matching.dart';
+import 'package:afc_studymate/widgets/primary_pals_generic_activity.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../data/models/lesson.dart';
-import '../../../utils/scripture_reference_parser.dart';
-import '../../../widgets/activity_matching.dart';
-import '../../../widgets/primary_pals_generic_activity.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PrimaryPalsLessonView extends ConsumerStatefulWidget {
   const PrimaryPalsLessonView({required this.lesson, super.key});
@@ -41,7 +40,7 @@ class _PrimaryPalsLessonViewState extends ConsumerState<PrimaryPalsLessonView> {
           final isMatching =
               type.toLowerCase().contains('match') && activity['data'] != null;
 
-          String parsedInstructions = '';
+          var parsedInstructions = '';
           final rawInstructions = activity['instructions'];
           if (rawInstructions is String) {
             parsedInstructions = rawInstructions;
@@ -99,7 +98,7 @@ class _PrimaryPalsLessonViewState extends ConsumerState<PrimaryPalsLessonView> {
       backgroundColor = const Color(0xFFE6F7FF);
     }
 
-    return Container(
+    return ColoredBox(
       color: backgroundColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -125,7 +124,7 @@ class _PrimaryPalsLessonViewState extends ConsumerState<PrimaryPalsLessonView> {
           ),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            transitionBuilder: (Widget child, Animation<double> animation) {
+            transitionBuilder: (child, animation) {
               return FadeTransition(opacity: animation, child: child);
             },
             child: pages[currentIndex],

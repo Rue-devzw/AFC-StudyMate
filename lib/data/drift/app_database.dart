@@ -1,24 +1,51 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:afc_studymate/data/models/attendance_record.dart';
+import 'package:afc_studymate/data/models/bible_ref.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/journal_entry.dart';
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/data/models/memory_verse.dart';
+import 'package:afc_studymate/data/models/note.dart';
+import 'package:afc_studymate/data/models/progress.dart';
+import 'package:afc_studymate/data/models/student.dart';
+import 'package:afc_studymate/data/models/teacher_guide.dart';
+import 'package:afc_studymate/data/models/user_profile.dart';
+import 'package:afc_studymate/utils/scripture_reference_parser.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../models/bible_ref.dart';
-import '../models/enums.dart';
-import '../models/lesson.dart';
-import '../models/memory_verse.dart';
-import '../models/note.dart';
-import '../models/progress.dart';
-import '../models/journal_entry.dart';
-import '../models/user_profile.dart';
-import '../models/teacher_guide.dart';
-
 final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
 });
+
+Map<String, TeacherGuide> mergeTeacherGuides(
+  List<Map<String, dynamic>> entries,
+) {
+  final merged = <String, TeacherGuide>{};
+  for (final rawGuide in entries) {
+    final guide = TeacherGuide.fromJson(rawGuide);
+    final existing = merged[guide.lessonId];
+    if (existing == null) {
+      merged[guide.lessonId] = guide;
+      continue;
+    }
+    final normalizedExisting = existing.content.trim();
+    final normalizedIncoming = guide.content.trim();
+    if (normalizedIncoming.isEmpty ||
+        normalizedExisting.contains(normalizedIncoming)) {
+      continue;
+    }
+    merged[guide.lessonId] = existing.copyWith(
+      content: '$normalizedExisting\n\n$normalizedIncoming',
+      pdfPath: existing.pdfPath.isNotEmpty ? existing.pdfPath : guide.pdfPath,
+    );
+  }
+  return merged;
+}
 
 class AppDatabase {
   AppDatabase();
@@ -29,8 +56,11 @@ class AppDatabase {
   final Map<String, JournalEntry> _journalEntries = <String, JournalEntry>{};
   final Map<String, String> _settings = <String, String>{};
   final Map<String, TeacherGuide> _teacherGuides = <String, TeacherGuide>{};
+  final Map<String, Student> _students = <String, Student>{};
+  final Map<String, AttendanceRecord> _attendance =
+      <String, AttendanceRecord>{};
   UserProfile? _profile;
-  Map<String, MemoryVerse> _memoryVerses = <String, MemoryVerse>{};
+  final Map<String, MemoryVerse> _memoryVerses = <String, MemoryVerse>{};
   Future<void>? _seedFuture;
   late SharedPreferences _prefs;
   File? _dataFile;
@@ -80,6 +110,25 @@ class AppDatabase {
           ),
         );
 
+        final studentsMap = data['students'] as Map<String, dynamic>? ?? {};
+        _students.clear();
+        _students.addAll(
+          studentsMap.map(
+            (k, v) => MapEntry(k, Student.fromJson(v as Map<String, dynamic>)),
+          ),
+        );
+
+        final attendanceMap = data['attendance'] as Map<String, dynamic>? ?? {};
+        _attendance.clear();
+        _attendance.addAll(
+          attendanceMap.map(
+            (k, v) => MapEntry(
+              k,
+              AttendanceRecord.fromJson(v as Map<String, dynamic>),
+            ),
+          ),
+        );
+
         if (data['profile'] != null) {
           _profile = UserProfile.fromJson(
             data['profile'] as Map<String, dynamic>,
@@ -98,6 +147,8 @@ class AppDatabase {
       'notes': _notes.map((k, v) => MapEntry(k, v.toJson())),
       'memoryVerses': _memoryVerses.map((k, v) => MapEntry(k, v.toJson())),
       'journalEntries': _journalEntries.map((k, v) => MapEntry(k, v.toJson())),
+      'students': _students.map((k, v) => MapEntry(k, v.toJson())),
+      'attendance': _attendance.map((k, v) => MapEntry(k, v.toJson())),
       'profile': _profile?.toJson(),
     };
     await _dataFile!.writeAsString(jsonEncode(data));
@@ -118,10 +169,7 @@ class AppDatabase {
     final decoded = jsonDecode(raw);
     if (decoded is List) {
       final entries = decoded.whereType<Map<String, dynamic>>().toList();
-      for (final rawGuide in entries) {
-        final guide = TeacherGuide.fromJson(rawGuide);
-        _teacherGuides[guide.lessonId] = guide;
-      }
+      _teacherGuides.addAll(mergeTeacherGuides(entries));
     }
   }
 
@@ -267,8 +315,8 @@ class AppDatabase {
         (parentGuideRaw['parents_corner'] as Map<String, dynamic>? ??
         <String, dynamic>{})['text'];
     final familyDevotions =
-        (parentGuideRaw['family_devotions'] as Map<String, dynamic>? ??
-        <String, dynamic>{});
+        parentGuideRaw['family_devotions'] as Map<String, dynamic>? ??
+        <String, dynamic>{};
     final devotions =
         (familyDevotions['verses'] as List<dynamic>? ?? <dynamic>[])
             .whereType<Map<String, dynamic>>()
@@ -324,7 +372,8 @@ class AppDatabase {
 
     final payload = <String, dynamic>{
       'story': (raw['story'] as List<dynamic>? ?? <dynamic>[]).cast<String>(),
-      if (keyVerse != null) 'keyVerse': keyVerse,
+      'keyVerse': ?keyVerse,
+      'topic': raw['topic'] ?? raw['title'] ?? '',
       'activities': activities,
     };
 
@@ -387,6 +436,7 @@ class AppDatabase {
   }
 
   Lesson _mapDiscoveryLesson(Map<String, dynamic> raw, int index) {
+    final bibleReferences = _parseBibleReferences(raw['bibleReference']);
     final payload = <String, dynamic>{
       'background': raw['background'] ?? '',
       'conclusion': raw['conclusion'] ?? '',
@@ -397,13 +447,45 @@ class AppDatabase {
     return Lesson(
       id: _coerceString(raw['id'], 'discovery_lesson_$index'),
       track: Track.discovery,
-      title: _coerceString(raw['title'], 'Discovery Lesson'),
-      bibleReferences: _parseBibleReferences(raw['bibleReference']),
+      title: _resolveDiscoveryTitle(
+        raw['title'],
+        bibleReferences,
+        raw['questions'],
+      ),
+      bibleReferences: bibleReferences,
       payload: payload,
       weekIndex: (raw['weekIndex'] as int?) ?? index,
       dayIndex: raw['dayIndex'] as int?,
       displayNumber: _parseLessonNumber(raw['id']),
     );
+  }
+
+  String _resolveDiscoveryTitle(
+    dynamic rawTitle,
+    List<BibleRef> bibleReferences,
+    dynamic rawQuestions,
+  ) {
+    final title = _coerceString(rawTitle, 'Discovery Lesson');
+    if (title.trim().toUpperCase() != 'QUESTIONS') {
+      return title;
+    }
+    if (bibleReferences.isNotEmpty) {
+      return 'Study Questions: ${bibleReferences.first.displayText}';
+    }
+    final questions = rawQuestions as List<dynamic>? ?? <dynamic>[];
+    if (questions.isNotEmpty) {
+      final firstQuestion = questions.first.toString().replaceAll(
+        RegExp(r'\s+'),
+        ' ',
+      );
+      if (firstQuestion.isNotEmpty) {
+        final snippet = firstQuestion.length > 64
+            ? '${firstQuestion.substring(0, 64).trimRight()}...'
+            : firstQuestion;
+        return 'Study Questions: $snippet';
+      }
+    }
+    return 'Study Questions';
   }
 
   Lesson _mapDaybreakLesson(Map<String, dynamic> raw, int index) {
@@ -437,6 +519,20 @@ class AppDatabase {
         .map((reference) {
           final book = reference['book'] as String?;
           final chapter = _tryParseInt(reference['chapter']);
+          if (book == null || chapter == null) {
+            final rawVerse =
+                reference['verses'] as String? ?? reference['verse'] as String?;
+            final basicParsed = _parseReferenceFromString(rawVerse);
+            if (basicParsed != null) {
+              return basicParsed;
+            }
+            final parsed = ScriptureReferenceParser.parseReferenceList(
+              rawVerse,
+            );
+            if (parsed.isNotEmpty) {
+              return parsed.first;
+            }
+          }
           if (book == null || chapter == null) {
             return null;
           }
@@ -497,6 +593,31 @@ class AppDatabase {
       return int.tryParse(match.group(1)!);
     }
     return null;
+  }
+
+  BibleRef? _parseReferenceFromString(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    final match = RegExp(
+      r'^\s*((?:[1-3]\s+)?[A-Za-z]+(?:\s+[A-Za-z]+)*)\s+(\d+)(?::(\d+)(?:[-–](\d+))?)?',
+    ).firstMatch(value);
+    if (match == null) {
+      return null;
+    }
+    final book = match.group(1)?.trim();
+    final chapter = int.tryParse(match.group(2) ?? '');
+    final verseStart = int.tryParse(match.group(3) ?? '');
+    final verseEnd = int.tryParse(match.group(4) ?? '');
+    if (book == null || chapter == null) {
+      return null;
+    }
+    return BibleRef(
+      book: book,
+      chapter: chapter,
+      verseStart: verseStart,
+      verseEnd: verseEnd,
+    );
   }
 
   Future<void> seedFromAssets() {
@@ -584,6 +705,19 @@ class AppDatabase {
         .toList();
   }
 
+  Future<List<Note>> getAllNotes(String userId) async {
+    await _ensureInitialized();
+    final list = _notes.values.where((note) => note.userId == userId).toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return list;
+  }
+
+  Future<void> deleteNote(String noteId) async {
+    await _ensureInitialized();
+    _notes.remove(noteId);
+    await _saveToDisk();
+  }
+
   Future<void> upsertSetting(String key, String value) async {
     await _ensureInitialized();
     await _prefs.setString(key, value);
@@ -612,6 +746,12 @@ class AppDatabase {
     await _saveToDisk();
   }
 
+  Future<void> deleteJournalEntry(String entryId) async {
+    await _ensureInitialized();
+    _journalEntries.remove(entryId);
+    await _saveToDisk();
+  }
+
   Future<List<JournalEntry>> getJournalEntries(
     String userId, {
     Track? track,
@@ -635,5 +775,43 @@ class AppDatabase {
   Future<UserProfile?> getProfile(String userId) async {
     await _ensureInitialized();
     return _profile;
+  }
+
+  Future<void> upsertStudent(Student student) async {
+    await _ensureInitialized();
+    _students[student.id] = student;
+    await _saveToDisk();
+  }
+
+  Future<List<Student>> getStudents() async {
+    await _ensureInitialized();
+    final list = _students.values.toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return list;
+  }
+
+  Future<void> deleteStudent(String studentId) async {
+    await _ensureInitialized();
+    _students.remove(studentId);
+    _attendance.removeWhere((_, value) => value.studentId == studentId);
+    await _saveToDisk();
+  }
+
+  Future<void> upsertAttendance(AttendanceRecord record) async {
+    await _ensureInitialized();
+    _attendance[record.id] = record;
+    await _saveToDisk();
+  }
+
+  Future<Map<String, AttendanceRecord>> getAttendanceForSession({
+    required String lessonId,
+    required String dateKey,
+  }) async {
+    await _ensureInitialized();
+    final entries = _attendance.entries.where(
+      (entry) =>
+          entry.value.lessonId == lessonId && entry.value.dateKey == dateKey,
+    );
+    return Map<String, AttendanceRecord>.fromEntries(entries);
   }
 }

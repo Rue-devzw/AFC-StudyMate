@@ -1,18 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-final appThemeProvider = Provider<AppTheme>((ref) {
-  return AppTheme();
+enum AppThemeMode { system, light, dark }
+
+const _themeModePrefKey = 'theme_mode';
+
+final appThemeProvider = Provider<AppTheme>((ref) => AppTheme());
+
+final themeModeProvider = StateNotifierProvider<ThemeModeController, ThemeMode>((
+  ref,
+) {
+  return ThemeModeController()..load();
 });
+
+final appThemeModeProvider = Provider<AppThemeMode>((ref) {
+  final mode = ref.watch(themeModeProvider);
+  switch (mode) {
+    case ThemeMode.light:
+      return AppThemeMode.light;
+    case ThemeMode.dark:
+      return AppThemeMode.dark;
+    case ThemeMode.system:
+      return AppThemeMode.system;
+  }
+});
+
+class ThemeModeController extends StateNotifier<ThemeMode> {
+  ThemeModeController() : super(ThemeMode.system);
+
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_themeModePrefKey);
+    state = _fromStored(stored);
+  }
+
+  Future<void> setAppThemeMode(AppThemeMode mode) async {
+    switch (mode) {
+      case AppThemeMode.light:
+        state = ThemeMode.light;
+      case AppThemeMode.dark:
+        state = ThemeMode.dark;
+      case AppThemeMode.system:
+        state = ThemeMode.system;
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_themeModePrefKey, mode.name);
+  }
+
+  ThemeMode _fromStored(String? value) {
+    AppThemeMode? mode;
+    for (final item in AppThemeMode.values) {
+      if (item.name == value) {
+        mode = item;
+        break;
+      }
+    }
+    if (mode == null) {
+      return ThemeMode.system;
+    }
+    switch (mode) {
+      case AppThemeMode.light:
+        return ThemeMode.light;
+      case AppThemeMode.dark:
+        return ThemeMode.dark;
+      case AppThemeMode.system:
+        return ThemeMode.system;
+    }
+  }
+}
 
 class AppTheme {
   AppTheme();
-
-  ThemeMode get themeMode => ThemeMode.system;
-
-  Provider<ThemeMode> get themeModeProvider =>
-      Provider<ThemeMode>((_) => themeMode);
 
   ThemeData get lightTheme => _buildTheme(Brightness.light);
 
@@ -62,7 +122,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: colorScheme.background,
+      scaffoldBackgroundColor: colorScheme.surface,
       visualDensity: VisualDensity.adaptivePlatformDensity,
       textTheme: customTextTheme,
       cardTheme: CardThemeData(

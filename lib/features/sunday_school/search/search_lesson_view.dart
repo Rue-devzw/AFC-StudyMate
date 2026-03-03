@@ -1,16 +1,16 @@
+import 'package:afc_studymate/data/drift/app_database.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/journal_entry.dart';
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/data/services/analytics_service.dart';
+import 'package:afc_studymate/data/services/progress_service.dart';
+import 'package:afc_studymate/utils/scripture_reference_parser.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/linked_verse.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
-
-import '../../../data/drift/app_database.dart';
-import '../../../data/models/enums.dart';
-import '../../../data/services/progress_service.dart';
-import '../../../data/models/journal_entry.dart';
-import '../../../data/models/lesson.dart';
-import '../../../utils/scripture_reference_parser.dart';
-import '../../../widgets/design_system_widgets.dart';
-import '../../../widgets/linked_verse.dart';
 
 class SearchLessonView extends StatefulHookConsumerWidget {
   const SearchLessonView({required this.lesson, super.key});
@@ -24,6 +24,20 @@ class SearchLessonView extends StatefulHookConsumerWidget {
 class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
   final Map<String, TextEditingController> _responses =
       <String, TextEditingController>{};
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.microtask(() async {
+      await ref
+          .read(analyticsServiceProvider)
+          .logLessonOpened(
+            lessonId: widget.lesson.id,
+            track: widget.lesson.track,
+            source: 'search_lesson_view',
+          );
+    });
+  }
 
   @override
   void dispose() {
@@ -56,7 +70,7 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
     final lessonNumber =
         widget.lesson.displayNumber?.toString() ??
         widget.lesson.id.replaceAll('lesson_', '');
-    final unitTopic = (payload['unitTopic'] as String?)?.isNotEmpty == true
+    final unitTopic = (payload['unitTopic'] as String?)?.isNotEmpty ?? false
         ? payload['unitTopic'] as String
         : 'Search Unit';
 
@@ -210,7 +224,7 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
               final id = question['id'] as String? ?? 'q';
               final controller = _responses.putIfAbsent(
                 id,
-                () => TextEditingController(),
+                TextEditingController.new,
               );
               return Padding(
                 padding: const EdgeInsets.only(bottom: 24),
@@ -253,7 +267,6 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
             const SizedBox(height: 16),
             AppButton(
               label: 'Share My Reflections',
-              isFullWidth: true,
               icon: Icons.ios_share,
               onPressed: _shareReflections,
             ),
@@ -262,7 +275,6 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
           AppButton(
             label: 'Complete Lesson',
             icon: Icons.check_circle_outline,
-            variant: AppButtonVariant.primary,
             onPressed: () async {
               await ref
                   .read(progressServiceProvider)
@@ -335,7 +347,7 @@ class _KeyVerseBlock extends StatelessWidget {
     );
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.4),
         borderRadius: BorderRadius.circular(16),
         border: Border(
           left: BorderSide(color: theme.colorScheme.primary, width: 4),
@@ -464,8 +476,8 @@ class _JournalQuestionInputState extends ConsumerState<_JournalQuestionInput> {
                     final uuid = const Uuid().v4();
 
                     // We try to find existing entry to keep the same ID and createdAt
-                    String entryId = uuid;
-                    DateTime createdAt = DateTime.now();
+                    var entryId = uuid;
+                    var createdAt = DateTime.now();
 
                     try {
                       final entries = await db.getJournalEntries(
@@ -493,6 +505,13 @@ class _JournalQuestionInputState extends ConsumerState<_JournalQuestionInput> {
                         updatedAt: DateTime.now(),
                       ),
                     );
+                    await ref
+                        .read(analyticsServiceProvider)
+                        .logJournalSaved(
+                          source: 'search_question',
+                          track: Track.search,
+                          lessonId: widget.lessonId,
+                        );
 
                     if (mounted) {
                       setState(() {

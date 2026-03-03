@@ -1,7 +1,7 @@
 import 'package:afc_studymate/utils/scripture_reference_parser.dart';
 
 void main() {
-  final text = "Let's read 1 Corinthians 13:4-8 and 3 John 1:2.";
+  const text = "Let's read 1 Corinthians 13:4-8 and 3 John 1:2.";
   final matches = ScriptureReferenceParser.findInText(text);
   for (final match in matches) {
     print(

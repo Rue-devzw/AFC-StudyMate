@@ -1,13 +1,14 @@
 import 'dart:ui';
+
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/widgets/drop_cap_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'drop_cap_text.dart';
-import '../data/models/enums.dart';
 
 class AppCard extends StatelessWidget {
   const AppCard({
-    super.key,
     required this.child,
+    super.key,
     this.padding,
     this.onTap,
     this.color,
@@ -60,9 +61,9 @@ class AppCard extends StatelessWidget {
 
 class AppButton extends StatelessWidget {
   const AppButton({
-    super.key,
     required this.label,
     required this.onPressed,
+    super.key,
     this.icon,
     this.isLoading = false,
     this.isFullWidth = true,
@@ -80,7 +81,7 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    Widget content = Row(
+    final Widget content = Row(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -114,13 +115,11 @@ class AppButton extends StatelessWidget {
           backgroundColor: theme.colorScheme.primary,
           foregroundColor: theme.colorScheme.onPrimary,
         );
-        break;
       case AppButtonVariant.secondary:
         style = FilledButton.styleFrom(
           backgroundColor: theme.colorScheme.secondaryContainer,
           foregroundColor: theme.colorScheme.onSecondaryContainer,
         );
-        break;
       case AppButtonVariant.outline:
         style = OutlinedButton.styleFrom(
           side: BorderSide(color: theme.colorScheme.outline),
@@ -128,10 +127,9 @@ class AppButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
         );
-        break;
     }
 
-    Widget button = variant == AppButtonVariant.outline
+    final Widget button = variant == AppButtonVariant.outline
         ? OutlinedButton(
             onPressed: isLoading
                 ? null
@@ -164,8 +162,8 @@ enum AppButtonVariant { primary, secondary, outline }
 
 class AppSectionTitle extends StatelessWidget {
   const AppSectionTitle({
-    super.key,
     required this.title,
+    super.key,
     this.trailing,
   });
 
@@ -186,7 +184,7 @@ class AppSectionTitle extends StatelessWidget {
               letterSpacing: -0.5,
             ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );
@@ -256,8 +254,8 @@ class AppTextField extends StatelessWidget {
 
 class AppDropCapText extends StatelessWidget {
   const AppDropCapText({
-    super.key,
     required this.text,
+    super.key,
     this.style,
   });
 
@@ -282,20 +280,20 @@ class AppDropCapText extends StatelessWidget {
       style: textStyle,
       dropCapStyle: textStyle?.copyWith(
         fontSize: (textStyle.fontSize ?? 18) * 3.5,
-        height: 1.0,
+        height: 1,
         fontWeight: FontWeight.bold,
         color: theme.colorScheme.primary,
       ),
       textAlign: TextAlign.justify,
-      dropCapPadding: const EdgeInsets.only(right: 8.0, bottom: 4.0),
+      dropCapPadding: const EdgeInsets.only(right: 8, bottom: 4),
     );
   }
 }
 
 class PremiumBackground extends StatelessWidget {
   const PremiumBackground({
-    super.key,
     required this.assetPath,
+    super.key,
     this.overlayColors,
     this.overlayStops,
   });
@@ -336,8 +334,8 @@ class PremiumBackground extends StatelessWidget {
 
 class PremiumGlassCard extends StatelessWidget {
   const PremiumGlassCard({
-    super.key,
     required this.child,
+    super.key,
     this.padding,
     this.borderRadius,
     this.blur = 16.0,
@@ -378,10 +376,10 @@ class PremiumGlassCard extends StatelessWidget {
 
 class PremiumTextField extends StatelessWidget {
   const PremiumTextField({
-    super.key,
     required this.label,
     required this.value,
     required this.onChanged,
+    super.key,
     this.hint,
     this.keyboardType,
   });
@@ -436,9 +434,9 @@ class PremiumTextField extends StatelessWidget {
 
 class PremiumScaffold extends StatelessWidget {
   const PremiumScaffold({
-    super.key,
     required this.body,
     required this.backgroundAsset,
+    super.key,
     this.appBar,
     this.bottomNavigationBar,
     this.floatingActionButton,
@@ -452,6 +450,9 @@ class PremiumScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topInset = appBar == null
+        ? 0.0
+        : MediaQuery.paddingOf(context).top + appBar!.preferredSize.height;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: appBar,
@@ -459,13 +460,39 @@ class PremiumScaffold extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           PremiumBackground(assetPath: backgroundAsset),
-          body,
+          Padding(
+            padding: EdgeInsets.only(top: topInset),
+            child: body,
+          ),
         ],
       ),
       bottomNavigationBar: bottomNavigationBar,
       floatingActionButton: floatingActionButton,
     );
   }
+}
+
+const _baseBottomContentPadding = 120.0;
+
+double standardBottomContentPadding(
+  BuildContext context, {
+  double extra = 0,
+}) {
+  return _baseBottomContentPadding +
+      MediaQuery.paddingOf(context).bottom +
+      extra;
+}
+
+double responsiveHorizontalPadding(
+  BuildContext context, {
+  double maxContentWidth = 860,
+  double minPadding = 16,
+}) {
+  final width = MediaQuery.sizeOf(context).width;
+  if (width <= maxContentWidth) {
+    return minPadding;
+  }
+  return ((width - maxContentWidth) / 2).clamp(minPadding, 220);
 }
 
 extension TrackThemeExtension on Track {

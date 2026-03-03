@@ -1,6 +1,5 @@
+import 'package:afc_studymate/data/models/enums.dart';
 import 'package:meta/meta.dart';
-
-import 'enums.dart';
 
 @immutable
 class JournalEntry {
@@ -14,6 +13,21 @@ class JournalEntry {
     required this.createdAt,
     required this.updatedAt,
   });
+
+  factory JournalEntry.fromJson(Map<String, dynamic> json) {
+    return JournalEntry(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      relatedLessonId: json['relatedLessonId'] as String,
+      sourceTrack: Track.values.firstWhere(
+        (value) => value.name == json['sourceTrack'],
+      ),
+      prompt: json['prompt'] as String,
+      response: json['response'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: DateTime.parse(json['updatedAt'] as String),
+    );
+  }
 
   final String id;
   final String userId;
@@ -56,21 +70,6 @@ class JournalEntry {
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
   };
-
-  factory JournalEntry.fromJson(Map<String, dynamic> json) {
-    return JournalEntry(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      relatedLessonId: json['relatedLessonId'] as String,
-      sourceTrack: Track.values.firstWhere(
-        (value) => value.name == json['sourceTrack'],
-      ),
-      prompt: json['prompt'] as String,
-      response: json['response'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-    );
-  }
 
   @override
   int get hashCode => Object.hash(

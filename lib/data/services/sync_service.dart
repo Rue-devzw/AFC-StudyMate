@@ -1,8 +1,7 @@
+import 'package:afc_studymate/data/models/note.dart';
+import 'package:afc_studymate/data/models/progress.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../models/note.dart';
-import '../models/progress.dart';
 
 final syncServiceProvider = Provider<SyncService>((ref) {
   return SyncService(firestore: FirebaseFirestore.instance);

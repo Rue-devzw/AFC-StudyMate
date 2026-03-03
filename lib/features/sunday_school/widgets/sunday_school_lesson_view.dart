@@ -1,12 +1,11 @@
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/features/sunday_school/answer/answer_lesson_view.dart';
+import 'package:afc_studymate/features/sunday_school/beginners/beginners_lesson_view.dart';
+import 'package:afc_studymate/features/sunday_school/discovery/discovery_lesson_view.dart';
+import 'package:afc_studymate/features/sunday_school/primary_pals/primary_pals_lesson_view.dart';
+import 'package:afc_studymate/features/sunday_school/search/search_lesson_view.dart';
 import 'package:flutter/material.dart';
-
-import '../../../data/models/enums.dart';
-import '../../../data/models/lesson.dart';
-import '../answer/answer_lesson_view.dart';
-import '../beginners/beginners_lesson_view.dart';
-import '../discovery/discovery_lesson_view.dart';
-import '../primary_pals/primary_pals_lesson_view.dart';
-import '../search/search_lesson_view.dart';
 
 class SundaySchoolLessonView extends StatelessWidget {
   const SundaySchoolLessonView({required this.lesson, super.key});

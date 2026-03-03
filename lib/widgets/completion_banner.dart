@@ -20,7 +20,7 @@ class CompletionBanner extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Brilliant work! Tap to celebrate today\'s progress.',
+                  "Brilliant work! Tap to celebrate today's progress.",
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
               ),

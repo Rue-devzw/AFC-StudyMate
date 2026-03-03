@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class PdfViewerScreen extends StatefulWidget {
   const PdfViewerScreen({
-    super.key,
-    required this.pdfPath,
+    required this.pdfPath, super.key,
     this.title,
     this.initialPage,
   });
@@ -29,6 +33,11 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
         title: Text(widget.title ?? 'Reader'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.share),
+            tooltip: 'Share PDF',
+            onPressed: _sharePdf,
+          ),
+          IconButton(
             icon: const Icon(Icons.bookmark_outline),
             onPressed: () {
               // Future enhancement
@@ -45,7 +54,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
       body: SfPdfViewer.asset(
         widget.pdfPath,
         controller: _pdfViewerController,
-        onDocumentLoaded: (PdfDocumentLoadedDetails details) {
+        onDocumentLoaded: (details) {
           if (widget.initialPage != null) {
             // SfPdfViewer page index is 1-based or 0-based?
             // According to docs, jumpToPage(int pageNumber) is 1-based?
@@ -55,5 +64,25 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _sharePdf() async {
+    try {
+      final data = await rootBundle.load(widget.pdfPath);
+      final bytes = data.buffer.asUint8List();
+      final directory = await getTemporaryDirectory();
+      final fileName = widget.pdfPath.split('/').last;
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(bytes, flush: true);
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: widget.title ?? 'StudyMate PDF',
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to share this PDF right now.')),
+      );
+    }
   }
 }

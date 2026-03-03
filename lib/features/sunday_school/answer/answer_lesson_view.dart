@@ -1,14 +1,13 @@
 import 'dart:async';
 
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/utils/scripture_reference_parser.dart';
+import 'package:afc_studymate/widgets/pdf_viewer_screen.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../data/models/lesson.dart';
-import '../../../utils/scripture_reference_parser.dart';
-import '../../../widgets/pdf_viewer_screen.dart';
 
 class AnswerLessonView extends ConsumerStatefulWidget {
   const AnswerLessonView({required this.lesson, super.key});
@@ -102,7 +101,7 @@ class _AnswerLessonViewState extends ConsumerState<AnswerLessonView> {
           ),
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 300),
-            transitionBuilder: (Widget child, Animation<double> animation) {
+            transitionBuilder: (child, animation) {
               return FadeTransition(opacity: animation, child: child);
             },
             child: pages[currentIndex],
@@ -178,8 +177,7 @@ class _AnswerLessonViewState extends ConsumerState<AnswerLessonView> {
 class _StorySection extends StatelessWidget {
   const _StorySection({
     required this.story,
-    this.keyVerse,
-    required this.lessonId,
+    required this.lessonId, this.keyVerse,
   });
 
   final List<String> story;
@@ -211,7 +209,7 @@ class _StorySection extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  String pdfPath = 'assets/pdfs/answer/unit_01.pdf';
+                  var pdfPath = 'assets/pdfs/answer/unit_01.pdf';
                   final match = RegExp(r'answer_(\d+)').firstMatch(lessonId);
                   if (match != null) {
                     final lessonNum = int.parse(match.group(1)!);
@@ -240,7 +238,7 @@ class _StorySection extends StatelessWidget {
               color: const Color(0xFFEAF2F8),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.blue.shade100, width: 1),
+                side: BorderSide(color: Colors.blue.shade100),
               ),
               margin: const EdgeInsets.only(bottom: 24),
               child: Padding(
@@ -290,7 +288,7 @@ class _StorySection extends StatelessWidget {
             color: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.grey.shade200, width: 1),
+              side: BorderSide(color: Colors.grey.shade200),
             ),
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -348,7 +346,7 @@ class _ActivitySection extends StatelessWidget {
         color: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.grey.shade200, width: 1),
+          side: BorderSide(color: Colors.grey.shade200),
         ),
         child: Padding(
           padding: const EdgeInsets.all(24),

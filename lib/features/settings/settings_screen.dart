@@ -1,15 +1,23 @@
+import 'package:afc_studymate/data/services/notification_service.dart';
+import 'package:afc_studymate/theme/app_theme.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../data/services/notification_service.dart';
-import '../../widgets/design_system_widgets.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // ─── Providers ────────────────────────────────────────────────────────────────
 
 final _reminderEnabledProvider = StateProvider<bool>((ref) => false);
 final _reminderHourProvider = StateProvider<int>((ref) => 7);
 final _reminderMinuteProvider = StateProvider<int>((ref) => 0);
+final _sundayReminderEnabledProvider = StateProvider<bool>((ref) => false);
+final _sundayReminderHourProvider = StateProvider<int>((ref) => 8);
+final _sundayReminderMinuteProvider = StateProvider<int>((ref) => 0);
+final _packageInfoProvider = FutureProvider<PackageInfo>((ref) async {
+  return PackageInfo.fromPlatform();
+});
 
 // ─── SettingsScreen ───────────────────────────────────────────────────────────
 
@@ -34,10 +42,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final enabled = prefs.getBool('reminder_enabled') ?? false;
     final hour = prefs.getInt('reminder_hour') ?? 7;
     final minute = prefs.getInt('reminder_minute') ?? 0;
+    final sundayEnabled = prefs.getBool('sunday_reminder_enabled') ?? false;
+    final sundayHour = prefs.getInt('sunday_reminder_hour') ?? 8;
+    final sundayMinute = prefs.getInt('sunday_reminder_minute') ?? 0;
 
     ref.read(_reminderEnabledProvider.notifier).state = enabled;
     ref.read(_reminderHourProvider.notifier).state = hour;
     ref.read(_reminderMinuteProvider.notifier).state = minute;
+    ref.read(_sundayReminderEnabledProvider.notifier).state = sundayEnabled;
+    ref.read(_sundayReminderHourProvider.notifier).state = sundayHour;
+    ref.read(_sundayReminderMinuteProvider.notifier).state = sundayMinute;
   }
 
   Future<void> _savePrefs({
@@ -49,6 +63,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await prefs.setBool('reminder_enabled', enabled);
     await prefs.setInt('reminder_hour', hour);
     await prefs.setInt('reminder_minute', minute);
+  }
+
+  Future<void> _saveSundayPrefs({
+    required bool enabled,
+    required int hour,
+    required int minute,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('sunday_reminder_enabled', enabled);
+    await prefs.setInt('sunday_reminder_hour', hour);
+    await prefs.setInt('sunday_reminder_minute', minute);
   }
 
   Future<void> _onToggleReminder(bool enabled) async {
@@ -76,11 +101,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await svc.scheduleDaily(hour: hour, minute: minute);
       await _savePrefs(enabled: true, hour: hour, minute: minute);
     } else {
-      await svc.cancelAll();
+      await svc.cancelDaily();
       await _savePrefs(
         enabled: false,
         hour: ref.read(_reminderHourProvider),
         minute: ref.read(_reminderMinuteProvider),
+      );
+    }
+  }
+
+  Future<void> _onToggleSundayReminder(bool enabled) async {
+    final svc = ref.read(notificationServiceProvider);
+    ref.read(_sundayReminderEnabledProvider.notifier).state = enabled;
+
+    if (enabled) {
+      final granted = await svc.requestPermission();
+      if (!granted) {
+        ref.read(_sundayReminderEnabledProvider.notifier).state = false;
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Notification permission denied. Please enable in system settings.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      final hour = ref.read(_sundayReminderHourProvider);
+      final minute = ref.read(_sundayReminderMinuteProvider);
+      await svc.scheduleWeeklySundayReminder(hour: hour, minute: minute);
+      await _saveSundayPrefs(enabled: true, hour: hour, minute: minute);
+    } else {
+      await svc.cancelWeeklySundayReminder();
+      await _saveSundayPrefs(
+        enabled: false,
+        hour: ref.read(_sundayReminderHourProvider),
+        minute: ref.read(_sundayReminderMinuteProvider),
       );
     }
   }
@@ -131,10 +189,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final reminderEnabled = ref.watch(_reminderEnabledProvider);
     final reminderHour = ref.watch(_reminderHourProvider);
     final reminderMinute = ref.watch(_reminderMinuteProvider);
+    final sundayReminderEnabled = ref.watch(_sundayReminderEnabledProvider);
     final timeStr = TimeOfDay(
       hour: reminderHour,
       minute: reminderMinute,
     ).format(context);
+    final sundayTime = TimeOfDay(
+      hour: ref.watch(_sundayReminderHourProvider),
+      minute: ref.watch(_sundayReminderMinuteProvider),
+    ).format(context);
+    final appThemeMode = ref.watch(appThemeModeProvider);
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_journal.png',
@@ -144,6 +208,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         elevation: 0,
       ),
       body: SafeArea(
+        top: false,
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
@@ -202,8 +267,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   const Divider(height: 1, color: Colors.white10),
                   SwitchListTile.adaptive(
-                    value: false,
-                    onChanged: (_) {},
+                    value: sundayReminderEnabled,
+                    onChanged: _onToggleSundayReminder,
                     secondary: const Icon(
                       Icons.calendar_month_rounded,
                       color: Colors.white70,
@@ -212,9 +277,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       'Sunday School Reminder',
                       style: TextStyle(color: Colors.white),
                     ),
-                    subtitle: const Text(
-                      'Coming soon',
-                      style: TextStyle(color: Colors.white38, fontSize: 12),
+                    subtitle: Text(
+                      sundayReminderEnabled
+                          ? 'Weekly reminder at $sundayTime'
+                          : 'Tap to enable weekly Sunday reminder',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
                     ),
                     activeColor: const Color(0xFF2C1B5E),
                     activeTrackColor: const Color(0xFFD4A017),
@@ -232,23 +302,55 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
-                  SwitchListTile.adaptive(
-                    value: Theme.of(context).brightness == Brightness.dark,
-                    onChanged: (_) {},
-                    secondary: const Icon(
+                  ListTile(
+                    leading: const Icon(
                       Icons.dark_mode_rounded,
                       color: Colors.white70,
                     ),
                     title: const Text(
-                      'Dark Theme',
+                      'Theme',
                       style: TextStyle(color: Colors.white),
                     ),
-                    subtitle: const Text(
-                      'Matches system appearance',
-                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                    subtitle: Text(
+                      switch (appThemeMode) {
+                        AppThemeMode.system => 'System',
+                        AppThemeMode.light => 'Light',
+                        AppThemeMode.dark => 'Dark',
+                      },
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
                     ),
-                    activeColor: const Color(0xFF2C1B5E),
-                    activeTrackColor: const Color(0xFFD4A017),
+                    trailing: DropdownButtonHideUnderline(
+                      child: DropdownButton<AppThemeMode>(
+                        value: appThemeMode,
+                        dropdownColor: const Color(0xFF1C1C1E),
+                        style: const TextStyle(color: Colors.white),
+                        items: const [
+                          DropdownMenuItem(
+                            value: AppThemeMode.system,
+                            child: Text('System'),
+                          ),
+                          DropdownMenuItem(
+                            value: AppThemeMode.light,
+                            child: Text('Light'),
+                          ),
+                          DropdownMenuItem(
+                            value: AppThemeMode.dark,
+                            child: Text('Dark'),
+                          ),
+                        ],
+                        onChanged: (value) {
+                          if (value == null) {
+                            return;
+                          }
+                          ref
+                              .read(themeModeProvider.notifier)
+                              .setAppThemeMode(value);
+                        },
+                      ),
+                    ),
                   ),
                   const Divider(height: 1, color: Colors.white10),
                   const ListTile(
@@ -271,14 +373,67 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
             const SizedBox(height: 32),
 
-            // ── DATA ──────────────────────────────────────────────────────
-            _settingSectionLabel(context, 'DATA'),
+            // ── ABOUT ─────────────────────────────────────────────────────
+            _settingSectionLabel(context, 'ABOUT'),
             const SizedBox(height: 12),
             PremiumGlassCard(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
-                  const ListTile(
+                  ListTile(
+                    leading: const Icon(
+                      Icons.info_outline,
+                      color: Colors.white70,
+                    ),
+                    title: const Text(
+                      'About StudyMate',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: ref
+                        .watch(_packageInfoProvider)
+                        .when(
+                          data: (info) => Text(
+                            'Version ${info.version} (${info.buildNumber})',
+                            style: const TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                          loading: () => const Text(
+                            'Loading version...',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                          error: (_, __) => const Text(
+                            'Version unavailable',
+                            style: TextStyle(
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.white38,
+                    ),
+                    onTap: _openAboutSheet,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // ── DATA ──────────────────────────────────────────────────────
+            _settingSectionLabel(context, 'DATA'),
+            const SizedBox(height: 12),
+            const PremiumGlassCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  ListTile(
                     leading: Icon(
                       Icons.download_rounded,
                       color: Colors.white70,
@@ -300,8 +455,60 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
 
-            const SizedBox(height: 100),
+            SizedBox(height: standardBottomContentPadding(context)),
           ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openAboutSheet() async {
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF1C1C1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'AFM SEAR StudyMate',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Version ${info.version} (${info.buildNumber})',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Proprietary © Apostolic Faith Church. All rights reserved.',
+                style: TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () async {
+                  final uri = Uri.parse('https://www.afmsear.org');
+                  if (await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
+                icon: const Icon(Icons.open_in_new),
+                label: const Text('Visit AFM SEAR Website'),
+              ),
+            ],
+          ),
         ),
       ),
     );

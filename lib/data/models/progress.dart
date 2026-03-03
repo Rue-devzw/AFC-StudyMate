@@ -10,6 +10,16 @@ class Progress {
     this.streakCount,
   });
 
+  factory Progress.fromJson(Map<String, dynamic> json) {
+    return Progress(
+      userId: json['userId'] as String,
+      lessonId: json['lessonId'] as String,
+      completedAt: DateTime.parse(json['completedAt'] as String),
+      score: (json['score'] as num?)?.toDouble(),
+      streakCount: json['streakCount'] as int?,
+    );
+  }
+
   final String userId;
   final String lessonId;
   final DateTime completedAt;
@@ -39,16 +49,6 @@ class Progress {
         'score': score,
         'streakCount': streakCount,
       };
-
-  factory Progress.fromJson(Map<String, dynamic> json) {
-    return Progress(
-      userId: json['userId'] as String,
-      lessonId: json['lessonId'] as String,
-      completedAt: DateTime.parse(json['completedAt'] as String),
-      score: (json['score'] as num?)?.toDouble(),
-      streakCount: json['streakCount'] as int?,
-    );
-  }
 
   @override
   int get hashCode => Object.hash(userId, lessonId, completedAt, score, streakCount);

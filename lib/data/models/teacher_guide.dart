@@ -8,6 +8,14 @@ class TeacherGuide {
     required this.pdfPath,
   });
 
+  factory TeacherGuide.fromJson(Map<String, dynamic> json) {
+    return TeacherGuide(
+      lessonId: json['lesson_id'] as String,
+      content: json['content'] as String,
+      pdfPath: json['pdf_path'] as String,
+    );
+  }
+
   final String lessonId;
   final String content;
   final String pdfPath;
@@ -29,12 +37,4 @@ class TeacherGuide {
     'content': content,
     'pdf_path': pdfPath,
   };
-
-  factory TeacherGuide.fromJson(Map<String, dynamic> json) {
-    return TeacherGuide(
-      lessonId: json['lesson_id'] as String,
-      content: json['content'] as String,
-      pdfPath: json['pdf_path'] as String,
-    );
-  }
 }

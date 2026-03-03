@@ -1,9 +1,6 @@
 import 'dart:math';
-import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 enum DropCapMode {
   /// default
@@ -22,42 +19,26 @@ enum DropCapPosition {
 }
 
 class DropCap extends StatelessWidget {
-  final Widget child;
-  final double width, height;
-
-  DropCap({
-    Key? key,
+  const DropCap({
     required this.child,
     required this.width,
     required this.height,
-  }) : assert(width != null),
-       assert(height != null),
-       super(key: key);
+    super.key,
+  });
+  final Widget child;
+  final double width;
+  final double height;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(child: child, width: width, height: height);
+    return SizedBox(width: width, height: height, child: child);
   }
 }
 
 class DropCapText extends StatelessWidget {
-  final String data;
-  final DropCapMode mode;
-  final TextStyle? style, dropCapStyle;
-  final TextAlign textAlign;
-  final DropCap? dropCap;
-  final EdgeInsets dropCapPadding;
-  final Offset indentation;
-  final bool forceNoDescent, parseInlineMarkdown;
-  final TextDirection textDirection;
-  final DropCapPosition? dropCapPosition;
-  final int dropCapChars;
-  final int? maxLines;
-  final TextOverflow overflow;
-
-  DropCapText(
+  const DropCapText(
     this.data, {
-    Key? key,
+    super.key,
     this.mode = DropCapMode.inside,
     this.style,
     this.dropCapStyle,
@@ -72,12 +53,26 @@ class DropCapText extends StatelessWidget {
     this.overflow = TextOverflow.clip,
     this.maxLines,
     this.dropCapPosition,
-  }) : assert(data != null),
-       super(key: key);
+  });
+  final String data;
+  final DropCapMode mode;
+  final TextStyle? style;
+  final TextStyle? dropCapStyle;
+  final TextAlign textAlign;
+  final DropCap? dropCap;
+  final EdgeInsets dropCapPadding;
+  final Offset indentation;
+  final bool forceNoDescent;
+  final bool parseInlineMarkdown;
+  final TextDirection textDirection;
+  final DropCapPosition? dropCapPosition;
+  final int dropCapChars;
+  final int? maxLines;
+  final TextOverflow overflow;
 
   @override
   Widget build(BuildContext context) {
-    TextStyle textStyle = TextStyle(
+    final textStyle = TextStyle(
       color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black,
       fontSize: 14,
       height: 1,
@@ -86,7 +81,7 @@ class DropCapText extends StatelessWidget {
 
     if (data == '') return Text(data, style: textStyle);
 
-    TextStyle capStyle = TextStyle(
+    final capStyle = TextStyle(
       color: textStyle.color,
       fontSize: textStyle.fontSize! * 5.5,
       fontFamily: textStyle.fontFamily,
@@ -95,24 +90,26 @@ class DropCapText extends StatelessWidget {
       height: 1,
     ).merge(dropCapStyle);
 
-    double capWidth, capHeight;
-    int dropCapChars = dropCap != null ? 0 : this.dropCapChars;
-    CrossAxisAlignment sideCrossAxisAlignment = CrossAxisAlignment.start;
-    MarkdownParser? mdData = parseInlineMarkdown ? MarkdownParser(data) : null;
-    final String dropCapStr = (mdData?.plainText ?? data).substring(
+    double capWidth;
+    double capHeight;
+    final dropCapChars = dropCap != null ? 0 : this.dropCapChars;
+    var sideCrossAxisAlignment = CrossAxisAlignment.start;
+    final mdData = parseInlineMarkdown ? MarkdownParser(data) : null;
+    final dropCapStr = (mdData?.plainText ?? data).substring(
       0,
       dropCapChars,
     );
 
-    if (mode == DropCapMode.baseline && dropCap == null)
+    if (mode == DropCapMode.baseline && dropCap == null) {
       return _buildBaseline(context, textStyle, capStyle);
+    }
 
     // custom DropCap
     if (dropCap != null) {
       capWidth = dropCap!.width;
       capHeight = dropCap!.height;
     } else {
-      TextPainter capPainter = TextPainter(
+      final capPainter = TextPainter(
         text: TextSpan(
           text: dropCapStr,
           style: capStyle,
@@ -123,7 +120,7 @@ class DropCapText extends StatelessWidget {
       capWidth = capPainter.width;
       capHeight = capPainter.height;
       if (forceNoDescent) {
-        List<LineMetrics> ls = capPainter.computeLineMetrics();
+        final ls = capPainter.computeLineMetrics();
         capHeight -= ls.isNotEmpty
             ? ls[0].descent * 0.95
             : capPainter.height * 0.2;
@@ -134,12 +131,10 @@ class DropCapText extends StatelessWidget {
     capWidth += dropCapPadding.left + dropCapPadding.right;
     capHeight += dropCapPadding.top + dropCapPadding.bottom;
 
-    MarkdownParser? mdRest = parseInlineMarkdown
-        ? mdData!.subchars(dropCapChars)
-        : null;
-    String restData = data.substring(dropCapChars);
+    final mdRest = parseInlineMarkdown ? mdData!.subchars(dropCapChars) : null;
+    final restData = data.substring(dropCapChars);
 
-    TextSpan textSpan = TextSpan(
+    final textSpan = TextSpan(
       text: parseInlineMarkdown ? null : restData,
       children: parseInlineMarkdown ? mdRest!.toTextSpanList() : null,
       style: textStyle.apply(
@@ -147,14 +142,14 @@ class DropCapText extends StatelessWidget {
       ),
     );
 
-    TextPainter textPainter = TextPainter(
+    final textPainter = TextPainter(
       textDirection: textDirection,
       text: textSpan,
       textAlign: textAlign,
     );
-    double lineHeight = textPainter.preferredLineHeight;
+    final lineHeight = textPainter.preferredLineHeight;
 
-    int rows = ((capHeight - indentation.dy) / lineHeight).ceil();
+    var rows = ((capHeight - indentation.dy) / lineHeight).ceil();
 
     // DROP CAP MODE - UPWARDS
     if (mode == DropCapMode.upwards) {
@@ -164,17 +159,17 @@ class DropCapText extends StatelessWidget {
 
     // BUILDER
     return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        double boundsWidth = constraints.maxWidth - capWidth;
+      builder: (context, constraints) {
+        var boundsWidth = constraints.maxWidth - capWidth;
         if (boundsWidth < 1) boundsWidth = 1;
 
-        int charIndexEnd = data.length;
+        var charIndexEnd = data.length;
 
         //int startMillis = new DateTime.now().millisecondsSinceEpoch;
         if (rows > 0) {
           textPainter.layout(maxWidth: boundsWidth);
-          double yPos = rows * lineHeight;
-          int charIndex = textPainter
+          final yPos = rows * lineHeight;
+          final charIndex = textPainter
               .getPositionForOffset(Offset(0, yPos))
               .offset;
           textPainter.maxLines = rows;
@@ -202,21 +197,22 @@ class DropCapText extends StatelessWidget {
                         : TextDirection.ltr),
               crossAxisAlignment: sideCrossAxisAlignment,
               children: <Widget>[
-                dropCap != null
-                    ? Padding(padding: dropCapPadding, child: dropCap)
-                    : Container(
-                        width: capWidth,
-                        height: capHeight,
-                        padding: dropCapPadding,
-                        child: RichText(
-                          textDirection: textDirection,
-                          textAlign: textAlign,
-                          text: TextSpan(
-                            text: dropCapStr,
-                            style: capStyle,
-                          ),
-                        ),
+                if (dropCap != null)
+                  Padding(padding: dropCapPadding, child: dropCap)
+                else
+                  Container(
+                    width: capWidth,
+                    height: capHeight,
+                    padding: dropCapPadding,
+                    child: RichText(
+                      textDirection: textDirection,
+                      textAlign: textAlign,
+                      text: TextSpan(
+                        text: dropCapStr,
+                        style: capStyle,
                       ),
+                    ),
+                  ),
                 Flexible(
                   child: Container(
                     padding: EdgeInsets.only(top: indentation.dy),
@@ -277,7 +273,7 @@ class DropCapText extends StatelessWidget {
     TextStyle textStyle,
     TextStyle capStyle,
   ) {
-    MarkdownParser mdData = MarkdownParser(data);
+    final mdData = MarkdownParser(data);
 
     return RichText(
       textAlign: textAlign,
@@ -286,7 +282,7 @@ class DropCapText extends StatelessWidget {
         children: <TextSpan>[
           TextSpan(
             text: mdData.plainText.substring(0, dropCapChars),
-            style: capStyle.merge(TextStyle(height: 0)),
+            style: capStyle.merge(const TextStyle(height: 0)),
           ),
           TextSpan(
             children: mdData.subchars(dropCapChars).toTextSpanList(),
@@ -301,6 +297,65 @@ class DropCapText extends StatelessWidget {
 }
 
 class MarkdownParser {
+  MarkdownParser(this.data) {
+    plainText = '';
+    spans = [MarkdownSpan(text: '', markups: [], style: const TextStyle())];
+
+    var bold = false;
+    var italic = false;
+    var underline = false;
+
+    const markupBold = '**';
+    const markupItalic = '_';
+    const markupUnderline = '++';
+
+    void addSpan(String markup, bool isOpening) {
+      final markups = <Markup>[Markup(markup, isOpening)];
+
+      if (bold && markup != markupBold) markups.add(Markup(markupBold, true));
+      if (italic && markup != markupItalic) {
+        markups.add(Markup(markupItalic, true));
+      }
+      if (underline && markup != markupUnderline) {
+        markups.add(Markup(markupUnderline, true));
+      }
+
+      spans.add(
+        MarkdownSpan(
+          text: '',
+          markups: markups,
+          style: TextStyle(
+            fontWeight: bold ? FontWeight.bold : null,
+            fontStyle: italic ? FontStyle.italic : null,
+            decoration: underline ? TextDecoration.underline : null,
+          ),
+        ),
+      );
+    }
+
+    bool checkMarkup(int i, String markup) {
+      return data.substring(i, min(i + markup.length, data.length)) == markup;
+    }
+
+    for (var c = 0; c < data.length; c++) {
+      if (checkMarkup(c, markupBold)) {
+        bold = !bold;
+        addSpan(markupBold, bold);
+        c += markupBold.length - 1;
+      } else if (checkMarkup(c, markupItalic)) {
+        italic = !italic;
+        addSpan(markupItalic, italic);
+        c += markupItalic.length - 1;
+      } else if (checkMarkup(c, markupUnderline)) {
+        underline = !underline;
+        addSpan(markupUnderline, underline);
+        c += markupUnderline.length - 1;
+      } else {
+        spans[spans.length - 1].text += data[c];
+        plainText += data[c];
+      }
+    }
+  }
   final String data;
   late List<MarkdownSpan> spans;
   String plainText = '';
@@ -310,10 +365,10 @@ class MarkdownParser {
   }
 
   MarkdownParser subchars(int startIndex, [int? endIndex]) {
-    final List<MarkdownSpan> subspans = [];
-    int skip = startIndex;
-    for (int s = 0; s < spans.length; s++) {
-      MarkdownSpan span = spans[s];
+    final subspans = <MarkdownSpan>[];
+    var skip = startIndex;
+    for (var s = 0; s < spans.length; s++) {
+      final span = spans[s];
       if (skip <= 0) {
         subspans.add(span);
       } else if (span.text.length < skip) {
@@ -333,8 +388,8 @@ class MarkdownParser {
     return MarkdownParser(
       subspans
           .asMap()
-          .map((int index, MarkdownSpan span) {
-            String markup = index > 0
+          .map((index, span) {
+            final markup = index > 0
                 ? (span.markups.isNotEmpty ? span.markups[0].code : '')
                 : span.markups.map((m) => m.isActive ? m.code : '').join();
             return MapEntry(index, '$markup${span.text}');
@@ -344,83 +399,23 @@ class MarkdownParser {
           .join(),
     );
   }
-
-  MarkdownParser(this.data) {
-    plainText = '';
-    spans = [MarkdownSpan(text: '', markups: [], style: TextStyle())];
-
-    bool bold = false;
-    bool italic = false;
-    bool underline = false;
-
-    const String MARKUP_BOLD = '**';
-    const String MARKUP_ITALIC = '_';
-    const String MARKUP_UNDERLINE = '++';
-
-    addSpan(String markup, bool isOpening) {
-      final List<Markup> markups = [Markup(markup, isOpening)];
-
-      if (bold && markup != MARKUP_BOLD) markups.add(Markup(MARKUP_BOLD, true));
-      if (italic && markup != MARKUP_ITALIC)
-        markups.add(Markup(MARKUP_ITALIC, true));
-      if (underline && markup != MARKUP_UNDERLINE)
-        markups.add(Markup(MARKUP_UNDERLINE, true));
-
-      spans.add(
-        MarkdownSpan(
-          text: '',
-          markups: markups,
-          style: TextStyle(
-            fontWeight: bold ? FontWeight.bold : null,
-            fontStyle: italic ? FontStyle.italic : null,
-            decoration: underline ? TextDecoration.underline : null,
-          ),
-        ),
-      );
-    }
-
-    bool checkMarkup(int i, String markup) {
-      return data.substring(i, min(i + markup.length, data.length)) == markup;
-    }
-
-    for (int c = 0; c < data.length; c++) {
-      if (checkMarkup(c, MARKUP_BOLD)) {
-        bold = !bold;
-        addSpan(MARKUP_BOLD, bold);
-        c += MARKUP_BOLD.length - 1;
-      } else if (checkMarkup(c, MARKUP_ITALIC)) {
-        italic = !italic;
-        addSpan(MARKUP_ITALIC, italic);
-        c += MARKUP_ITALIC.length - 1;
-      } else if (checkMarkup(c, MARKUP_UNDERLINE)) {
-        underline = !underline;
-        addSpan(MARKUP_UNDERLINE, underline);
-        c += MARKUP_UNDERLINE.length - 1;
-      } else {
-        spans[spans.length - 1].text += data[c];
-        plainText += data[c];
-      }
-    }
-  }
 }
 
 class MarkdownSpan {
-  final TextStyle style;
-  final List<Markup> markups;
-  String text;
-
-  TextSpan toTextSpan() => TextSpan(text: text, style: style);
-
   MarkdownSpan({
     required this.text,
     required this.style,
     required this.markups,
   });
+  final TextStyle style;
+  final List<Markup> markups;
+  String text;
+
+  TextSpan toTextSpan() => TextSpan(text: text, style: style);
 }
 
 class Markup {
+  Markup(this.code, this.isActive);
   final String code;
   final bool isActive;
-
-  Markup(this.code, this.isActive);
 }

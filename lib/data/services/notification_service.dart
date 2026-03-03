@@ -1,10 +1,9 @@
+import 'package:afc_studymate/app_router.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logger/logger.dart';
 import 'package:timezone/timezone.dart' as tz;
-
-import '../../app_router.dart';
 
 final notificationServiceProvider = Provider<NotificationService>((ref) {
   return NotificationService();
@@ -146,5 +145,15 @@ class NotificationService {
   Future<void> cancelAll() async {
     await _notifications.cancelAll();
     _logger.i('All notifications cancelled');
+  }
+
+  Future<void> cancelDaily() async {
+    await _notifications.cancel(id: 0);
+    _logger.i('Daily reminder cancelled');
+  }
+
+  Future<void> cancelWeeklySundayReminder() async {
+    await _notifications.cancel(id: 1);
+    _logger.i('Weekly Sunday reminder cancelled');
   }
 }

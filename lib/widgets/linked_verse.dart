@@ -1,13 +1,13 @@
+import 'package:afc_studymate/data/models/bible_ref.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/verse.dart';
+import 'package:afc_studymate/data/providers/user_providers.dart';
+import 'package:afc_studymate/data/services/bible_service.dart';
+import 'package:afc_studymate/features/bible/bible_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../data/models/bible_ref.dart';
-import '../data/models/enums.dart';
-import '../data/models/verse.dart';
-import '../data/services/bible_service.dart';
-import '../features/bible/bible_screen.dart';
 
 class LinkedVerse extends HookConsumerWidget {
   const LinkedVerse({
@@ -45,24 +45,11 @@ class LinkedVerse extends HookConsumerWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (BuildContext sheetContext) {
+      builder: (sheetContext) {
         return _VersePreviewSheet(
           reference: reference,
-          onOpenFullText: () {
-            Navigator.of(sheetContext).pop();
-            final queryParameters = <String, String>{
-              'book': reference.book,
-              'chapter': reference.chapter.toString(),
-            };
-            final verse = reference.verseStart;
-            if (verse != null) {
-              queryParameters['verse'] = verse.toString();
-            }
-            rootContext.goNamed(
-              BibleScreen.routeName,
-              queryParameters: queryParameters,
-            );
-          },
+          rootContext: rootContext,
+          onClose: () => Navigator.of(sheetContext).pop(),
         );
       },
     );
@@ -70,16 +57,23 @@ class LinkedVerse extends HookConsumerWidget {
 }
 
 class _VersePreviewSheet extends HookConsumerWidget {
-  const _VersePreviewSheet({required this.reference, required this.onOpenFullText});
+  const _VersePreviewSheet({
+    required this.reference,
+    required this.rootContext,
+    required this.onClose,
+  });
 
   final BibleRef reference;
-  final VoidCallback onOpenFullText;
+  final BuildContext rootContext;
+  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final bibleService = ref.read(bibleServiceProvider);
-    const translation = Translation.kjv;
+    final profileAsync = ref.watch(userProfileProvider);
+    final translation =
+        profileAsync.valueOrNull?.translation ?? Translation.kjv;
 
     final passageFuture = useMemoized(
       () => bibleService.getPassage(reference, translation),
@@ -96,7 +90,12 @@ class _VersePreviewSheet extends HookConsumerWidget {
         ),
       );
     } else if (!passageSnapshot.hasData) {
-      content = const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()));
+      content = const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: CircularProgressIndicator(),
+        ),
+      );
     } else {
       final verses = passageSnapshot.data ?? <Verse>[];
       if (verses.isEmpty) {
@@ -144,7 +143,10 @@ class _VersePreviewSheet extends HookConsumerWidget {
           const SizedBox(height: 16),
           Text(reference.displayText, style: theme.textTheme.titleLarge),
           const SizedBox(height: 4),
-          Text('King James Version', style: theme.textTheme.bodySmall),
+          Text(
+            _translationLabel(translation),
+            style: theme.textTheme.bodySmall,
+          ),
           const SizedBox(height: 16),
           ConstrainedBox(
             constraints: BoxConstraints(maxHeight: maxHeight),
@@ -154,7 +156,22 @@ class _VersePreviewSheet extends HookConsumerWidget {
           Align(
             alignment: Alignment.centerRight,
             child: FilledButton.icon(
-              onPressed: onOpenFullText,
+              onPressed: () {
+                onClose();
+                final queryParameters = <String, String>{
+                  'book': reference.book,
+                  'chapter': reference.chapter.toString(),
+                  'translation': translation.name,
+                };
+                final verse = reference.verseStart;
+                if (verse != null) {
+                  queryParameters['verse'] = verse.toString();
+                }
+                rootContext.goNamed(
+                  BibleScreen.routeName,
+                  queryParameters: queryParameters,
+                );
+              },
               icon: const Icon(Icons.open_in_new),
               label: const Text('Go to full text'),
             ),
@@ -162,6 +179,15 @@ class _VersePreviewSheet extends HookConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+String _translationLabel(Translation translation) {
+  switch (translation) {
+    case Translation.kjv:
+      return 'King James Version';
+    case Translation.shona:
+      return 'Shona';
   }
 }
 
@@ -173,7 +199,8 @@ class _VerseLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textStyle = theme.textTheme.bodyLarge ?? const TextStyle(fontSize: 16);
+    final textStyle =
+        theme.textTheme.bodyLarge ?? const TextStyle(fontSize: 16);
     final verseNumberStyle = textStyle.copyWith(
       fontWeight: FontWeight.w600,
       color: theme.colorScheme.primary,

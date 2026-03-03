@@ -1,20 +1,26 @@
+import 'package:afc_studymate/data/drift/app_database.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/progress.dart';
+import 'package:afc_studymate/data/repositories/lesson_repository.dart';
+import 'package:afc_studymate/data/services/analytics_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../drift/app_database.dart';
-import '../models/enums.dart';
-import '../models/progress.dart';
-import '../repositories/lesson_repository.dart';
 
 final progressServiceProvider = Provider<ProgressService>((ref) {
   return ProgressService(
+    analyticsService: ref.read(analyticsServiceProvider),
     database: ref.read(appDatabaseProvider),
     lessonRepository: ref.read(lessonRepositoryProvider),
   );
 });
 
 class ProgressService {
-  ProgressService({required this.database, required this.lessonRepository});
+  ProgressService({
+    required this.analyticsService,
+    required this.database,
+    required this.lessonRepository,
+  });
 
+  final AnalyticsService analyticsService;
   final AppDatabase database;
   final LessonRepository lessonRepository;
 
@@ -23,18 +29,38 @@ class ProgressService {
     required String lessonId,
     double? score,
   }) async {
+    await recordComplete(
+      userId: userId,
+      lessonId: lessonId,
+      track: _inferTrackFromLessonId(lessonId),
+      score: score,
+    );
+  }
+
+  Future<void> recordComplete({
+    required String userId,
+    required String lessonId,
+    required Track track,
+    DateTime? completedAt,
+    double? score,
+  }) async {
     final now = DateTime.now();
     final progressList = await getUserProgress(userId);
-    final streak = _calculateStreak(progressList, now);
+    final completed = completedAt ?? now;
+    final streak = _calculateStreak(progressList, completed);
 
     final progress = Progress(
       userId: userId,
       lessonId: lessonId,
-      completedAt: now,
+      completedAt: completed,
       score: score,
       streakCount: streak,
     );
     await database.upsertProgress(progress);
+    await analyticsService.logLessonCompleted(
+      lessonId: lessonId,
+      track: track,
+    );
   }
 
   Future<List<Progress>> getUserProgress(String userId) =>
@@ -51,7 +77,7 @@ class ProgressService {
 
   int getBestStreak(List<Progress> progress) {
     if (progress.isEmpty) return 0;
-    int maxStreak = 0;
+    var maxStreak = 0;
     for (final p in progress) {
       if ((p.streakCount ?? 0) > maxStreak) {
         maxStreak = p.streakCount ?? 0;
@@ -92,6 +118,16 @@ class ProgressService {
     return 'Other';
   }
 
+  Track _inferTrackFromLessonId(String lessonId) {
+    if (lessonId.startsWith('search')) return Track.search;
+    if (lessonId.startsWith('answer')) return Track.answer;
+    if (lessonId.startsWith('beginners')) return Track.beginners;
+    if (lessonId.startsWith('primary')) return Track.primaryPals;
+    if (lessonId.startsWith('discovery')) return Track.discovery;
+    if (lessonId.startsWith('daybreak')) return Track.daybreak;
+    return Track.search;
+  }
+
   int _calculateStreak(List<Progress> progress, DateTime relativeTo) {
     if (progress.isEmpty) return 0;
 
@@ -110,8 +146,8 @@ class ProgressService {
             .toList()
           ..sort((a, b) => b.compareTo(a));
 
-    int streak = 0;
-    DateTime currentDay = DateTime(
+    var streak = 0;
+    var currentDay = DateTime(
       relativeTo.year,
       relativeTo.month,
       relativeTo.day,

@@ -1,9 +1,8 @@
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/verse_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../data/models/lesson.dart';
-import '../../../widgets/design_system_widgets.dart';
-import '../../../widgets/verse_card.dart';
 
 class DiscoveryLessonView extends ConsumerWidget {
   const DiscoveryLessonView({required this.lesson, super.key});

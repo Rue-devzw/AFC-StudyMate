@@ -1,7 +1,6 @@
+import 'package:afc_studymate/data/models/bible_ref.dart';
+import 'package:afc_studymate/data/models/enums.dart';
 import 'package:meta/meta.dart';
-
-import 'bible_ref.dart';
-import 'enums.dart';
 
 @immutable
 class MemoryVerse {
@@ -14,6 +13,18 @@ class MemoryVerse {
     this.easiness = 2.5,
     this.intervalDays = 0,
   });
+
+  factory MemoryVerse.fromJson(Map<String, dynamic> json) {
+    return MemoryVerse(
+      id: json['id'] as String,
+      ref: BibleRef.fromJson(json['ref'] as Map<String, dynamic>),
+      translation: Translation.values.firstWhere((value) => value.name == json['translation']),
+      dueDate: (json['dueDate'] as String?) == null ? null : DateTime.parse(json['dueDate'] as String),
+      repetitions: json['repetitions'] as int? ?? 0,
+      easiness: (json['easiness'] as num?)?.toDouble() ?? 2.5,
+      intervalDays: json['intervalDays'] as int? ?? 0,
+    );
+  }
 
   final String id;
   final BibleRef ref;
@@ -52,18 +63,6 @@ class MemoryVerse {
         'easiness': easiness,
         'intervalDays': intervalDays,
       };
-
-  factory MemoryVerse.fromJson(Map<String, dynamic> json) {
-    return MemoryVerse(
-      id: json['id'] as String,
-      ref: BibleRef.fromJson(json['ref'] as Map<String, dynamic>),
-      translation: Translation.values.firstWhere((value) => value.name == json['translation']),
-      dueDate: (json['dueDate'] as String?) == null ? null : DateTime.parse(json['dueDate'] as String),
-      repetitions: json['repetitions'] as int? ?? 0,
-      easiness: (json['easiness'] as num?)?.toDouble() ?? 2.5,
-      intervalDays: json['intervalDays'] as int? ?? 0,
-    );
-  }
 
   @override
   int get hashCode => Object.hash(id, ref, translation, dueDate, repetitions, easiness, intervalDays);

@@ -1,6 +1,5 @@
+import 'package:afc_studymate/data/models/enums.dart';
 import 'package:meta/meta.dart';
-
-import 'enums.dart';
 
 @immutable
 class BibleBook {

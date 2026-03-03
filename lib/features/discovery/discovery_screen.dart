@@ -1,25 +1,56 @@
+import 'package:afc_studymate/data/drift/app_database.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/journal_entry.dart';
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/data/providers/progress_providers.dart';
+import 'package:afc_studymate/data/providers/user_providers.dart';
+import 'package:afc_studymate/data/repositories/discovery_guide_repository.dart';
+import 'package:afc_studymate/data/repositories/lesson_repository.dart';
+import 'package:afc_studymate/data/services/analytics_service.dart';
+import 'package:afc_studymate/data/services/bible_service.dart';
+import 'package:afc_studymate/data/services/progress_service.dart';
+import 'package:afc_studymate/utils/scripture_reference_parser.dart';
+import 'package:afc_studymate/widgets/completion_banner.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/pdf_viewer_screen.dart';
+import 'package:afc_studymate/widgets/retry_error_card.dart';
+import 'package:afc_studymate/widgets/skeleton_widgets.dart';
+import 'package:afc_studymate/widgets/tts_play_button.dart';
+import 'package:afc_studymate/widgets/verse_card.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../data/drift/app_database.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/journal_entry.dart';
-import '../../data/models/lesson.dart';
-import '../../data/repositories/lesson_repository.dart';
-import '../../widgets/completion_banner.dart';
-import '../../widgets/design_system_widgets.dart';
-import '../../widgets/verse_card.dart';
-
 class DiscoveryScreen extends HookConsumerWidget {
-  const DiscoveryScreen({super.key});
+  const DiscoveryScreen({super.key, this.lessonId});
 
   static const String routeName = 'discovery';
+  final String? lessonId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final discoveryAsync = ref.watch(_discoveryLessonProvider);
+    final discoveryAsync = ref.watch(_discoveryLessonProvider(lessonId));
+    final lesson = discoveryAsync.valueOrNull;
+    final horizontalPadding = responsiveHorizontalPadding(context);
+
+    useEffect(() {
+      if (lesson == null) {
+        return null;
+      }
+      Future<void>.microtask(() async {
+        await ref
+            .read(analyticsServiceProvider)
+            .logLessonOpened(
+              lessonId: lesson.id,
+              track: Track.discovery,
+              source: 'discovery_screen',
+            );
+      });
+      return null;
+    }, [lesson?.id]);
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_discovery.png',
@@ -29,28 +60,55 @@ class DiscoveryScreen extends HookConsumerWidget {
         elevation: 0,
         actions: discoveryAsync.valueOrNull != null
             ? [
-                FutureBuilder(
-                  future: ref
-                      .read(appDatabaseProvider)
-                      .getTeacherGuide(discoveryAsync.valueOrNull!.id),
-                  builder: (context, snapshot) {
-                    final guide = snapshot.data;
-                    if (guide == null) {
-                      return const SizedBox.shrink();
-                    }
-                    return IconButton(
-                      icon: const Icon(Icons.school, color: Colors.white),
-                      tooltip: "View Teacher's Guide",
-                      onPressed: () {
-                        context.pushNamed(
-                          'teacher-guide',
-                          extra: guide,
-                          queryParameters: {
-                            'title':
-                                "${discoveryAsync.valueOrNull!.title} Teacher's Guide",
-                          },
-                        );
-                      },
+                IconButton(
+                  icon: const Icon(Icons.view_list, color: Colors.white),
+                  tooltip: 'Archive',
+                  onPressed: () {
+                    context.pushNamed('discoveryArchive');
+                  },
+                ),
+                TtsPlayButton(
+                  text: [
+                    discoveryAsync.valueOrNull!.title,
+                    discoveryAsync.valueOrNull!.payload['keyVerse']
+                            as String? ??
+                        '',
+                    discoveryAsync.valueOrNull!.payload['background']
+                            as String? ??
+                        '',
+                    discoveryAsync.valueOrNull!.payload['conclusion']
+                            as String? ??
+                        '',
+                    (discoveryAsync.valueOrNull!.payload['questions']
+                                as List<dynamic>? ??
+                            <dynamic>[])
+                        .join('\n'),
+                  ].join('\n\n'),
+                  compact: true,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.share, color: Colors.white),
+                  tooltip: 'Share lesson',
+                  onPressed: () {
+                    final lesson = discoveryAsync.valueOrNull!;
+                    Share.share(
+                      'Discovery Lesson ${lesson.weekIndex ?? ''}: ${lesson.title}\n\n'
+                      '${lesson.payload['keyVerse'] ?? ''}',
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.menu_book_rounded,
+                    color: Colors.white,
+                  ),
+                  tooltip: "Open Teacher's Guides",
+                  onPressed: () {
+                    final currentLesson = discoveryAsync.valueOrNull!;
+                    _openDiscoveryGuidePicker(
+                      context: context,
+                      repository: ref.read(discoveryGuideRepositoryProvider),
+                      lesson: currentLesson,
                     );
                   },
                 ),
@@ -66,22 +124,42 @@ class DiscoveryScreen extends HookConsumerWidget {
                 ),
               )
             : _DiscoveryContent(lesson: lesson),
-        error: (error, stackTrace) => Center(
-          child: Text(
-            'Unable to load: $error',
-            style: const TextStyle(color: Colors.white),
-          ),
+        error: (error, stackTrace) => RetryErrorCard(
+          title: 'Unable to load discovery lesson',
+          message: '$error',
+          onRetry: () => ref.invalidate(_discoveryLessonProvider(lessonId)),
         ),
-        loading: () =>
-            const Center(child: CircularProgressIndicator(color: Colors.white)),
+        loading: () => ListView(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            16,
+            horizontalPadding,
+            standardBottomContentPadding(context),
+          ),
+          children: const [
+            SkeletonCard(),
+            SizedBox(height: 12),
+            SkeletonCard(),
+            SizedBox(height: 12),
+            SkeletonCard(),
+          ],
+        ),
       ),
     );
   }
 }
 
-final _discoveryLessonProvider = FutureProvider<Lesson?>((ref) {
-  return ref.read(lessonRepositoryProvider).getDiscoveryLesson();
-});
+final FutureProviderFamily<Lesson?, String?> _discoveryLessonProvider =
+    FutureProvider.family<Lesson?, String?>((
+      ref,
+      lessonId,
+    ) async {
+      final repo = ref.read(lessonRepositoryProvider);
+      if (lessonId == null || lessonId.isEmpty) {
+        return repo.getDiscoveryLesson();
+      }
+      return repo.getLessonById(lessonId);
+    });
 
 class _DiscoveryContent extends StatelessWidget {
   const _DiscoveryContent({required this.lesson});
@@ -91,14 +169,26 @@ class _DiscoveryContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final horizontalPadding = responsiveHorizontalPadding(context);
     final keyVerse = lesson.payload['keyVerse'] as String? ?? '';
     final background = lesson.payload['background'] as String? ?? '';
     final conclusion = lesson.payload['conclusion'] as String? ?? '';
     final questions = (lesson.payload['questions'] as List<dynamic>? ?? [])
         .cast<String>();
+    final hasBodyContent =
+        lesson.bibleReferences.isNotEmpty ||
+        keyVerse.isNotEmpty ||
+        background.isNotEmpty ||
+        questions.isNotEmpty ||
+        conclusion.isNotEmpty;
 
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
+        24,
+        horizontalPadding,
+        standardBottomContentPadding(context),
+      ),
       children: <Widget>[
         Text(
           'Lesson ${lesson.weekIndex ?? 0}: ${lesson.title}',
@@ -108,12 +198,28 @@ class _DiscoveryContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
+        if (!hasBodyContent)
+          PremiumGlassCard(
+            child: Text(
+              'Content for this Discovery lesson is not available yet.',
+              style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white),
+            ),
+          ),
+        if (!hasBodyContent) const SizedBox(height: 24),
         if (lesson.bibleReferences.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 24),
-            child: VerseCard(
-              ref: lesson.bibleReferences.first,
-              translationLabel: 'Parallel (KJV/Shona)',
+            child: Column(
+              children: [
+                for (final bibleRef in lesson.bibleReferences)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: VerseCard(
+                      ref: bibleRef,
+                      translationLabel: 'Your selected translation',
+                    ),
+                  ),
+              ],
             ),
           ),
 
@@ -127,13 +233,7 @@ class _DiscoveryContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           PremiumGlassCard(
-            child: Text(
-              keyVerse,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                fontStyle: FontStyle.italic,
-                color: Colors.white,
-              ),
-            ),
+            child: _DiscoveryKeyVerseBlock(rawKeyVerse: keyVerse),
           ),
           const SizedBox(height: 24),
         ],
@@ -148,8 +248,8 @@ class _DiscoveryContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           PremiumGlassCard(
-            child: Text(
-              background,
+            child: _ScriptureLinkedText(
+              text: background,
               style: theme.textTheme.bodyMedium?.copyWith(
                 height: 1.5,
                 color: Colors.white.withOpacity(0.9),
@@ -186,8 +286,8 @@ class _DiscoveryContent extends StatelessWidget {
                           ),
                         ),
                         Expanded(
-                          child: Text(
-                            questions[i],
+                          child: _ScriptureLinkedText(
+                            text: questions[i],
                             style: theme.textTheme.bodyMedium?.copyWith(
                               height: 1.5,
                               fontSize: 16,
@@ -219,8 +319,8 @@ class _DiscoveryContent extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           PremiumGlassCard(
-            child: Text(
-              conclusion,
+            child: _ScriptureLinkedText(
+              text: conclusion,
               style: theme.textTheme.bodyMedium?.copyWith(
                 height: 1.5,
                 color: Colors.white.withOpacity(0.9),
@@ -230,10 +330,22 @@ class _DiscoveryContent extends StatelessWidget {
           const SizedBox(height: 24),
         ],
 
-        CompletionBanner(
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Marked as read!')),
+        Consumer(
+          builder: (context, ref, child) {
+            return CompletionBanner(
+              onTap: () async {
+                await ref
+                    .read(progressServiceProvider)
+                    .recordComplete(
+                      userId: localUserId,
+                      lessonId: lesson.id,
+                      track: Track.discovery,
+                    );
+                triggerProgressRefresh(ref);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Marked as read!')),
+                );
+              },
             );
           },
         ),
@@ -241,6 +353,165 @@ class _DiscoveryContent extends StatelessWidget {
       ],
     );
   }
+}
+
+class _ScriptureLinkedText extends StatelessWidget {
+  const _ScriptureLinkedText({required this.text, this.style});
+
+  final String text;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text.rich(
+      TextSpan(
+        style: style,
+        children: ScriptureReferenceParser.buildLinkedTextSpans(
+          context,
+          text,
+          style,
+        ),
+      ),
+    );
+  }
+}
+
+class _DiscoveryKeyVerseBlock extends HookConsumerWidget {
+  const _DiscoveryKeyVerseBlock({required this.rawKeyVerse});
+
+  final String rawKeyVerse;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final linkedTextStyle = theme.textTheme.bodyLarge?.copyWith(
+      fontStyle: FontStyle.italic,
+      color: Colors.white,
+    );
+    final directRefs = ScriptureReferenceParser.parseReferenceList(rawKeyVerse);
+
+    Widget? resolvedVerseWidget;
+    if (directRefs.isNotEmpty) {
+      resolvedVerseWidget = Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: VerseCard(
+          ref: directRefs.first,
+          translationLabel: 'Resolved key verse',
+        ),
+      );
+    } else {
+      final profile = ref.watch(userProfileProvider).valueOrNull;
+      final translation = profile?.translation ?? Translation.kjv;
+      final searchQuery = _keyVerseSearchQuery(rawKeyVerse);
+      if (searchQuery != null) {
+        final searchFuture = useMemoized(
+          () => ref.read(bibleServiceProvider).search(searchQuery, translation),
+          <Object?>[searchQuery, translation],
+        );
+        final searchSnapshot = useFuture(searchFuture);
+        if (searchSnapshot.hasData && (searchSnapshot.data ?? []).isNotEmpty) {
+          final firstHit = searchSnapshot.data!.first;
+          final parsed = ScriptureReferenceParser.parseReferenceList(
+            firstHit.reference,
+          );
+          if (parsed.isNotEmpty) {
+            resolvedVerseWidget = Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Resolved from Bible: ${firstHit.reference}',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  VerseCard(
+                    ref: parsed.first,
+                    translationLabel: 'Resolved key verse',
+                  ),
+                ],
+              ),
+            );
+          }
+        }
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ScriptureLinkedText(text: rawKeyVerse, style: linkedTextStyle),
+        ...?resolvedVerseWidget != null
+            ? <Widget>[resolvedVerseWidget]
+            : null,
+      ],
+    );
+  }
+
+  String? _keyVerseSearchQuery(String value) {
+    final cleaned = value
+        .replaceAll(RegExp('[“”"()]'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+    if (cleaned.isEmpty) {
+      return null;
+    }
+    final words = cleaned.split(' ');
+    if (words.length < 4) {
+      return null;
+    }
+    final phrase = words.take(8).join(' ');
+    return phrase.length < 12 ? null : phrase;
+  }
+}
+
+void _openDiscoveryGuidePicker({
+  required BuildContext context,
+  required DiscoveryGuideRepository repository,
+  required Lesson lesson,
+}) {
+  final options = repository.getGuideOptionsForLesson(lesson.id);
+  showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    showDragHandle: true,
+    builder: (sheetContext) {
+      if (options.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.all(20),
+          child: Text('No Discovery teacher guides are available.'),
+        );
+      }
+      return ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        itemCount: options.length,
+        itemBuilder: (context, index) {
+          final option = options[index];
+          return ListTile(
+            leading: Icon(
+              option.recommended ? Icons.star_rounded : Icons.picture_as_pdf,
+              color: option.recommended ? Colors.amber : null,
+            ),
+            title: Text(option.title),
+            subtitle: Text('Page ${option.startPage}'),
+            onTap: () {
+              Navigator.of(sheetContext).pop();
+              context.pushNamed(
+                PdfViewerScreen.routeName,
+                queryParameters: {
+                  'path': option.pdfPath,
+                  'title': option.title,
+                  'page': option.startPage.toString(),
+                },
+              );
+            },
+          );
+        },
+      );
+    },
+  );
 }
 
 class _DiscoveryJournalInput extends StatefulHookConsumerWidget {
@@ -334,8 +605,8 @@ class _DiscoveryJournalInputState
                     final db = ref.read(appDatabaseProvider);
                     final uuid = const Uuid().v4();
 
-                    String entryId = uuid;
-                    DateTime createdAt = DateTime.now();
+                    var entryId = uuid;
+                    var createdAt = DateTime.now();
 
                     try {
                       final entries = await db.getJournalEntries(
@@ -363,6 +634,13 @@ class _DiscoveryJournalInputState
                         updatedAt: DateTime.now(),
                       ),
                     );
+                    await ref
+                        .read(analyticsServiceProvider)
+                        .logJournalSaved(
+                          source: 'discovery_question',
+                          track: Track.discovery,
+                          lessonId: widget.lessonId,
+                        );
 
                     if (mounted) {
                       setState(() {

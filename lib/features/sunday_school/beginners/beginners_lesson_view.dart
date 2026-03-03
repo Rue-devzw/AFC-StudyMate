@@ -1,6 +1,5 @@
+import 'package:afc_studymate/data/models/lesson.dart';
 import 'package:flutter/material.dart';
-
-import '../../../data/models/lesson.dart';
 
 class BeginnersLessonView extends StatefulWidget {
   const BeginnersLessonView({required this.lesson, super.key});
@@ -45,7 +44,7 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
               controller: _controller,
               itemCount: sections.length,
               onPageChanged: (value) => setState(() => _index = value),
-              itemBuilder: (BuildContext context, int index) {
+              itemBuilder: (context, index) {
                 final section = sections[index];
                 final type = (section['sectionType'] as String? ?? 'text')
                     .toLowerCase();

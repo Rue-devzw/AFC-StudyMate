@@ -1,16 +1,24 @@
+import 'package:afc_studymate/data/drift/app_database.dart';
+import 'package:afc_studymate/data/models/bible_ref.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/journal_entry.dart';
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/data/providers/progress_providers.dart';
+import 'package:afc_studymate/data/repositories/lesson_repository.dart';
+import 'package:afc_studymate/data/services/analytics_service.dart';
+import 'package:afc_studymate/data/services/progress_service.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/linked_verse.dart';
+import 'package:afc_studymate/widgets/retry_error_card.dart';
+import 'package:afc_studymate/widgets/skeleton_widgets.dart';
+import 'package:afc_studymate/widgets/tts_play_button.dart';
+import 'package:afc_studymate/widgets/verse_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
-
-import '../../data/drift/app_database.dart';
-import '../../data/models/bible_ref.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/journal_entry.dart';
-import '../../data/models/lesson.dart';
-import '../../data/repositories/lesson_repository.dart';
-import '../../widgets/design_system_widgets.dart';
-import '../../widgets/linked_verse.dart';
-import '../../widgets/verse_card.dart';
 
 class DaybreakScreen extends HookConsumerWidget {
   const DaybreakScreen({required this.date, super.key});
@@ -20,48 +28,67 @@ class DaybreakScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lessonAsync = ref.watch(_daybreakLessonProvider);
+    final lessonAsync = ref.watch(_daybreakLessonProvider(date));
+    final lesson = lessonAsync.valueOrNull;
+    final horizontalPadding = responsiveHorizontalPadding(context);
+
+    useEffect(() {
+      if (lesson == null) {
+        return null;
+      }
+      Future<void>.microtask(() async {
+        final analytics = ref.read(analyticsServiceProvider);
+        await analytics.logLessonOpened(
+          lessonId: lesson.id,
+          track: Track.daybreak,
+          source: 'daybreak_screen',
+        );
+        await analytics.logDaybreakRead(lessonId: lesson.id);
+      });
+      return null;
+    }, [lesson?.id]);
 
     return Scaffold(
       body: lessonAsync.when(
-        data: (lesson) => _DaybreakContent(lesson: lesson),
-        error: (error, stackTrace) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  "Unable to load today's devotion",
-                  style: Theme.of(context).textTheme.titleLarge,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(error.toString(), textAlign: TextAlign.center),
-              ],
-            ),
-          ),
+        data: (lesson) => _DaybreakContent(lesson: lesson, date: date),
+        error: (error, stackTrace) => RetryErrorCard(
+          title: "Unable to load today's devotion",
+          message: '$error',
+          onRetry: () => ref.invalidate(_daybreakLessonProvider(date)),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => ListView(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            24,
+            horizontalPadding,
+            standardBottomContentPadding(context),
+          ),
+          children: const [
+            SkeletonCard(),
+            SizedBox(height: 12),
+            SkeletonCard(),
+            SizedBox(height: 12),
+            SkeletonCard(),
+          ],
+        ),
       ),
     );
   }
 }
 
-final _daybreakLessonProvider = FutureProvider<Lesson?>((ref) {
-  return ref.read(lessonRepositoryProvider).getDaybreakLesson();
-});
+final FutureProviderFamily<Lesson?, DateTime> _daybreakLessonProvider =
+    FutureProvider.family<Lesson?, DateTime>((
+      ref,
+      date,
+    ) {
+      return ref.read(lessonRepositoryProvider).getDaybreakLessonForDate(date);
+    });
 
-class _DaybreakContent extends StatelessWidget {
-  const _DaybreakContent({required this.lesson});
+class _DaybreakContent extends ConsumerWidget {
+  const _DaybreakContent({required this.lesson, required this.date});
 
   final Lesson? lesson;
+  final DateTime date;
 
   Widget _buildSectionHeader(BuildContext context, String title) {
     final theme = Theme.of(context);
@@ -86,7 +113,7 @@ class _DaybreakContent extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (lesson == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Daybreak')),
@@ -95,17 +122,65 @@ class _DaybreakContent extends StatelessWidget {
     }
 
     final theme = Theme.of(context);
+    final horizontalPadding = responsiveHorizontalPadding(context);
     final isDark = theme.brightness == Brightness.dark;
+    final shareText = StringBuffer()
+      ..writeln('Daybreak - ${lesson!.title}')
+      ..writeln()
+      ..writeln((lesson!.payload['devotion'] as String? ?? '').trim());
+    final ttsText = [
+      lesson!.title,
+      lesson!.payload['devotion'] as String? ?? '',
+      lesson!.payload['background'] as String? ?? '',
+      lesson!.payload['conclusion'] as String? ?? '',
+    ].join('\n\n');
 
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
-          title: const Text('Daybreak'),
+          title: Text('Daybreak • ${date.day}/${date.month}'),
           stretch: true,
           surfaceTintColor: theme.colorScheme.surface,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left),
+              tooltip: 'Previous day',
+              onPressed: () {
+                final prev = date.subtract(const Duration(days: 1));
+                context.goNamed(
+                  DaybreakScreen.routeName,
+                  pathParameters: {'date': prev.toIso8601String()},
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.chevron_right),
+              tooltip: 'Next day',
+              onPressed: () {
+                final next = date.add(const Duration(days: 1));
+                context.goNamed(
+                  DaybreakScreen.routeName,
+                  pathParameters: {'date': next.toIso8601String()},
+                );
+              },
+            ),
+            TtsPlayButton(text: ttsText, compact: true),
+            IconButton(
+              icon: const Icon(Icons.share),
+              tooltip: 'Share daybreak',
+              onPressed: () {
+                Share.share(shareText.toString());
+              },
+            ),
+          ],
         ),
         SliverPadding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            24,
+            horizontalPadding,
+            24,
+          ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               // Daybreak Header Block
@@ -128,7 +203,7 @@ class _DaybreakContent extends StatelessWidget {
                       'DAYBREAK',
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w900,
-                        letterSpacing: 2.0,
+                        letterSpacing: 2,
                         color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),
@@ -182,8 +257,8 @@ class _DaybreakContent extends StatelessWidget {
                   );
                 },
               ),
-              if ((lesson!.payload['background'] as String?)?.isNotEmpty ==
-                  true) ...[
+              if ((lesson!.payload['background'] as String?)?.isNotEmpty ??
+                  false) ...[
                 const SizedBox(height: 32),
                 _buildSectionHeader(context, 'Background'),
                 _LinkedText(
@@ -195,8 +270,8 @@ class _DaybreakContent extends StatelessWidget {
                 ),
               ],
               if ((lesson!.payload['amplifiedOutline'] as String?)
-                      ?.isNotEmpty ==
-                  true) ...[
+                      ?.isNotEmpty ??
+                  false) ...[
                 const SizedBox(height: 32),
                 _buildSectionHeader(context, 'Amplified Outline'),
                 _LinkedText(
@@ -207,8 +282,8 @@ class _DaybreakContent extends StatelessWidget {
                   ),
                 ),
               ],
-              if ((lesson!.payload['aCloserLook'] as List?)?.isNotEmpty ==
-                  true) ...[
+              if ((lesson!.payload['aCloserLook'] as List?)?.isNotEmpty ??
+                  false) ...[
                 const SizedBox(height: 32),
                 _buildSectionHeader(context, 'A Closer Look'),
                 for (
@@ -217,7 +292,7 @@ class _DaybreakContent extends StatelessWidget {
                   i++
                 )
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 24.0),
+                    padding: const EdgeInsets.only(bottom: 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -254,8 +329,8 @@ class _DaybreakContent extends StatelessWidget {
                     ),
                   ),
               ],
-              if ((lesson!.payload['conclusion'] as String?)?.isNotEmpty ==
-                  true) ...[
+              if ((lesson!.payload['conclusion'] as String?)?.isNotEmpty ??
+                  false) ...[
                 const SizedBox(height: 32),
                 _buildSectionHeader(context, 'Conclusion'),
                 _LinkedText(
@@ -272,7 +347,15 @@ class _DaybreakContent extends StatelessWidget {
               AppButton(
                 label: 'Mark as Complete',
                 icon: Icons.check_circle_outline,
-                onPressed: () {
+                onPressed: () async {
+                  await ref
+                      .read(progressServiceProvider)
+                      .recordComplete(
+                        userId: localUserId,
+                        lessonId: lesson!.id,
+                        track: Track.daybreak,
+                      );
+                  triggerProgressRefresh(ref);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Text('Marked as read. Great consistency!'),
@@ -284,7 +367,7 @@ class _DaybreakContent extends StatelessWidget {
                   );
                 },
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: standardBottomContentPadding(context)),
             ]),
           ),
         ),
@@ -478,8 +561,8 @@ class _DaybreakJournalInputState extends ConsumerState<_DaybreakJournalInput> {
                     final db = ref.read(appDatabaseProvider);
                     final uuid = const Uuid().v4();
 
-                    String entryId = uuid;
-                    DateTime createdAt = DateTime.now();
+                    var entryId = uuid;
+                    var createdAt = DateTime.now();
 
                     try {
                       final entries = await db.getJournalEntries(
@@ -507,6 +590,13 @@ class _DaybreakJournalInputState extends ConsumerState<_DaybreakJournalInput> {
                         updatedAt: DateTime.now(),
                       ),
                     );
+                    await ref
+                        .read(analyticsServiceProvider)
+                        .logJournalSaved(
+                          source: 'daybreak_question',
+                          track: Track.daybreak,
+                          lessonId: widget.lessonId,
+                        );
 
                     if (mounted) {
                       setState(() {

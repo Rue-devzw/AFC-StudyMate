@@ -1,31 +1,26 @@
+import 'package:afc_studymate/data/drift/app_database.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/progress.dart';
+import 'package:afc_studymate/data/models/user_profile.dart';
+import 'package:afc_studymate/data/providers/progress_providers.dart';
+import 'package:afc_studymate/data/services/progress_service.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
-
-import '../../data/models/enums.dart';
-import '../../data/models/progress.dart';
-import '../../data/models/user_profile.dart';
-import '../../data/services/progress_service.dart';
-import '../../data/drift/app_database.dart';
-import '../../widgets/design_system_widgets.dart';
 
 // ─── Providers ────────────────────────────────────────────────────────────────
 
 const _userId = 'local_user';
 
-final _userProfileProvider = FutureProvider.family<UserProfile?, String>((
-  ref,
-  userId,
-) {
-  return ref.read(appDatabaseProvider).getProfile(userId);
-});
-
-final _userProgressProvider = FutureProvider.family<List<Progress>, String>((
-  ref,
-  userId,
-) {
-  return ref.read(progressServiceProvider).getUserProgress(userId);
-});
+final FutureProviderFamily<UserProfile?, String> _userProfileProvider =
+    FutureProvider.family<UserProfile?, String>((
+      ref,
+      userId,
+    ) {
+      return ref.read(appDatabaseProvider).getProfile(userId);
+    });
 
 // ─── ProfileScreen ────────────────────────────────────────────────────────────
 
@@ -37,7 +32,8 @@ class ProfileScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncProfile = ref.watch(_userProfileProvider(_userId));
-    final asyncProgress = ref.watch(_userProgressProvider(_userId));
+    final asyncProgress = ref.watch(userProgressProvider(_userId));
+    final nameController = useTextEditingController();
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_journal.png',
@@ -50,95 +46,162 @@ class ProfileScreen extends HookConsumerWidget {
         elevation: 0,
       ),
       body: SafeArea(
-        child: asyncProfile.when(
-          data: (profile) {
-            final effectiveProfile =
-                profile ??
-                const UserProfile(
-                  userId: _userId,
-                  name: 'Learner',
-                  role: Role.learner,
-                  targetTrack: Track.search,
-                  translation: Translation.kjv,
-                );
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth.clamp(0, 860).toDouble();
+            return Center(
+              child: SizedBox(
+                width: width,
+                child: asyncProfile.when(
+                  data: (profile) {
+                    final effectiveProfile =
+                        profile ??
+                        const UserProfile(
+                          userId: _userId,
+                          name: 'Learner',
+                          role: Role.learner,
+                          targetTrack: Track.search,
+                          translation: Translation.kjv,
+                        );
+                    if (nameController.text != effectiveProfile.name) {
+                      nameController.text = effectiveProfile.name;
+                    }
 
-            return ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                _ProfileHeader(profile: effectiveProfile),
-                const SizedBox(height: 32),
+                    return ListView(
+                      padding: const EdgeInsets.all(24),
+                      children: [
+                        _ProfileHeader(profile: effectiveProfile),
+                        const SizedBox(height: 32),
 
-                // ── PROGRESS ──────────────────────────────────────────────
-                _sectionLabel(context, 'YOUR PROGRESS'),
-                const SizedBox(height: 16),
-                asyncProgress.when(
-                  data: (progress) =>
-                      _ProgressSection(progress: progress, ref: ref),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (e, _) => Text(
-                    'Error loading progress: $e',
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // ── PREFERENCES ───────────────────────────────────────────
-                _sectionLabel(context, 'PREFERENCES'),
-                const SizedBox(height: 16),
-                PremiumGlassCard(
-                  padding: EdgeInsets.zero,
-                  child: Column(
-                    children: [
-                      _ProfileOption(
-                        icon: Icons.person_outline_rounded,
-                        label: 'Role',
-                        value: _formatName(effectiveProfile.role.name),
-                        onTap: () =>
-                            _showRolePicker(context, ref, effectiveProfile),
-                      ),
-                      const Divider(height: 1, color: Colors.white10),
-                      _ProfileOption(
-                        icon: Icons.class_outlined,
-                        label: 'Class/Track',
-                        value: effectiveProfile.targetTrack.label,
-                        onTap: () =>
-                            _showTrackPicker(context, ref, effectiveProfile),
-                      ),
-                      const Divider(height: 1, color: Colors.white10),
-                      _ProfileOption(
-                        icon: Icons.translate_rounded,
-                        label: 'Bible Translation',
-                        value: effectiveProfile.translation == Translation.kjv
-                            ? 'King James Version'
-                            : 'Shona',
-                        onTap: () => _showTranslationPicker(
-                          context,
-                          ref,
-                          effectiveProfile,
+                        // ── PROGRESS ──────────────────────────────────────────────
+                        _sectionLabel(context, 'YOUR PROGRESS'),
+                        const SizedBox(height: 16),
+                        asyncProgress.when(
+                          data: (progress) =>
+                              _ProgressSection(progress: progress, ref: ref),
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (e, _) => Text(
+                            'Error loading progress: $e',
+                            style: const TextStyle(color: Colors.white70),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-                AppButton(
-                  label: 'Save Changes',
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Profile updated successfully!'),
-                      ),
+                        const SizedBox(height: 32),
+
+                        // ── PREFERENCES ───────────────────────────────────────────
+                        _sectionLabel(context, 'PREFERENCES'),
+                        const SizedBox(height: 16),
+                        PremiumGlassCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Name',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  letterSpacing: 1.2,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              TextField(
+                                controller: nameController,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'Your name',
+                                  hintStyle: TextStyle(
+                                    color: Colors.white.withOpacity(0.3),
+                                  ),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        PremiumGlassCard(
+                          padding: EdgeInsets.zero,
+                          child: Column(
+                            children: [
+                              _ProfileOption(
+                                icon: Icons.person_outline_rounded,
+                                label: 'Role',
+                                value: _formatName(effectiveProfile.role.name),
+                                onTap: () => _showRolePicker(
+                                  context,
+                                  ref,
+                                  effectiveProfile,
+                                ),
+                              ),
+                              const Divider(height: 1, color: Colors.white10),
+                              _ProfileOption(
+                                icon: Icons.class_outlined,
+                                label: 'Class/Track',
+                                value: effectiveProfile.targetTrack.label,
+                                onTap: () => _showTrackPicker(
+                                  context,
+                                  ref,
+                                  effectiveProfile,
+                                ),
+                              ),
+                              const Divider(height: 1, color: Colors.white10),
+                              _ProfileOption(
+                                icon: Icons.translate_rounded,
+                                label: 'Bible Translation',
+                                value:
+                                    effectiveProfile.translation ==
+                                        Translation.kjv
+                                    ? 'King James Version'
+                                    : 'Shona',
+                                onTap: () => _showTranslationPicker(
+                                  context,
+                                  ref,
+                                  effectiveProfile,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        AppButton(
+                          label: 'Save Changes',
+                          onPressed: () async {
+                            final updated = effectiveProfile.copyWith(
+                              name: nameController.text.trim().isEmpty
+                                  ? 'Learner'
+                                  : nameController.text.trim(),
+                            );
+                            await ref
+                                .read(appDatabaseProvider)
+                                .upsertProfile(updated);
+                            ref.invalidate(_userProfileProvider(_userId));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Profile updated successfully!'),
+                              ),
+                            );
+                          },
+                        ),
+                        SizedBox(height: standardBottomContentPadding(context)),
+                      ],
                     );
                   },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (profileError, _) =>
+                      Center(child: Text('Error: $profileError')),
                 ),
-                const SizedBox(height: 100),
-              ],
+              ),
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (profileError, _) =>
-              Center(child: Text('Error: $profileError')),
         ),
       ),
     );

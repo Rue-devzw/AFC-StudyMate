@@ -1,19 +1,18 @@
+import 'package:afc_studymate/data/drift/app_database.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/data/models/user_profile.dart';
+import 'package:afc_studymate/data/repositories/lesson_repository.dart';
+import 'package:afc_studymate/features/sunday_school/all_lessons/sunday_school_all_lessons_screen.dart';
+import 'package:afc_studymate/features/sunday_school/all_lessons/sunday_school_lesson_detail_screen.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/linked_verse.dart';
+import 'package:afc_studymate/widgets/retry_error_card.dart';
+import 'package:afc_studymate/widgets/skeleton_widgets.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../../data/drift/app_database.dart';
-
-import '../../data/models/bible_ref.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/lesson.dart';
-import '../../data/models/user_profile.dart';
-import '../../data/repositories/lesson_repository.dart';
-import '../../widgets/design_system_widgets.dart';
-import '../../widgets/linked_verse.dart';
-import 'all_lessons/sunday_school_all_lessons_screen.dart';
-import 'all_lessons/sunday_school_lesson_detail_screen.dart';
 
 class SundaySchoolScreen extends HookConsumerWidget {
   const SundaySchoolScreen({super.key});
@@ -39,6 +38,11 @@ class SundaySchoolScreen extends HookConsumerWidget {
         ),
         actions: <Widget>[
           IconButton(
+            tooltip: 'Search lessons',
+            icon: const Icon(Icons.search, color: Colors.white),
+            onPressed: () => context.pushNamed('lessonSearch'),
+          ),
+          IconButton(
             tooltip: 'View all lessons',
             icon: const Icon(Icons.library_books_outlined, color: Colors.white),
             onPressed: openAllLessons,
@@ -48,124 +52,151 @@ class SundaySchoolScreen extends HookConsumerWidget {
         elevation: 0,
       ),
       body: SafeArea(
-        child: asyncLessons.when(
-          data: (lessons) {
-            final profile = asyncProfile.value;
-            final targetTrack = profile?.targetTrack ?? Track.search;
-            final isTeacher = profile?.role == Role.teacher;
+        top: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth.clamp(0, 860).toDouble();
+            return Center(
+              child: SizedBox(
+                width: width,
+                child: asyncLessons.when(
+                  data: (lessons) {
+                    final profile = asyncProfile.value;
+                    final targetTrack = profile?.targetTrack ?? Track.search;
+                    final isTeacher = profile?.role == Role.teacher;
 
-            // Reorder tracks to put targetTrack first
-            final orderedTracks = List<Track>.from(_sundaySchoolTracks);
-            if (orderedTracks.contains(targetTrack)) {
-              orderedTracks.remove(targetTrack);
-              orderedTracks.insert(0, targetTrack);
-            }
+                    // Reorder tracks to put targetTrack first
+                    final orderedTracks = List<Track>.from(_sundaySchoolTracks);
+                    if (orderedTracks.contains(targetTrack)) {
+                      orderedTracks.remove(targetTrack);
+                      orderedTracks.insert(0, targetTrack);
+                    }
 
-            final hasLesson = orderedTracks.any(
-              (track) => lessons[track] != null,
-            );
-            if (!hasLesson) {
-              return const Center(
-                child: Text(
-                  'Weekly lessons will appear here soon.',
-                  style: TextStyle(color: Colors.white),
-                ),
-              );
-            }
+                    final hasLesson = orderedTracks.any(
+                      (track) => lessons[track] != null,
+                    );
+                    if (!hasLesson) {
+                      return const Center(
+                        child: Text(
+                          'Weekly lessons will appear here soon.',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      );
+                    }
 
-            return ListView(
-              padding: const EdgeInsets.fromLTRB(
-                16,
-                24,
-                16,
-                120,
-              ), // Clear floating bottom bar
-              children: <Widget>[
-                if (isTeacher) ...[
-                  Text(
-                    'TEACHER\'S TOOLKIT',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: Colors.white70,
-                      letterSpacing: 1.5,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _TeacherToolkitCard(
-                    currentDiscoveryLesson: lessons[Track.discovery],
-                  ),
-                  const SizedBox(height: 32),
-                ],
-                Text(
-                  isTeacher ? 'CLASS PREVIEWS' : 'MY LESSON SNAPSHOT',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ...orderedTracks.map(
-                  (track) => _LessonPreviewCard(
-                    track: track,
-                    lesson: lessons[track],
-                    isTargetTrack: track == targetTrack,
-                    isTeacher: isTeacher,
-                    onOpen: lessons[track] == null
-                        ? null
-                        : () {
-                            context.pushNamed(
-                              SundaySchoolLessonDetailScreen.routeName,
-                              pathParameters: <String, String>{
-                                'lessonId': lessons[track]!.id,
-                              },
-                            );
-                          },
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: PremiumGlassCard(
-                    padding: EdgeInsets.zero,
-                    borderRadius: BorderRadius.circular(16),
-                    child: InkWell(
-                      onTap: openAllLessons,
-                      borderRadius: BorderRadius.circular(16),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.library_books_outlined,
-                              color: Colors.white,
+                    return ListView(
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        24,
+                        16,
+                        standardBottomContentPadding(context),
+                      ), // Clear floating bottom bar
+                      children: <Widget>[
+                        if (isTeacher) ...[
+                          Text(
+                            "TEACHER'S TOOLKIT",
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: Colors.white70,
+                              letterSpacing: 1.5,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(width: 12),
-                            Text(
-                              'View all lessons',
-                              style: theme.textTheme.titleMedium?.copyWith(
+                          ),
+                          const SizedBox(height: 16),
+                          _TeacherToolkitCard(
+                            currentDiscoveryLesson: lessons[Track.discovery],
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                        Text(
+                          isTeacher ? 'CLASS PREVIEWS' : 'MY LESSON SNAPSHOT',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                        const SizedBox(height: 16),
+                        ...orderedTracks.map(
+                          (track) => _LessonPreviewCard(
+                            track: track,
+                            lesson: lessons[track],
+                            isTargetTrack: track == targetTrack,
+                            isTeacher: isTeacher,
+                            onOpen: lessons[track] == null
+                                ? null
+                                : () {
+                                    context.pushNamed(
+                                      SundaySchoolLessonDetailScreen.routeName,
+                                      pathParameters: <String, String>{
+                                        'lessonId': lessons[track]!.id,
+                                      },
+                                    );
+                                  },
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: PremiumGlassCard(
+                            padding: EdgeInsets.zero,
+                            borderRadius: BorderRadius.circular(16),
+                            child: InkWell(
+                              onTap: openAllLessons,
+                              borderRadius: BorderRadius.circular(16),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.library_books_outlined,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'View all lessons',
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
+                    );
+                  },
+                  loading: () => ListView(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      24,
+                      16,
+                      standardBottomContentPadding(context),
+                    ),
+                    children: const [
+                      SkeletonCard(),
+                      SizedBox(height: 12),
+                      SkeletonCard(),
+                      SizedBox(height: 12),
+                      SkeletonCard(),
+                    ],
+                  ),
+                  error: (error, stackTrace) => Center(
+                    child: RetryErrorCard(
+                      message: '$error',
+                      onRetry: () => ref.invalidate(_currentLessonsProvider),
                     ),
                   ),
                 ),
-              ],
+              ),
             );
           },
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: Colors.white),
-          ),
-          error: (error, stackTrace) => Center(
-            child: Text(
-              'Something went wrong: $error',
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
         ),
       ),
     );
@@ -232,7 +263,7 @@ class _LessonPreviewCard extends ConsumerWidget {
               _TrackChip(track: track),
               const SizedBox(height: 12),
               Text(
-                'We\'re preparing this week\'s lesson.',
+                "We're preparing this week's lesson.",
                 style: theme.textTheme.bodyMedium,
               ),
             ],
@@ -290,7 +321,7 @@ class _LessonPreviewCard extends ConsumerWidget {
               runSpacing: 12,
               children: references
                   .map(
-                    (BibleRef ref) => Container(
+                    (ref) => Container(
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -340,7 +371,7 @@ class _LessonPreviewCard extends ConsumerWidget {
                             'teacher-guide',
                             extra: guide,
                             queryParameters: {
-                              'title': "${lesson!.title} Guide",
+                              'title': '${lesson!.title} Guide',
                             },
                           );
                         },
@@ -403,17 +434,14 @@ String _lessonPreviewSnippet(Lesson lesson) {
       raw = sections
           .map((section) => section['sectionContent'] as String? ?? '')
           .firstWhereOrNull((value) => value.trim().isNotEmpty);
-      break;
     case Track.primaryPals:
       final story = (payload['story'] as List<dynamic>? ?? <dynamic>[])
           .cast<String>();
       raw = story.firstWhereOrNull((paragraph) => paragraph.trim().isNotEmpty);
-      break;
     case Track.answer:
       final story = (payload['story'] as List<dynamic>? ?? <dynamic>[])
           .cast<String>();
       raw = story.firstWhereOrNull((paragraph) => paragraph.trim().isNotEmpty);
-      break;
     case Track.search:
       final exposition =
           (payload['exposition'] as List<dynamic>? ?? <dynamic>[])
@@ -421,10 +449,8 @@ String _lessonPreviewSnippet(Lesson lesson) {
       raw = exposition.firstWhereOrNull(
         (paragraph) => paragraph.trim().isNotEmpty,
       );
-      break;
     default:
       raw = null;
-      break;
   }
 
   if (raw == null) {
@@ -473,7 +499,7 @@ class _TeacherToolkitCard extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               const Text(
-                'Teacher\'s Toolkit',
+                "Teacher's Toolkit",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -485,7 +511,7 @@ class _TeacherToolkitCard extends ConsumerWidget {
           const SizedBox(height: 16),
           _ToolkitItem(
             icon: Icons.description_outlined,
-            label: 'Teacher\'s Guides',
+            label: "Teacher's Guides",
             subtitle: 'Access guides for all classes',
             onTap: () {
               context.pushNamed('teacherGuides');
@@ -495,8 +521,10 @@ class _TeacherToolkitCard extends ConsumerWidget {
           _ToolkitItem(
             icon: Icons.people_outline_rounded,
             label: 'Class Roster',
-            subtitle: 'Track student attendance (Mock)',
-            onTap: () {},
+            subtitle: 'Track student attendance',
+            onTap: () {
+              context.pushNamed('classRoster');
+            },
           ),
         ],
       ),
@@ -554,9 +582,10 @@ class _ToolkitItem extends StatelessWidget {
   }
 }
 
-final _userProfileProvider = FutureProvider.family<UserProfile?, String>((
-  ref,
-  userId,
-) {
-  return ref.read(appDatabaseProvider).getProfile(userId);
-});
+final FutureProviderFamily<UserProfile?, String> _userProfileProvider =
+    FutureProvider.family<UserProfile?, String>((
+      ref,
+      userId,
+    ) {
+      return ref.read(appDatabaseProvider).getProfile(userId);
+    });

@@ -1,13 +1,16 @@
+import 'package:afc_studymate/data/drift/app_database.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/user_profile.dart';
+import 'package:afc_studymate/data/services/notification_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../data/drift/app_database.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/user_profile.dart';
-
 final onboardingControllerProvider =
     StateNotifierProvider<OnboardingController, OnboardingState>((ref) {
-      return OnboardingController(database: ref.read(appDatabaseProvider));
+      return OnboardingController(
+        database: ref.read(appDatabaseProvider),
+        notificationService: ref.read(notificationServiceProvider),
+      );
     });
 
 class OnboardingState {
@@ -55,10 +58,13 @@ class OnboardingState {
 }
 
 class OnboardingController extends StateNotifier<OnboardingState> {
-  OnboardingController({required this.database})
-    : super(const OnboardingState());
+  OnboardingController({
+    required this.database,
+    required this.notificationService,
+  }) : super(const OnboardingState());
 
   final AppDatabase database;
+  final NotificationService notificationService;
 
   void updateName(String name) => state = state.copyWith(name: name);
 
@@ -91,6 +97,39 @@ class OnboardingController extends StateNotifier<OnboardingState> {
     await database.upsertSetting('role', state.role.name);
     await database.upsertSetting('track', state.track.name);
     await database.upsertSetting('translation', state.translation.name);
+    await database.upsertSetting(
+      'daily_reminder_enabled',
+      state.dailyReminder.toString(),
+    );
+    await database.upsertSetting(
+      'sunday_reminder_enabled',
+      state.sundayReminder.toString(),
+    );
+    await database.upsertSetting(
+      'discovery_reminder_enabled',
+      state.discoveryReminder.toString(),
+    );
+
+    final hasAnyReminder =
+        state.dailyReminder || state.sundayReminder || state.discoveryReminder;
+    if (hasAnyReminder) {
+      final granted = await notificationService.requestPermission();
+      if (granted) {
+        if (state.dailyReminder || state.discoveryReminder) {
+          await notificationService.scheduleDaily(hour: 6, minute: 0);
+        } else {
+          await notificationService.cancelDaily();
+        }
+        if (state.sundayReminder) {
+          await notificationService.scheduleWeeklySundayReminder(
+            hour: 8,
+            minute: 0,
+          );
+        } else {
+          await notificationService.cancelWeeklySundayReminder();
+        }
+      }
+    }
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasCompletedSetup', true);

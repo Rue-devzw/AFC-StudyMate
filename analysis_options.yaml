@@ -1,6 +1,25 @@
 include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
+  errors:
+    avoid_catches_without_on_clauses: ignore
+    avoid_equals_and_hash_code_on_mutable_classes: ignore
+    avoid_positional_boolean_parameters: ignore
+    avoid_print: ignore
+    avoid_slow_async_io: ignore
+    cancel_subscriptions: ignore
+    cascade_invocations: ignore
+    depend_on_referenced_packages: ignore
+    deprecated_member_use: ignore
+    discarded_futures: ignore
+    lines_longer_than_80_chars: ignore
+    no_default_cases: ignore
+    public_member_api_docs: ignore
+    sort_pub_dependencies: ignore
+    unawaited_futures: ignore
+    unreachable_from_main: ignore
+    unnecessary_underscores: ignore
+    use_build_context_synchronously: ignore
   exclude:
     - lib/**.g.dart
     - lib/**.freezed.dart

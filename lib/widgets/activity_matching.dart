@@ -40,7 +40,7 @@ class _ActivityMatchingState extends State<ActivityMatching> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: targets.length,
-            itemBuilder: (BuildContext context, int index) {
+            itemBuilder: (context, index) {
               final key = targets[index];
               return Card(
                 child: ListTile(
@@ -49,7 +49,7 @@ class _ActivityMatchingState extends State<ActivityMatching> {
                     isExpanded: true,
                     value: _answers[key],
                     hint: const Text('Select'),
-                    onChanged: (String? value) {
+                    onChanged: (value) {
                       setState(() {
                         _answers[key] = value;
                         _showResult = false;

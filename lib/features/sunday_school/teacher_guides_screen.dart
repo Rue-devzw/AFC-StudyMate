@@ -1,14 +1,13 @@
+import 'package:afc_studymate/data/drift/app_database.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/data/repositories/discovery_guide_repository.dart';
+import 'package:afc_studymate/data/repositories/lesson_repository.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/pdf_viewer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../../data/drift/app_database.dart';
-import '../../data/models/enums.dart';
-import '../../data/models/lesson.dart';
-import '../../data/repositories/discovery_guide_repository.dart';
-import '../../data/repositories/lesson_repository.dart';
-import '../../widgets/design_system_widgets.dart';
-import '../../widgets/pdf_viewer_screen.dart';
 
 final _teacherGuidesLessonsProvider = FutureProvider<Map<Track, Lesson?>>((
   ref,
@@ -46,7 +45,7 @@ class TeacherGuidesScreen extends HookConsumerWidget {
       backgroundAsset: 'assets/images/bg_sunday_school.png',
       appBar: AppBar(
         title: const Text(
-          'Teacher\'s Guides',
+          "Teacher's Guides",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.transparent,
@@ -54,6 +53,7 @@ class TeacherGuidesScreen extends HookConsumerWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SafeArea(
+        top: false,
         child: asyncLessons.when(
           data: (lessons) {
             const tracks = [
@@ -65,7 +65,12 @@ class TeacherGuidesScreen extends HookConsumerWidget {
             ];
 
             return ListView(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                standardBottomContentPadding(context),
+              ),
               children: [
                 Text(
                   'CURRENT LESSONS',
@@ -216,7 +221,7 @@ class _DiscoveryGuideAction extends ConsumerWidget {
             PdfViewerScreen.routeName,
             queryParameters: {
               'path': guide.pdfPath,
-              'title': 'Teacher\'s Guide: ${lesson.title}',
+              'title': "Teacher's Guide: ${lesson.title}",
               'page': guide.startPage.toString(),
             },
           );
@@ -286,7 +291,7 @@ class _GuideButton extends StatelessWidget {
       child: FilledButton.icon(
         onPressed: onTap,
         icon: const Icon(Icons.school_rounded),
-        label: const Text('Open Teacher\'s Guide'),
+        label: const Text("Open Teacher's Guide"),
         style: FilledButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: Theme.of(context).colorScheme.primary,

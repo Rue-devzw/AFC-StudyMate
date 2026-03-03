@@ -9,6 +9,25 @@ class UserProfile {
     required this.translation,
   });
 
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      userId: json['userId'] as String,
+      name: json['name'] as String? ?? 'User',
+      role: Role.values.firstWhere(
+        (e) => e.name == json['role'],
+        orElse: () => Role.learner,
+      ),
+      targetTrack: Track.values.firstWhere(
+        (e) => e.name == json['targetTrack'],
+        orElse: () => Track.search,
+      ),
+      translation: Translation.values.firstWhere(
+        (e) => e.name == json['translation'],
+        orElse: () => Translation.kjv,
+      ),
+    );
+  }
+
   final String userId;
   final String name;
   final Role role;
@@ -38,25 +57,6 @@ class UserProfile {
     'targetTrack': targetTrack.name,
     'translation': translation.name,
   };
-
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
-      userId: json['userId'] as String,
-      name: json['name'] as String? ?? 'User',
-      role: Role.values.firstWhere(
-        (e) => e.name == json['role'],
-        orElse: () => Role.learner,
-      ),
-      targetTrack: Track.values.firstWhere(
-        (e) => e.name == json['targetTrack'],
-        orElse: () => Track.search,
-      ),
-      translation: Translation.values.firstWhere(
-        (e) => e.name == json['translation'],
-        orElse: () => Translation.kjv,
-      ),
-    );
-  }
 
   @override
   bool operator ==(Object other) =>

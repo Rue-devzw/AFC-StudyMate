@@ -1,13 +1,13 @@
 import 'dart:ui';
+
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/features/onboarding/onboarding_controller.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../../data/models/enums.dart';
-import '../../widgets/design_system_widgets.dart';
-import 'onboarding_controller.dart';
 
 class OnboardingScreen extends HookConsumerWidget {
   const OnboardingScreen({super.key});
@@ -79,11 +79,11 @@ class OnboardingScreen extends HookConsumerWidget {
                       controller: pageController,
                       onPageChanged: (index) => currentPage.value = index,
                       children: [
-                        _OnboardingStep(
+                        const _OnboardingStep(
                           title: 'Welcome to\nStudyMate',
                           subtitle:
                               'Your companion for Sunday School and daily devotion.',
-                          child: const SizedBox.shrink(),
+                          child: SizedBox.shrink(),
                         ),
                         _OnboardingStep(
                           title: 'Personalize\nYour Profile',
@@ -94,7 +94,7 @@ class OnboardingScreen extends HookConsumerWidget {
                               PremiumTextField(
                                 label: 'What is your name?',
                                 value: state.name,
-                                onChanged: (val) => controller.updateName(val),
+                                onChanged: controller.updateName,
                                 hint: 'e.g. Brother John',
                               ),
                               const SizedBox(height: 16),
@@ -104,7 +104,7 @@ class OnboardingScreen extends HookConsumerWidget {
                                 items: Role.values,
                                 labelBuilder: (role) =>
                                     _formatRoleName(role.name),
-                                onChanged: (Role? val) =>
+                                onChanged: (val) =>
                                     controller.updateRole(val!),
                               ),
                               const SizedBox(height: 16),
@@ -154,14 +154,14 @@ class OnboardingScreen extends HookConsumerWidget {
                                   value: state.dailyReminder,
                                   onChanged: controller.toggleDaily,
                                 ),
-                                Divider(height: 24, color: Colors.white24),
+                                const Divider(height: 24, color: Colors.white24),
                                 _ReminderSwitch(
                                   title: 'Sunday School',
                                   subtitle: 'Lesson reminder at 08:00',
                                   value: state.sundayReminder,
                                   onChanged: controller.toggleSunday,
                                 ),
-                                Divider(height: 24, color: Colors.white24),
+                                const Divider(height: 24, color: Colors.white24),
                                 _ReminderSwitch(
                                   title: 'Discovery',
                                   subtitle: 'Mid-week unlock reminder',
@@ -224,7 +224,7 @@ class OnboardingScreen extends HookConsumerWidget {
                               'Get Started',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            onPressed: () => controller.complete(),
+                            onPressed: controller.complete,
                           ),
                       ],
                     ),
@@ -293,7 +293,7 @@ class _OnboardingStep extends StatelessWidget {
               fontWeight: FontWeight.w900,
               color: Colors.white,
               height: 1.1,
-              letterSpacing: -1.0,
+              letterSpacing: -1,
             ),
           ),
           const SizedBox(height: 16),

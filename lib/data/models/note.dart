@@ -1,6 +1,5 @@
+import 'package:afc_studymate/data/models/bible_ref.dart';
 import 'package:meta/meta.dart';
-
-import 'bible_ref.dart';
 
 @immutable
 class Note {
@@ -11,6 +10,16 @@ class Note {
     required this.text,
     required this.createdAt,
   });
+
+  factory Note.fromJson(Map<String, dynamic> json) {
+    return Note(
+      id: json['id'] as String,
+      userId: json['userId'] as String,
+      ref: BibleRef.fromJson(json['ref'] as Map<String, dynamic>),
+      text: json['text'] as String,
+      createdAt: DateTime.parse(json['createdAt'] as String),
+    );
+  }
 
   final String id;
   final String userId;
@@ -41,16 +50,6 @@ class Note {
         'text': text,
         'createdAt': createdAt.toIso8601String(),
       };
-
-  factory Note.fromJson(Map<String, dynamic> json) {
-    return Note(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      ref: BibleRef.fromJson(json['ref'] as Map<String, dynamic>),
-      text: json['text'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
-  }
 
   @override
   int get hashCode => Object.hash(id, userId, ref, text, createdAt);

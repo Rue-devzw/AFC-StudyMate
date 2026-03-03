@@ -1,7 +1,7 @@
+import 'package:afc_studymate/data/drift/app_database.dart';
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/user_profile.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../drift/app_database.dart';
-import '../models/user_profile.dart';
-import '../models/enums.dart';
 
 /// Provider for the current user's profile.
 /// Uses 'local_user' as the default ID for this application.

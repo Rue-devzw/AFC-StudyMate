@@ -11,8 +11,8 @@ AFM SEAR StudyMate is an offline-first Flutter application designed to support A
 
 > **Platform shells**
 >
-> The `android/`, `ios/`, `windows/`, and other platform folders are not checked in to keep the repository lean. Before running
-> the app on a specific platform, generate the platform scaffolding once per machine:
+> The `android/`, `ios/`, `windows/`, and other platform folders are checked in. If your local setup is missing any platform shell,
+> you can regenerate it once per machine:
 >
 > ```sh
 > flutter create . --platforms=windows,android,ios,macos,linux,web

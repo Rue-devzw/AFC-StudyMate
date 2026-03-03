@@ -1,13 +1,16 @@
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/data/providers/progress_providers.dart';
+import 'package:afc_studymate/data/repositories/lesson_repository.dart';
+import 'package:afc_studymate/features/sunday_school/all_lessons/sunday_school_lesson_detail_screen.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/retry_error_card.dart';
+import 'package:afc_studymate/widgets/skeleton_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../../../data/models/bible_ref.dart';
-import '../../../data/models/enums.dart';
-import '../../../data/models/lesson.dart';
-import '../../../data/repositories/lesson_repository.dart';
-import 'sunday_school_lesson_detail_screen.dart';
+import 'package:share_plus/share_plus.dart';
 
 class SundaySchoolAllLessonsScreen extends HookConsumerWidget {
   const SundaySchoolAllLessonsScreen({super.key});
@@ -27,9 +30,25 @@ class SundaySchoolAllLessonsScreen extends HookConsumerWidget {
           }
           return _LessonsExplorer(lessonsByTrack: value);
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) =>
-            Center(child: Text('Something went wrong: $error')),
+        loading: () => ListView(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            standardBottomContentPadding(context),
+          ),
+          children: const [
+            SkeletonCard(),
+            SizedBox(height: 12),
+            SkeletonCard(),
+            SizedBox(height: 12),
+            SkeletonCard(),
+          ],
+        ),
+        error: (error, stackTrace) => RetryErrorCard(
+          message: '$error',
+          onRetry: () => ref.invalidate(_allSundayLessonsProvider),
+        ),
       ),
     );
   }
@@ -48,7 +67,7 @@ final _allSundayLessonsProvider = FutureProvider<Map<Track, List<Lesson>>>((
 ) async {
   final repository = ref.read(lessonRepositoryProvider);
   final entries = await Future.wait(
-    _sundaySchoolTracks.map((Track track) async {
+    _sundaySchoolTracks.map((track) async {
       final lessons = await repository.getLessonsForTrack(track);
       return MapEntry(track, lessons);
     }),
@@ -216,24 +235,21 @@ class _LessonsExplorer extends HookConsumerWidget {
                 SizedBox(
                   width: 200,
                   child: DropdownButtonFormField<int?>(
-                    value: selectedQuarter.value,
+                    initialValue: selectedQuarter.value,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Quarter',
                     ),
                     items: <DropdownMenuItem<int?>>[
                       const DropdownMenuItem<int?>(
-                        value: null,
                         child: Text('All quarters'),
                       ),
-                      ...quarters
-                          .map(
-                            (quarter) => DropdownMenuItem<int?>(
-                              value: quarter,
-                              child: Text('Quarter $quarter'),
-                            ),
-                          )
-                          .toList(),
+                      ...quarters.map(
+                        (quarter) => DropdownMenuItem<int?>(
+                          value: quarter,
+                          child: Text('Quarter $quarter'),
+                        ),
+                      ),
                     ],
                     onChanged: (value) => selectedQuarter.value = value,
                   ),
@@ -242,24 +258,21 @@ class _LessonsExplorer extends HookConsumerWidget {
                 SizedBox(
                   width: 240,
                   child: DropdownButtonFormField<String?>(
-                    value: selectedTopic.value,
+                    initialValue: selectedTopic.value,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Topic',
                     ),
                     items: <DropdownMenuItem<String?>>[
                       const DropdownMenuItem<String?>(
-                        value: null,
                         child: Text('All topics'),
                       ),
-                      ...topics
-                          .map(
-                            (topic) => DropdownMenuItem<String?>(
-                              value: topic,
-                              child: Text(topic),
-                            ),
-                          )
-                          .toList(),
+                      ...topics.map(
+                        (topic) => DropdownMenuItem<String?>(
+                          value: topic,
+                          child: Text(topic),
+                        ),
+                      ),
                     ],
                     onChanged: (value) => selectedTopic.value = value,
                   ),
@@ -272,14 +285,14 @@ class _LessonsExplorer extends HookConsumerWidget {
           child: filteredLessons.isEmpty
               ? const Center(child: Text('No lessons match your filters yet.'))
               : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(
+                  padding: EdgeInsets.fromLTRB(
                     16,
                     8,
                     16,
-                    120,
+                    standardBottomContentPadding(context),
                   ), // Clear floating bottom bar
                   itemCount: filteredLessons.length,
-                  itemBuilder: (BuildContext context, int index) {
+                  itemBuilder: (context, index) {
                     final lesson = filteredLessons[index];
                     return _LessonCard(
                       lesson: lesson,
@@ -300,15 +313,16 @@ class _LessonsExplorer extends HookConsumerWidget {
   }
 }
 
-class _LessonCard extends StatelessWidget {
+class _LessonCard extends ConsumerWidget {
   const _LessonCard({required this.lesson, required this.onTap});
 
   final Lesson lesson;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final isCompleted = ref.watch(isLessonCompletedProvider(lesson.id));
     final subtitle = _lessonSubtitle(lesson);
     final summary = _lessonSummary(lesson);
     final topic = _topicForLesson(lesson);
@@ -319,7 +333,7 @@ class _LessonCard extends StatelessWidget {
       Chip(label: Text('Lesson $lessonNumber')),
       ...lesson.bibleReferences
           .take(3)
-          .map((BibleRef ref) => Chip(label: Text(ref.displayText))),
+          .map((ref) => Chip(label: Text(ref.displayText))),
       if ((lesson.bibleReferences.length) > 3)
         Chip(label: Text('+${lesson.bibleReferences.length - 3} refs')),
       if (topic != null && topic.isNotEmpty) Chip(label: Text(topic)),
@@ -364,6 +378,26 @@ class _LessonCard extends StatelessWidget {
                       ],
                     ),
                   ),
+                  IconButton(
+                    tooltip: 'Share lesson',
+                    icon: const Icon(Icons.share_outlined, size: 20),
+                    onPressed: () {
+                      Share.share(
+                        '${lesson.title}\n'
+                        '${_trackLabel(lesson.track)}\n'
+                        '${lesson.bibleReferences.map((e) => e.displayText).join(", ")}',
+                      );
+                    },
+                  ),
+                  if (isCompleted.valueOrNull ?? false)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 4),
+                      child: Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 22,
+                      ),
+                    ),
                   const Icon(Icons.chevron_right),
                 ],
               ),

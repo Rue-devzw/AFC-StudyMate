@@ -46,12 +46,12 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-    _iconScale = Tween<double>(begin: 0.3, end: 1.0).animate(
+    _iconScale = Tween<double>(begin: 0.3, end: 1).animate(
       CurvedAnimation(parent: _iconController, curve: Curves.elasticOut),
     );
     _iconOpacity = CurvedAnimation(
       parent: _iconController,
-      curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
+      curve: const Interval(0, 0.5, curve: Curves.easeIn),
     );
 
     // Rotating rays + glow pulse
@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen>
       vsync: this,
       duration: const Duration(seconds: 6),
     )..repeat();
-    _glowPulse = Tween<double>(begin: 0.6, end: 1.0).animate(
+    _glowPulse = Tween<double>(begin: 0.6, end: 1).animate(
       CurvedAnimation(parent: _rayController, curve: Curves.easeInOut),
     );
 
@@ -283,7 +283,7 @@ class _RaysPainter extends CustomPainter {
         ],
       ).createShader(Rect.fromCircle(center: center, radius: size.width / 2));
 
-    for (int i = 0; i < rayCount; i++) {
+    for (var i = 0; i < rayCount; i++) {
       final angle = i * angleStep;
       final path = Path()
         ..moveTo(center.dx, center.dy)
@@ -317,7 +317,7 @@ class _ParticlePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (final p in _particles) {
       final t = (progress + p.offset) % 1.0;
-      final opacity = (math.sin(t * math.pi)).clamp(0.0, 1.0);
+      final opacity = math.sin(t * math.pi).clamp(0.0, 1.0);
       final x = p.x * size.width;
       final y = size.height - (t * size.height * 1.3);
 

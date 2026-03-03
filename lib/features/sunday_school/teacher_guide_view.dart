@@ -2,6 +2,7 @@ import 'package:afc_studymate/data/models/teacher_guide.dart';
 import 'package:afc_studymate/widgets/pdf_viewer_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 class TeacherGuideView extends StatelessWidget {
   const TeacherGuideView({
@@ -21,6 +22,16 @@ class TeacherGuideView extends StatelessWidget {
       appBar: AppBar(
         title: Text(title),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share_outlined),
+            tooltip: 'Share Guide',
+            onPressed: () {
+              final preview = guide.content.length > 200
+                  ? '${guide.content.substring(0, 200)}...'
+                  : guide.content;
+              Share.share('$title\n\n$preview');
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.picture_as_pdf),
             tooltip: 'View Full PDF',

@@ -1,10 +1,9 @@
+import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/data/providers/user_providers.dart';
+import 'package:afc_studymate/features/home/widgets/premium_bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../../data/models/enums.dart';
-import '../../data/providers/user_providers.dart';
-import 'widgets/premium_bottom_bar.dart';
 
 class HomeShell extends ConsumerWidget {
   const HomeShell({required this.shell, super.key});

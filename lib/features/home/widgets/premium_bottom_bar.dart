@@ -1,12 +1,12 @@
 import 'dart:ui';
+
+import 'package:afc_studymate/data/models/user_profile.dart';
+import 'package:afc_studymate/data/providers/user_providers.dart';
+import 'package:afc_studymate/widgets/design_system_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../../../widgets/design_system_widgets.dart';
-import '../../../data/models/user_profile.dart';
-import '../../../data/providers/user_providers.dart';
 
 class PremiumBottomBar extends ConsumerWidget {
   const PremiumBottomBar({

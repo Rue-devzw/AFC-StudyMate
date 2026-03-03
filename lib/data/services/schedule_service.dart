@@ -1,8 +1,7 @@
 import 'dart:math';
 
+import 'package:afc_studymate/data/models/enums.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../models/enums.dart';
 
 final scheduleServiceProvider = Provider<ScheduleService>((ref) {
   return ScheduleService();
@@ -14,24 +13,32 @@ class ScheduleService {
   int get currentSundayWeekIndex => weekIndexForTrack(Track.beginners);
 
   int get discoveryWeekIndex {
-    return _weekIndexFromAnchor(DateTime(2023, 10, 5));
+    // Anchored so the current cycle aligns with live Discovery planning.
+    return _weekIndexFromAnchor(DateTime(2026, 2, 23));
   }
 
   int get daybreakIndex {
+    return daybreakIndexForDate(today);
+  }
+
+  int daybreakIndexForDate(DateTime date) {
     final anchor = DateTime(2026, 2, 21);
-    final normalizedToday = DateTime(today.year, today.month, today.day);
-    return max(0, normalizedToday.difference(anchor).inDays);
+    final normalized = DateTime(date.year, date.month, date.day);
+    return max(0, normalized.difference(anchor).inDays);
   }
 
   Track trackForRole(Track preferred) => preferred;
 
   int weekIndexForTrack(Track track) {
     switch (track) {
+      case Track.beginners:
+        // Adjusted to align current live planner position.
+        return _weekIndexFromAnchor(DateTime(2025, 11, 2));
       case Track.search:
       case Track.primaryPals:
         return _weekIndexFromAnchor(DateTime(2024, 8, 25));
       default:
-        final anchor = DateTime(today.year, 1, 1);
+        final anchor = DateTime(today.year);
         return _weekIndexFromAnchor(anchor);
     }
   }

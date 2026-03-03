@@ -1,7 +1,6 @@
+import 'package:afc_studymate/data/models/bible_ref.dart';
+import 'package:afc_studymate/widgets/linked_verse.dart';
 import 'package:flutter/material.dart';
-
-import '../data/models/bible_ref.dart';
-import '../widgets/linked_verse.dart';
 
 class ScriptureReferenceMatch {
   const ScriptureReferenceMatch({
@@ -238,7 +237,7 @@ class ScriptureReferenceParser {
       return null;
     }
 
-    final cleaned = trimmed.replaceAll(RegExp(r'[“”]'), '"').replaceAll('—', '-');
+    final cleaned = trimmed.replaceAll(RegExp('[“”]'), '"').replaceAll('—', '-');
     final firstDigitMatch = RegExp(r'\d').firstMatch(cleaned);
     if (firstDigitMatch == null) {
       return null;
@@ -327,7 +326,7 @@ class ScriptureReferenceParser {
       return null;
     }
     final baseLower = base.toLowerCase();
-    String? canonicalBase = _canonicalLookup[baseLower];
+    var canonicalBase = _canonicalLookup[baseLower];
     canonicalBase ??= _bookAliases[baseLower];
     if (canonicalBase != null) {
       canonicalBase = _canonicalLookup[canonicalBase.toLowerCase()] ?? canonicalBase;

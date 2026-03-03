@@ -10,6 +10,15 @@ class BibleRef {
     this.verseEnd,
   });
 
+  factory BibleRef.fromJson(Map<String, dynamic> json) {
+    return BibleRef(
+      book: json['book'] as String,
+      chapter: json['chapter'] as int,
+      verseStart: json['verseStart'] as int?,
+      verseEnd: json['verseEnd'] as int?,
+    );
+  }
+
   final String book;
   final int chapter;
   final int? verseStart;
@@ -35,15 +44,6 @@ class BibleRef {
         'verseStart': verseStart,
         'verseEnd': verseEnd,
       };
-
-  factory BibleRef.fromJson(Map<String, dynamic> json) {
-    return BibleRef(
-      book: json['book'] as String,
-      chapter: json['chapter'] as int,
-      verseStart: json['verseStart'] as int?,
-      verseEnd: json['verseEnd'] as int?,
-    );
-  }
 
   String get displayText {
     final buffer = StringBuffer('$book $chapter');
