@@ -18,6 +18,7 @@ class NotificationService {
 
   static const String _channelId = 'studymate_reminders';
   static const String _channelName = 'Daily Reminders';
+  static const String _androidIcon = '@drawable/ic_stat_notify';
 
   static const NotificationDetails _details = NotificationDetails(
     android: AndroidNotificationDetails(
@@ -26,7 +27,7 @@ class NotificationService {
       channelDescription: 'Daily study and devotion reminders',
       importance: Importance.high,
       priority: Priority.high,
-      icon: '@mipmap/ic_launcher',
+      icon: _androidIcon,
     ),
     iOS: DarwinNotificationDetails(
       presentAlert: true,
@@ -37,23 +38,31 @@ class NotificationService {
 
   Future<void> initialise() async {
     const initSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      android: AndroidInitializationSettings(_androidIcon),
       iOS: DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
         requestSoundPermission: false,
       ),
     );
-    await _notifications.initialize(
-      settings: initSettings,
-      onDidReceiveNotificationResponse: (response) {
-        final payload = response.payload;
-        if (payload != null && payload.isNotEmpty) {
-          _logger.i('Notification tapped: $payload');
-          rootNavigatorKey.currentContext?.go(payload);
-        }
-      },
-    );
+    try {
+      await _notifications.initialize(
+        settings: initSettings,
+        onDidReceiveNotificationResponse: (response) {
+          final payload = response.payload;
+          if (payload != null && payload.isNotEmpty) {
+            _logger.i('Notification tapped: $payload');
+            rootNavigatorKey.currentContext?.go(payload);
+          }
+        },
+      );
+    } catch (error, stackTrace) {
+      _logger.w(
+        'Notification initialise failed. Continuing without notifications.',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   Future<bool> requestPermission() async {
