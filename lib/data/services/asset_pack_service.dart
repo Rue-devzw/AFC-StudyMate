@@ -39,28 +39,24 @@ class AssetPackService {
   static const _prefKeyPreparedRoot = 'asset_pack_prepared_root';
 
   final Map<String, String> _resolvedAssetPaths = <String, String>{};
-  bool _prepared = false;
-  int _preparedVersion = 0;
 
   Future<AssetPackPrepareResult> prepare({
     void Function(AssetPackProgress progress)? onProgress,
+    Set<String>? includeLogicalAssetPaths,
+    Set<String>? includeExtensions,
   }) async {
-    if (_prepared) {
-      return AssetPackPrepareResult(
-        usedCompressedBundles: true,
-        usedFallbackAssets: false,
-        version: _preparedVersion,
-      );
-    }
-
-    onProgress?.call(const AssetPackProgress(progress: 0.02, message: 'Reading data bundle manifest...'));
+    onProgress?.call(
+      const AssetPackProgress(
+        progress: 0.02,
+        message: 'Reading data bundle manifest...',
+      ),
+    );
 
     try {
       final manifestRaw = await rootBundle.loadString(_manifestAssetPath);
       final manifest = _AssetPackManifest.fromJson(
         jsonDecode(manifestRaw) as Map<String, dynamic>,
       );
-      _preparedVersion = manifest.version;
       final supportDir = await getApplicationSupportDirectory();
       final extractionRoot = Directory(
         '${supportDir.path}/asset_packs/v${manifest.version}',
@@ -74,25 +70,55 @@ class AssetPackService {
           preparedVersion != manifest.version ||
           preparedRoot != extractionRoot.path;
 
-      final total = manifest.bundles.length;
+      final bundles = manifest.bundles.where((bundle) {
+        final matchesPath =
+            includeLogicalAssetPaths == null ||
+            includeLogicalAssetPaths.contains(bundle.logicalAssetPath);
+        final matchesExtension =
+            includeExtensions == null ||
+            includeExtensions.any(
+              (extension) => bundle.logicalAssetPath.toLowerCase().endsWith(
+                extension.toLowerCase(),
+              ),
+            );
+        return matchesPath && matchesExtension;
+      }).toList();
+
+      final total = bundles.length;
+      if (total == 0) {
+        return AssetPackPrepareResult(
+          usedCompressedBundles: true,
+          usedFallbackAssets: false,
+          version: manifest.version,
+        );
+      }
+
       for (var index = 0; index < total; index++) {
-        final bundle = manifest.bundles[index];
-        final targetFile = File('${extractionRoot.path}/${bundle.outputFileName}');
+        final bundle = bundles[index];
+        final targetFile = File(
+          '${extractionRoot.path}/${bundle.outputRelativePath}',
+        );
+        await targetFile.parent.create(recursive: true);
         final logicalProgress = 0.05 + (index / total) * 0.9;
         onProgress?.call(
           AssetPackProgress(
             progress: logicalProgress,
-            message: 'Preparing ${bundle.outputFileName}...',
+            message: 'Preparing ${bundle.outputRelativePath}...',
           ),
         );
 
         final exists = await targetFile.exists();
-        final valid = exists && (!shouldVerifyAll || await _matchesChecksum(targetFile, bundle.sha256));
+        final valid =
+            exists &&
+            (!shouldVerifyAll ||
+                await _matchesChecksum(targetFile, bundle.sha256));
         if (!valid) {
           await _extractBundle(bundle, targetFile);
           final verified = await _matchesChecksum(targetFile, bundle.sha256);
           if (!verified) {
-            throw StateError('Checksum mismatch after extraction for ${bundle.outputFileName}');
+            throw StateError(
+              'Checksum mismatch after extraction for ${bundle.outputRelativePath}',
+            );
           }
         }
         _resolvedAssetPaths[bundle.logicalAssetPath] = targetFile.path;
@@ -100,17 +126,16 @@ class AssetPackService {
 
       await prefs.setInt(_prefKeyPreparedVersion, manifest.version);
       await prefs.setString(_prefKeyPreparedRoot, extractionRoot.path);
-      _prepared = true;
 
-      onProgress?.call(const AssetPackProgress(progress: 1, message: 'Data bundles ready.'));
+      onProgress?.call(
+        const AssetPackProgress(progress: 1, message: 'Data bundles ready.'),
+      );
       return AssetPackPrepareResult(
         usedCompressedBundles: true,
         usedFallbackAssets: false,
         version: manifest.version,
       );
     } catch (_) {
-      _resolvedAssetPaths.clear();
-      _prepared = true;
       onProgress?.call(
         const AssetPackProgress(
           progress: 1,
@@ -131,6 +156,18 @@ class AssetPackService {
       return rootBundle.loadString(logicalAssetPath);
     }
     return File(path).readAsString();
+  }
+
+  Future<String?> resolveFilePath(String logicalAssetPath) async {
+    final path = _resolvedAssetPaths[logicalAssetPath];
+    if (path == null) {
+      return null;
+    }
+    final file = File(path);
+    if (await file.exists()) {
+      return file.path;
+    }
+    return null;
   }
 
   Future<void> _extractBundle(_AssetPackBundle bundle, File targetFile) async {
@@ -175,7 +212,7 @@ class _AssetPackBundle {
   const _AssetPackBundle({
     required this.logicalAssetPath,
     required this.compressedAssetPath,
-    required this.outputFileName,
+    required this.outputRelativePath,
     required this.sha256,
   });
 
@@ -183,13 +220,14 @@ class _AssetPackBundle {
     return _AssetPackBundle(
       logicalAssetPath: json['logicalAssetPath'] as String,
       compressedAssetPath: json['compressedAssetPath'] as String,
-      outputFileName: json['outputFileName'] as String,
+      outputRelativePath:
+          (json['outputRelativePath'] ?? json['outputFileName']) as String,
       sha256: json['sha256'] as String,
     );
   }
 
   final String logicalAssetPath;
   final String compressedAssetPath;
-  final String outputFileName;
+  final String outputRelativePath;
   final String sha256;
 }

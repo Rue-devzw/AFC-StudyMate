@@ -50,6 +50,7 @@ class AppBootstrapService {
       ),
     );
     final unpackResult = await assetPackService.prepare(
+      includeExtensions: const {'.json'},
       onProgress: (progress) {
         onProgress?.call(
           BootstrapProgress(
@@ -76,21 +77,49 @@ class AppBootstrapService {
         message: 'Initializing notifications...',
       ),
     );
-    await notificationService.initialise();
+    try {
+      await notificationService.initialise().timeout(
+        const Duration(seconds: 8),
+      );
+    } catch (error, stackTrace) {
+      logger.w(
+        'Notification init skipped: $error',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
     onProgress?.call(
       const BootstrapProgress(
         progress: 0.86,
         message: 'Initializing analytics...',
       ),
     );
-    await analyticsService.initialise();
+    try {
+      await analyticsService.initialise().timeout(const Duration(seconds: 8));
+    } catch (error, stackTrace) {
+      logger.w(
+        'Analytics init skipped: $error',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
     onProgress?.call(
       const BootstrapProgress(
         progress: 0.93,
         message: 'Initializing messaging...',
       ),
     );
-    await pushMessagingService.initialise();
+    try {
+      await pushMessagingService.initialise().timeout(
+        const Duration(seconds: 8),
+      );
+    } catch (error, stackTrace) {
+      logger.w(
+        'Messaging init skipped: $error',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
     onProgress?.call(
       const BootstrapProgress(
         progress: 1,

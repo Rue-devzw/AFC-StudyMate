@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build compressed data bundles and manifest for first-run unpack."""
+"""Build compressed bundles + manifest for first-run unpack."""
 
 from __future__ import annotations
 
@@ -10,17 +10,35 @@ import json
 from pathlib import Path
 
 
-ASSETS = [
-    "assets/data/beginners_lessons.json",
-    "assets/data/primary_pals_lessons.json",
-    "assets/data/the_answer_lessons.json",
-    "assets/data/search_lessons.json",
-    "assets/data/discovery_lessons.json",
-    "assets/data/daybreak_lessons.json",
-    "assets/data/primary_pals_teacher_guides.json",
-    "assets/data/answer_teacher_guides.json",
-    "assets/data/discovery_teacher_guides.json",
+TEXT_EXTENSIONS = {".json"}
+BINARY_EXTENSIONS = {".pdf"}
+INCLUDE_ROOTS = [
+    Path("assets/data"),
+    Path("assets/pdfs"),
 ]
+
+
+def discover_assets(repo_root: Path) -> list[str]:
+    discovered: list[str] = []
+    for include_root in INCLUDE_ROOTS:
+        absolute_root = repo_root / include_root
+        if not absolute_root.exists():
+            continue
+        for path in absolute_root.rglob("*"):
+            if not path.is_file():
+                continue
+            if path.name.startswith("."):
+                continue
+            if path.suffix.lower() not in (TEXT_EXTENSIONS | BINARY_EXTENSIONS):
+                continue
+            discovered.append(path.relative_to(repo_root).as_posix())
+    discovered.sort()
+    return discovered
+
+
+def _compressed_name_for(logical_path: str) -> str:
+    safe = logical_path.replace("/", "__")
+    return f"{safe}.gz"
 
 
 def sha256_hex(data: bytes) -> str:
@@ -30,14 +48,16 @@ def sha256_hex(data: bytes) -> str:
 def build(version: int, repo_root: Path) -> None:
     out_dir = repo_root / "assets" / "data_packs"
     out_dir.mkdir(parents=True, exist_ok=True)
+    for stale in out_dir.glob("*.gz"):
+        stale.unlink()
 
+    assets = discover_assets(repo_root)
     bundles: list[dict[str, object]] = []
-    for logical in ASSETS:
+    for logical in assets:
         source = repo_root / logical
         raw = source.read_bytes()
         compressed = gzip.compress(raw, compresslevel=9)
-        output_name = source.name
-        compressed_name = f"{output_name}.gz"
+        compressed_name = _compressed_name_for(logical)
         compressed_rel = f"assets/data_packs/{compressed_name}"
         (repo_root / compressed_rel).write_bytes(compressed)
 
@@ -45,7 +65,7 @@ def build(version: int, repo_root: Path) -> None:
             {
                 "logicalAssetPath": logical,
                 "compressedAssetPath": compressed_rel,
-                "outputFileName": output_name,
+                "outputRelativePath": logical,
                 "sha256": sha256_hex(raw),
                 "size": len(raw),
                 "compressedSize": len(compressed),

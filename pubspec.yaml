@@ -55,12 +55,7 @@ flutter:
     - assets/data_packs/
     - assets/db/
     - assets/images/
-    - assets/pdfs/answer/
-    - assets/pdfs/answer_teachers/
-    - assets/pdfs/primary_pals_teachers/
-    - assets/pdfs/discovery_teachers/
     - assets/images/discovery/
-    - assets/pdfs/daybreak/
 
 analyzer:
   exclude:

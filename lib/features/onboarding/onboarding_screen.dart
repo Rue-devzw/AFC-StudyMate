@@ -104,8 +104,7 @@ class OnboardingScreen extends HookConsumerWidget {
                                 items: Role.values,
                                 labelBuilder: (role) =>
                                     _formatRoleName(role.name),
-                                onChanged: (val) =>
-                                    controller.updateRole(val!),
+                                onChanged: (val) => controller.updateRole(val!),
                               ),
                               const SizedBox(height: 16),
                               _DropdownCard<Track>(
@@ -154,14 +153,20 @@ class OnboardingScreen extends HookConsumerWidget {
                                   value: state.dailyReminder,
                                   onChanged: controller.toggleDaily,
                                 ),
-                                const Divider(height: 24, color: Colors.white24),
+                                const Divider(
+                                  height: 24,
+                                  color: Colors.white24,
+                                ),
                                 _ReminderSwitch(
                                   title: 'Sunday School',
                                   subtitle: 'Lesson reminder at 08:00',
                                   value: state.sundayReminder,
                                   onChanged: controller.toggleSunday,
                                 ),
-                                const Divider(height: 24, color: Colors.white24),
+                                const Divider(
+                                  height: 24,
+                                  color: Colors.white24,
+                                ),
                                 _ReminderSwitch(
                                   title: 'Discovery',
                                   subtitle: 'Mid-week unlock reminder',
@@ -224,7 +229,13 @@ class OnboardingScreen extends HookConsumerWidget {
                               'Get Started',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
-                            onPressed: controller.complete,
+                            onPressed: () async {
+                              await controller.complete();
+                              if (!context.mounted) {
+                                return;
+                              }
+                              context.go('/home/today');
+                            },
                           ),
                       ],
                     ),

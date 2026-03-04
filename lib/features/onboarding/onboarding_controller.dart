@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:afc_studymate/data/drift/app_database.dart';
 import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/user_profile.dart';
@@ -84,56 +86,81 @@ class OnboardingController extends StateNotifier<OnboardingState> {
   void toggleDaily(bool value) => state = state.copyWith(dailyReminder: value);
 
   Future<void> complete() async {
-    final profile = UserProfile(
-      userId: 'local_user',
-      name: state.name.isEmpty ? 'Learner' : state.name,
-      role: state.role,
-      targetTrack: state.track,
-      translation: state.translation,
-    );
-    await database.upsertProfile(profile);
-
-    // Also keep loose settings for legacy/compatibility if needed
-    await database.upsertSetting('role', state.role.name);
-    await database.upsertSetting('track', state.track.name);
-    await database.upsertSetting('translation', state.translation.name);
-    await database.upsertSetting(
-      'daily_reminder_enabled',
-      state.dailyReminder.toString(),
-    );
-    await database.upsertSetting(
-      'sunday_reminder_enabled',
-      state.sundayReminder.toString(),
-    );
-    await database.upsertSetting(
-      'discovery_reminder_enabled',
-      state.discoveryReminder.toString(),
-    );
-
-    final hasAnyReminder =
-        state.dailyReminder || state.sundayReminder || state.discoveryReminder;
-    if (hasAnyReminder) {
-      final granted = await notificationService.requestPermission();
-      if (granted) {
-        if (state.dailyReminder || state.discoveryReminder) {
-          await notificationService.scheduleDaily(hour: 6, minute: 0);
-        } else {
-          await notificationService.cancelDaily();
-        }
-        if (state.sundayReminder) {
-          await notificationService.scheduleWeeklySundayReminder(
-            hour: 8,
-            minute: 0,
-          );
-        } else {
-          await notificationService.cancelWeeklySundayReminder();
-        }
-      }
+    if (state.completed) {
+      return;
     }
 
+    final snapshot = state;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasCompletedSetup', true);
-
     state = state.copyWith(completed: true);
+
+    unawaited(_finalizeSetup(snapshot));
+  }
+
+  Future<void> _finalizeSetup(OnboardingState snapshot) async {
+    final profile = UserProfile(
+      userId: 'local_user',
+      name: snapshot.name.isEmpty ? 'Learner' : snapshot.name,
+      role: snapshot.role,
+      targetTrack: snapshot.track,
+      translation: snapshot.translation,
+    );
+
+    try {
+      await database.upsertProfile(profile).timeout(const Duration(seconds: 8));
+
+      // Keep loose settings for compatibility.
+      await database.upsertSetting('role', snapshot.role.name);
+      await database.upsertSetting('track', snapshot.track.name);
+      await database.upsertSetting('translation', snapshot.translation.name);
+      await database.upsertSetting(
+        'daily_reminder_enabled',
+        snapshot.dailyReminder.toString(),
+      );
+      await database.upsertSetting(
+        'sunday_reminder_enabled',
+        snapshot.sundayReminder.toString(),
+      );
+      await database.upsertSetting(
+        'discovery_reminder_enabled',
+        snapshot.discoveryReminder.toString(),
+      );
+    } catch (_) {
+      // Setup persistence should not block app entry.
+    }
+
+    final hasAnyReminder =
+        snapshot.dailyReminder ||
+        snapshot.sundayReminder ||
+        snapshot.discoveryReminder;
+    if (!hasAnyReminder) {
+      return;
+    }
+
+    try {
+      final granted = await notificationService.requestPermission().timeout(
+        const Duration(seconds: 8),
+      );
+      if (!granted) {
+        return;
+      }
+
+      if (snapshot.dailyReminder || snapshot.discoveryReminder) {
+        await notificationService.scheduleDaily(hour: 6, minute: 0);
+      } else {
+        await notificationService.cancelDaily();
+      }
+      if (snapshot.sundayReminder) {
+        await notificationService.scheduleWeeklySundayReminder(
+          hour: 8,
+          minute: 0,
+        );
+      } else {
+        await notificationService.cancelWeeklySundayReminder();
+      }
+    } catch (_) {
+      // Notifications are best effort and non-blocking.
+    }
   }
 }
