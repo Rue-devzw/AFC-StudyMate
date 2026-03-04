@@ -1,4 +1,5 @@
 import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/utils/scripture_reference_parser.dart';
 import 'package:flutter/material.dart';
 
 class BeginnersLessonView extends StatefulWidget {
@@ -85,9 +86,15 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
                                     ),
                                   ),
                                 ),
-                              Text(
-                                content,
-                                style: Theme.of(context).textTheme.bodyLarge,
+                              Text.rich(
+                                TextSpan(
+                                  children:
+                                      ScriptureReferenceParser.buildLinkedTextSpans(
+                                        context,
+                                        content,
+                                        Theme.of(context).textTheme.bodyLarge,
+                                      ),
+                                ),
                                 textScaler: const TextScaler.linear(1.15),
                               ),
                               if (type == 'question') ...<Widget>[

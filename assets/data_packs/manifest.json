@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "bundles": [
+    {
+      "logicalAssetPath": "assets/data/beginners_lessons.json",
+      "compressedAssetPath": "assets/data_packs/beginners_lessons.json.gz",
+      "outputFileName": "beginners_lessons.json",
+      "sha256": "fd3d2cd3c97262b45c4397b2186897c6ca8fbd881b247dd21dda7825f6660300",
+      "size": 342374,
+      "compressedSize": 99541
+    },
+    {
+      "logicalAssetPath": "assets/data/primary_pals_lessons.json",
+      "compressedAssetPath": "assets/data_packs/primary_pals_lessons.json.gz",
+      "outputFileName": "primary_pals_lessons.json",
+      "sha256": "0b195acb015c82b33a469278d410870de1f94fa2b818833e2c144c6a97785d89",
+      "size": 902708,
+      "compressedSize": 242440
+    },
+    {
+      "logicalAssetPath": "assets/data/the_answer_lessons.json",
+      "compressedAssetPath": "assets/data_packs/the_answer_lessons.json.gz",
+      "outputFileName": "the_answer_lessons.json",
+      "sha256": "8c1125c48e5047886c18389341f31f5650f6e7728a046a62fa4ae80e383f9ea9",
+      "size": 1042271,
+      "compressedSize": 381348
+    },
+    {
+      "logicalAssetPath": "assets/data/search_lessons.json",
+      "compressedAssetPath": "assets/data_packs/search_lessons.json.gz",
+      "outputFileName": "search_lessons.json",
+      "sha256": "8301a2187f796c8cc9d0a599d74cc10421417594d43757b293ec28586776582d",
+      "size": 822882,
+      "compressedSize": 189117
+    },
+    {
+      "logicalAssetPath": "assets/data/discovery_lessons.json",
+      "compressedAssetPath": "assets/data_packs/discovery_lessons.json.gz",
+      "outputFileName": "discovery_lessons.json",
+      "sha256": "9ba7f15089278e7dea107f16158aa37ef1fec08ccd46675e831eecf6919c7617",
+      "size": 796544,
+      "compressedSize": 269101
+    },
+    {
+      "logicalAssetPath": "assets/data/daybreak_lessons.json",
+      "compressedAssetPath": "assets/data_packs/daybreak_lessons.json.gz",
+      "outputFileName": "daybreak_lessons.json",
+      "sha256": "0335c5a63312cff779860a894c72ad99395d5cb08cbccfef74ea5565df7152c2",
+      "size": 6697232,
+      "compressedSize": 2296639
+    },
+    {
+      "logicalAssetPath": "assets/data/primary_pals_teacher_guides.json",
+      "compressedAssetPath": "assets/data_packs/primary_pals_teacher_guides.json.gz",
+      "outputFileName": "primary_pals_teacher_guides.json",
+      "sha256": "a6a18b270c5fd14d0fa679b2fe30a80ac6e86c6be9f6c85d25a2d8e5996410bc",
+      "size": 318446,
+      "compressedSize": 111069
+    },
+    {
+      "logicalAssetPath": "assets/data/answer_teacher_guides.json",
+      "compressedAssetPath": "assets/data_packs/answer_teacher_guides.json.gz",
+      "outputFileName": "answer_teacher_guides.json",
+      "sha256": "6f18c8d407d0d9e8814f9a1b3ccb1c4d853360298b86eaca8ea5cc9a69c72103",
+      "size": 2248374,
+      "compressedSize": 778045
+    },
+    {
+      "logicalAssetPath": "assets/data/discovery_teacher_guides.json",
+      "compressedAssetPath": "assets/data_packs/discovery_teacher_guides.json.gz",
+      "outputFileName": "discovery_teacher_guides.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "size": 2,
+      "compressedSize": 22
+    }
+  ]
+}

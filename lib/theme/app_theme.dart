@@ -4,10 +4,26 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum AppThemeMode { system, light, dark }
+enum AppFontPack { classic, nunito, lora, merriweather, rubik }
+enum AppBackgroundMode {
+  trackDefault,
+  dashboard,
+  journal,
+  sundaySchool,
+  bible,
+  discovery,
+}
 
 const _themeModePrefKey = 'theme_mode';
+const _fontPackPrefKey = 'font_pack';
+const _backgroundModePrefKey = 'background_mode';
+const _lowResourcePrefKey = 'low_resource_mode';
+const _cloudBackupPrefKey = 'cloud_backup_enabled';
 
-final appThemeProvider = Provider<AppTheme>((ref) => AppTheme());
+final appThemeProvider = Provider<AppTheme>((ref) {
+  final fontPack = ref.watch(appFontPackProvider);
+  return AppTheme(fontPack: fontPack);
+});
 
 final themeModeProvider = StateNotifierProvider<ThemeModeController, ThemeMode>((
   ref,
@@ -26,6 +42,30 @@ final appThemeModeProvider = Provider<AppThemeMode>((ref) {
       return AppThemeMode.system;
   }
 });
+
+final appFontPackProvider =
+    StateNotifierProvider<AppFontPackController, AppFontPack>((ref) {
+      return AppFontPackController()..load();
+    });
+
+final appBackgroundModeProvider =
+    StateNotifierProvider<AppBackgroundModeController, AppBackgroundMode>((
+      ref,
+    ) {
+      return AppBackgroundModeController()..load();
+    });
+
+final lowResourceModeProvider =
+    StateNotifierProvider<BoolPrefController, bool>((ref) {
+      return BoolPrefController(key: _lowResourcePrefKey, defaultValue: false)
+        ..load();
+    });
+
+final cloudBackupEnabledProvider =
+    StateNotifierProvider<BoolPrefController, bool>((ref) {
+      return BoolPrefController(key: _cloudBackupPrefKey, defaultValue: false)
+        ..load();
+    });
 
 class ThemeModeController extends StateNotifier<ThemeMode> {
   ThemeModeController() : super(ThemeMode.system);
@@ -71,8 +111,111 @@ class ThemeModeController extends StateNotifier<ThemeMode> {
   }
 }
 
+class AppFontPackController extends StateNotifier<AppFontPack> {
+  AppFontPackController() : super(AppFontPack.classic);
+
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_fontPackPrefKey);
+    state = _fromStored(stored);
+  }
+
+  Future<void> setFontPack(AppFontPack pack) async {
+    state = pack;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_fontPackPrefKey, pack.name);
+  }
+
+  AppFontPack _fromStored(String? value) {
+    for (final pack in AppFontPack.values) {
+      if (pack.name == value) {
+        return pack;
+      }
+    }
+    return AppFontPack.classic;
+  }
+}
+
+class AppBackgroundModeController extends StateNotifier<AppBackgroundMode> {
+  AppBackgroundModeController() : super(AppBackgroundMode.trackDefault);
+
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_backgroundModePrefKey);
+    state = _fromStored(stored);
+  }
+
+  Future<void> setBackgroundMode(AppBackgroundMode mode) async {
+    state = mode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_backgroundModePrefKey, mode.name);
+  }
+
+  AppBackgroundMode _fromStored(String? value) {
+    for (final mode in AppBackgroundMode.values) {
+      if (mode.name == value) {
+        return mode;
+      }
+    }
+    return AppBackgroundMode.trackDefault;
+  }
+}
+
+class BoolPrefController extends StateNotifier<bool> {
+  BoolPrefController({required this.key, required this.defaultValue})
+    : super(defaultValue);
+
+  final String key;
+  final bool defaultValue;
+
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    state = prefs.getBool(key) ?? defaultValue;
+  }
+
+  Future<void> setValue(bool value) async {
+    state = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(key, value);
+  }
+}
+
+String appFontPackLabel(AppFontPack pack) {
+  switch (pack) {
+    case AppFontPack.classic:
+      return 'Classic (Inter + Crimson)';
+    case AppFontPack.nunito:
+      return 'Nunito';
+    case AppFontPack.lora:
+      return 'Lora';
+    case AppFontPack.merriweather:
+      return 'Merriweather';
+    case AppFontPack.rubik:
+      return 'Rubik';
+  }
+}
+
+String appBackgroundModeLabel(AppBackgroundMode mode) {
+  switch (mode) {
+    case AppBackgroundMode.trackDefault:
+      return 'Track default';
+    case AppBackgroundMode.dashboard:
+      return 'Dashboard';
+    case AppBackgroundMode.journal:
+      return 'Journal';
+    case AppBackgroundMode.sundaySchool:
+      return 'Sunday School';
+    case AppBackgroundMode.bible:
+      return 'Bible';
+    case AppBackgroundMode.discovery:
+      return 'Discovery';
+  }
+}
+
 class AppTheme {
-  AppTheme();
+  AppTheme({required this.fontPack});
+
+  final AppFontPack fontPack;
 
   ThemeData get lightTheme => _buildTheme(Brightness.light);
 
@@ -88,36 +231,7 @@ class AppTheme {
       background: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
     );
 
-    // Create a base text theme using a Serif font for body
-    final serifTextTheme = GoogleFonts.crimsonTextTextTheme(
-      Typography.englishLike2021,
-    );
-
-    // Create a sans-serif text theme for headings
-    final sansSerifTextTheme = GoogleFonts.interTextTheme(
-      Typography.englishLike2021,
-    );
-
-    // Merge them: display and title use sans-serif, body uses serif
-    final customTextTheme = serifTextTheme
-        .copyWith(
-          displayLarge: sansSerifTextTheme.displayLarge,
-          displayMedium: sansSerifTextTheme.displayMedium,
-          displaySmall: sansSerifTextTheme.displaySmall,
-          headlineLarge: sansSerifTextTheme.headlineLarge,
-          headlineMedium: sansSerifTextTheme.headlineMedium,
-          headlineSmall: sansSerifTextTheme.headlineSmall,
-          titleLarge: sansSerifTextTheme.titleLarge,
-          titleMedium: sansSerifTextTheme.titleMedium,
-          titleSmall: sansSerifTextTheme.titleSmall,
-          labelLarge: sansSerifTextTheme.labelLarge,
-          labelMedium: sansSerifTextTheme.labelMedium,
-          labelSmall: sansSerifTextTheme.labelSmall,
-        )
-        .apply(
-          bodyColor: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF1E293B),
-          displayColor: isDark ? Colors.white : const Color(0xFF0F172A),
-        );
+    final customTextTheme = _buildTextTheme(isDark);
 
     return ThemeData(
       useMaterial3: true,
@@ -160,5 +274,51 @@ class AppTheme {
         ),
       ),
     );
+  }
+
+  TextTheme _buildTextTheme(bool isDark) {
+    final bodyColor = isDark ? const Color(0xFFE2E8F0) : const Color(0xFF1E293B);
+    final displayColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    switch (fontPack) {
+      case AppFontPack.classic:
+        final serifTextTheme = GoogleFonts.crimsonTextTextTheme(
+          Typography.englishLike2021,
+        );
+        final sansSerifTextTheme = GoogleFonts.interTextTheme(
+          Typography.englishLike2021,
+        );
+        return serifTextTheme
+            .copyWith(
+              displayLarge: sansSerifTextTheme.displayLarge,
+              displayMedium: sansSerifTextTheme.displayMedium,
+              displaySmall: sansSerifTextTheme.displaySmall,
+              headlineLarge: sansSerifTextTheme.headlineLarge,
+              headlineMedium: sansSerifTextTheme.headlineMedium,
+              headlineSmall: sansSerifTextTheme.headlineSmall,
+              titleLarge: sansSerifTextTheme.titleLarge,
+              titleMedium: sansSerifTextTheme.titleMedium,
+              titleSmall: sansSerifTextTheme.titleSmall,
+              labelLarge: sansSerifTextTheme.labelLarge,
+              labelMedium: sansSerifTextTheme.labelMedium,
+              labelSmall: sansSerifTextTheme.labelSmall,
+            )
+            .apply(bodyColor: bodyColor, displayColor: displayColor);
+      case AppFontPack.nunito:
+        return GoogleFonts.nunitoTextTheme(
+          Typography.englishLike2021,
+        ).apply(bodyColor: bodyColor, displayColor: displayColor);
+      case AppFontPack.lora:
+        return GoogleFonts.loraTextTheme(
+          Typography.englishLike2021,
+        ).apply(bodyColor: bodyColor, displayColor: displayColor);
+      case AppFontPack.merriweather:
+        return GoogleFonts.merriweatherTextTheme(
+          Typography.englishLike2021,
+        ).apply(bodyColor: bodyColor, displayColor: displayColor);
+      case AppFontPack.rubik:
+        return GoogleFonts.rubikTextTheme(
+          Typography.englishLike2021,
+        ).apply(bodyColor: bodyColor, displayColor: displayColor);
+    }
   }
 }

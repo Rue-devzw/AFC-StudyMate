@@ -1,9 +1,11 @@
+import 'package:afc_studymate/data/models/bible_ref.dart';
 import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/lesson.dart';
 import 'package:afc_studymate/data/providers/progress_providers.dart';
 import 'package:afc_studymate/data/repositories/lesson_repository.dart';
 import 'package:afc_studymate/features/sunday_school/all_lessons/sunday_school_lesson_detail_screen.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/linked_verse.dart';
 import 'package:afc_studymate/widgets/retry_error_card.dart';
 import 'package:afc_studymate/widgets/skeleton_widgets.dart';
 import 'package:flutter/material.dart';
@@ -333,7 +335,9 @@ class _LessonCard extends ConsumerWidget {
       Chip(label: Text('Lesson $lessonNumber')),
       ...lesson.bibleReferences
           .take(3)
-          .map((ref) => Chip(label: Text(ref.displayText))),
+          .map(
+            (ref) => _BibleRefChip(reference: ref),
+          ),
       if ((lesson.bibleReferences.length) > 3)
         Chip(label: Text('+${lesson.bibleReferences.length - 3} refs')),
       if (topic != null && topic.isNotEmpty) Chip(label: Text(topic)),
@@ -525,5 +529,50 @@ String _trackLabel(Track track) {
     default:
       final name = track.name;
       return name[0].toUpperCase() + name.substring(1);
+  }
+}
+
+/// A chip-styled widget that wraps a [LinkedVerse].
+/// [LinkedVerse] already handles the tap → verse-preview-sheet flow natively,
+/// so we just need to provide a chip-like appearance around it.
+class _BibleRefChip extends StatelessWidget {
+  const _BibleRefChip({required this.reference});
+
+  final BibleRef reference;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.secondaryContainer.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.3),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.menu_book_outlined,
+              size: 14,
+              color: colorScheme.onSecondaryContainer,
+            ),
+            const SizedBox(width: 6),
+            LinkedVerse(
+              reference: reference,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSecondaryContainer,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

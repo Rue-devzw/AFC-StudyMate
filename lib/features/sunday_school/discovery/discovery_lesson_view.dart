@@ -1,4 +1,5 @@
 import 'package:afc_studymate/data/models/lesson.dart';
+import 'package:afc_studymate/utils/scripture_reference_parser.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
 import 'package:afc_studymate/widgets/verse_card.dart';
 import 'package:flutter/material.dart';
@@ -53,10 +54,15 @@ class DiscoveryLessonView extends ConsumerWidget {
           _Section(
             title: 'Key Verse',
             child: PremiumGlassCard(
-              child: Text(
-                keyVerse,
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  fontStyle: FontStyle.italic,
+              child: Text.rich(
+                TextSpan(
+                  children: ScriptureReferenceParser.buildLinkedTextSpans(
+                    context,
+                    keyVerse,
+                    theme.textTheme.bodyLarge?.copyWith(
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -64,9 +70,14 @@ class DiscoveryLessonView extends ConsumerWidget {
         if (background.isNotEmpty)
           _Section(
             title: 'Background',
-            child: Text(
-              background,
-              style: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
+            child: Text.rich(
+              TextSpan(
+                children: ScriptureReferenceParser.buildLinkedTextSpans(
+                  context,
+                  background,
+                  theme.textTheme.bodyMedium?.copyWith(height: 1.6),
+                ),
+              ),
             ),
           ),
         if (questions.isNotEmpty)
@@ -93,10 +104,16 @@ class DiscoveryLessonView extends ConsumerWidget {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            questions[i],
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              height: 1.5,
+                          child: Text.rich(
+                            TextSpan(
+                              children:
+                                  ScriptureReferenceParser.buildLinkedTextSpans(
+                                    context,
+                                    questions[i],
+                                    theme.textTheme.bodyMedium?.copyWith(
+                                      height: 1.5,
+                                    ),
+                                  ),
                             ),
                           ),
                         ),
@@ -118,11 +135,16 @@ class DiscoveryLessonView extends ConsumerWidget {
                   color: theme.colorScheme.secondary.withAlpha(50),
                 ),
               ),
-              child: Text(
-                conclusion,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  height: 1.6,
-                  fontWeight: FontWeight.w500,
+              child: Text.rich(
+                TextSpan(
+                  children: ScriptureReferenceParser.buildLinkedTextSpans(
+                    context,
+                    conclusion,
+                    theme.textTheme.bodyMedium?.copyWith(
+                      height: 1.6,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
             ),

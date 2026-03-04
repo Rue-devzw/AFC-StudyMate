@@ -75,65 +75,7 @@ class AppDatabase {
       try {
         final content = await _dataFile!.readAsString();
         final data = jsonDecode(content) as Map<String, dynamic>;
-
-        final progressList = data['progress'] as List<dynamic>? ?? [];
-        _progress.clear();
-        _progress.addAll(
-          progressList.map((e) => Progress.fromJson(e as Map<String, dynamic>)),
-        );
-
-        final notesMap = data['notes'] as Map<String, dynamic>? ?? {};
-        _notes.clear();
-        _notes.addAll(
-          notesMap.map(
-            (k, v) => MapEntry(k, Note.fromJson(v as Map<String, dynamic>)),
-          ),
-        );
-
-        final memoryVersesMap =
-            data['memoryVerses'] as Map<String, dynamic>? ?? {};
-        _memoryVerses.clear();
-        _memoryVerses.addAll(
-          memoryVersesMap.map(
-            (k, v) =>
-                MapEntry(k, MemoryVerse.fromJson(v as Map<String, dynamic>)),
-          ),
-        );
-
-        final journalEntriesMap =
-            data['journalEntries'] as Map<String, dynamic>? ?? {};
-        _journalEntries.clear();
-        _journalEntries.addAll(
-          journalEntriesMap.map(
-            (k, v) =>
-                MapEntry(k, JournalEntry.fromJson(v as Map<String, dynamic>)),
-          ),
-        );
-
-        final studentsMap = data['students'] as Map<String, dynamic>? ?? {};
-        _students.clear();
-        _students.addAll(
-          studentsMap.map(
-            (k, v) => MapEntry(k, Student.fromJson(v as Map<String, dynamic>)),
-          ),
-        );
-
-        final attendanceMap = data['attendance'] as Map<String, dynamic>? ?? {};
-        _attendance.clear();
-        _attendance.addAll(
-          attendanceMap.map(
-            (k, v) => MapEntry(
-              k,
-              AttendanceRecord.fromJson(v as Map<String, dynamic>),
-            ),
-          ),
-        );
-
-        if (data['profile'] != null) {
-          _profile = UserProfile.fromJson(
-            data['profile'] as Map<String, dynamic>,
-          );
-        }
+        _applyUserData(data, clearExisting: true);
       } catch (e) {
         // Silently fail or log error
       }
@@ -142,7 +84,13 @@ class AppDatabase {
 
   Future<void> _saveToDisk() async {
     if (_dataFile == null) await _ensureInitialized();
-    final data = {
+    final data = await exportUserData();
+    await _dataFile!.writeAsString(jsonEncode(data));
+  }
+
+  Future<Map<String, dynamic>> exportUserData() async {
+    await _ensureInitialized();
+    return <String, dynamic>{
       'progress': _progress.map((e) => e.toJson()).toList(),
       'notes': _notes.map((k, v) => MapEntry(k, v.toJson())),
       'memoryVerses': _memoryVerses.map((k, v) => MapEntry(k, v.toJson())),
@@ -150,12 +98,93 @@ class AppDatabase {
       'students': _students.map((k, v) => MapEntry(k, v.toJson())),
       'attendance': _attendance.map((k, v) => MapEntry(k, v.toJson())),
       'profile': _profile?.toJson(),
+      'exportedAt': DateTime.now().toIso8601String(),
     };
-    await _dataFile!.writeAsString(jsonEncode(data));
   }
 
-  Future<void> importLessonsFromAsset(String assetPath, Track track) async {
-    final raw = await rootBundle.loadString(assetPath);
+  Future<void> importUserDataSnapshot(
+    Map<String, dynamic> data, {
+    bool merge = false,
+  }) async {
+    await _ensureInitialized();
+    _applyUserData(data, clearExisting: !merge);
+    await _saveToDisk();
+  }
+
+  void _applyUserData(
+    Map<String, dynamic> data, {
+    required bool clearExisting,
+  }) {
+    if (clearExisting) {
+      _progress.clear();
+      _notes.clear();
+      _memoryVerses.clear();
+      _journalEntries.clear();
+      _students.clear();
+      _attendance.clear();
+      _profile = null;
+    }
+
+    final progressList = data['progress'] as List<dynamic>? ?? <dynamic>[];
+    _progress.addAll(
+      progressList
+          .whereType<Map<String, dynamic>>()
+          .map(Progress.fromJson),
+    );
+
+    final notesMap = data['notes'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    _notes.addAll(
+      notesMap.map(
+        (k, v) => MapEntry(k, Note.fromJson(v as Map<String, dynamic>)),
+      ),
+    );
+
+    final memoryVersesMap =
+        data['memoryVerses'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    _memoryVerses.addAll(
+      memoryVersesMap.map(
+        (k, v) => MapEntry(k, MemoryVerse.fromJson(v as Map<String, dynamic>)),
+      ),
+    );
+
+    final journalEntriesMap =
+        data['journalEntries'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    _journalEntries.addAll(
+      journalEntriesMap.map(
+        (k, v) => MapEntry(k, JournalEntry.fromJson(v as Map<String, dynamic>)),
+      ),
+    );
+
+    final studentsMap =
+        data['students'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    _students.addAll(
+      studentsMap.map(
+        (k, v) => MapEntry(k, Student.fromJson(v as Map<String, dynamic>)),
+      ),
+    );
+
+    final attendanceMap =
+        data['attendance'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    _attendance.addAll(
+      attendanceMap.map(
+        (k, v) =>
+            MapEntry(k, AttendanceRecord.fromJson(v as Map<String, dynamic>)),
+      ),
+    );
+
+    if (data['profile'] case final Map<String, dynamic> profileData) {
+      _profile = UserProfile.fromJson(profileData);
+    }
+  }
+
+  Future<void> importLessonsFromAsset(
+    String assetPath,
+    Track track, {
+    Future<String> Function(String assetPath)? textLoader,
+  }) async {
+    final raw = textLoader == null
+        ? await rootBundle.loadString(assetPath)
+        : await textLoader(assetPath);
     final dynamic decoded = jsonDecode(raw);
     final lessons = _parseLessonsForTrack(decoded, track);
 
@@ -164,8 +193,13 @@ class AppDatabase {
     }
   }
 
-  Future<void> importTeacherGuidesFromAsset(String assetPath) async {
-    final raw = await rootBundle.loadString(assetPath);
+  Future<void> importTeacherGuidesFromAsset(
+    String assetPath, {
+    Future<String> Function(String assetPath)? textLoader,
+  }) async {
+    final raw = textLoader == null
+        ? await rootBundle.loadString(assetPath)
+        : await textLoader(assetPath);
     final decoded = jsonDecode(raw);
     if (decoded is List) {
       final entries = decoded.whereType<Map<String, dynamic>>().toList();
@@ -620,11 +654,15 @@ class AppDatabase {
     );
   }
 
-  Future<void> seedFromAssets() {
-    return _seedFuture ??= _performSeed();
+  Future<void> seedFromAssets({
+    Future<String> Function(String assetPath)? textLoader,
+  }) {
+    return _seedFuture ??= _performSeed(textLoader: textLoader);
   }
 
-  Future<void> _performSeed() async {
+  Future<void> _performSeed({
+    Future<String> Function(String assetPath)? textLoader,
+  }) async {
     await _ensureInitialized();
     if (_lessons.isNotEmpty) {
       return;
@@ -632,36 +670,45 @@ class AppDatabase {
     await importLessonsFromAsset(
       'assets/data/beginners_lessons.json',
       Track.beginners,
+      textLoader: textLoader,
     );
     await importLessonsFromAsset(
       'assets/data/primary_pals_lessons.json',
       Track.primaryPals,
+      textLoader: textLoader,
     );
     await importLessonsFromAsset(
       'assets/data/the_answer_lessons.json',
       Track.answer,
+      textLoader: textLoader,
     );
     await importLessonsFromAsset(
       'assets/data/search_lessons.json',
       Track.search,
+      textLoader: textLoader,
     );
     await importLessonsFromAsset(
       'assets/data/discovery_lessons.json',
       Track.discovery,
+      textLoader: textLoader,
     );
     await importLessonsFromAsset(
       'assets/data/daybreak_lessons.json',
       Track.daybreak,
+      textLoader: textLoader,
     );
 
     await importTeacherGuidesFromAsset(
       'assets/data/primary_pals_teacher_guides.json',
+      textLoader: textLoader,
     );
     await importTeacherGuidesFromAsset(
       'assets/data/answer_teacher_guides.json',
+      textLoader: textLoader,
     );
     await importTeacherGuidesFromAsset(
       'assets/data/discovery_teacher_guides.json',
+      textLoader: textLoader,
     );
   }
 

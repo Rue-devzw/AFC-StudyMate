@@ -242,6 +242,39 @@ class BibleScreen extends HookConsumerWidget {
         ? '${selectedBook.name} ${selectedChapter.value}'
         : 'Bible';
 
+    Future<void> openScrollWheelNavigation() async {
+      final books = booksSnapshot.data;
+      if (books == null || books.isEmpty) {
+        return;
+      }
+      final result = await showModalBottomSheet<_WheelNavigationResult>(
+        context: context,
+        useRootNavigator: true,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (context) => _ScrollWheelNavigationSheet(
+          books: books,
+          initialBookNumber: selectedBookNumber.value,
+          initialChapter: selectedChapter.value,
+          initialVerse: activeHighlightedVerse.value,
+          translation: translation.value,
+          bibleService: bibleService,
+        ),
+      );
+      if (result == null) {
+        return;
+      }
+      selectedBookNumber.value = result.book.number;
+      selectedChapter.value = result.chapter;
+      if (result.verse != null) {
+        activeHighlightedVerse.value = result.verse;
+        pendingVerseJump.value = result.verse;
+      } else {
+        activeHighlightedVerse.value = null;
+        pendingVerseJump.value = null;
+      }
+    }
+
     void moveHistory(int nextIndex) {
       final history = passageHistory.value;
       if (nextIndex < 0 || nextIndex >= history.length) {
@@ -290,8 +323,10 @@ class BibleScreen extends HookConsumerWidget {
                         final result =
                             await showModalBottomSheet<_PassageSelectionResult>(
                               context: context,
+                              useRootNavigator: true,
                               isScrollControlled: true,
                               useSafeArea: true,
+                              backgroundColor: Colors.transparent,
                               builder: (context) {
                                 return _PassageSelectorSheet(
                                   books: books,
@@ -380,27 +415,7 @@ class BibleScreen extends HookConsumerWidget {
               selectedChapter.value = result.chapter;
             },
           ),
-          _BibleActionIcon(
-            icon: Icons.format_list_numbered,
-            tooltip: 'Jump to verse',
-            onPressed: verses.isEmpty
-                ? null
-                : () async {
-                    final selected = await showModalBottomSheet<int>(
-                      context: context,
-                      useSafeArea: true,
-                      builder: (context) => _VerseJumpSheet(
-                        verseCount: verses.length,
-                        selectedVerse: activeHighlightedVerse.value,
-                      ),
-                    );
-                    if (selected == null) {
-                      return;
-                    }
-                    activeHighlightedVerse.value = selected;
-                    pendingVerseJump.value = selected;
-                  },
-          ),
+
           _BibleActionIcon(
             icon: Icons.collections_bookmark,
             tooltip: 'Study library',
@@ -479,6 +494,35 @@ class BibleScreen extends HookConsumerWidget {
                     activeHighlightedVerse.value = selected;
                     pendingVerseJump.value = selected;
                   },
+            onOpenWheel: openScrollWheelNavigation,
+            onDisplayOptions: () {
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                useSafeArea: true,
+                builder: (context) => _DisplayOptionsSheet(
+                  fontScale: fontScale.value,
+                  onFontScaleChanged: (value) => fontScale.value = value,
+                  fontStyle: readingFontStyle.value,
+                  onFontStyleChanged: (value) => readingFontStyle.value = value,
+                  translation: translation.value,
+                  onTranslationChanged: (value) {
+                    translation.value = value;
+                    selectedBookNumber.value = null;
+                    selectedChapter.value = 1;
+                    final profile = profileAsync.valueOrNull;
+                    if (profile != null) {
+                      ref
+                          .read(appDatabaseProvider)
+                          .upsertProfile(
+                            profile.copyWith(translation: value),
+                          );
+                    }
+                  },
+                ),
+              );
+            },
           ),
           Expanded(
             child: Builder(
@@ -560,7 +604,7 @@ class BibleScreen extends HookConsumerWidget {
                         }
                       });
                     }
-                    final verseText = SelectableText.rich(
+                    final verseText = Text.rich(
                       TextSpan(
                         children: <InlineSpan>[
                           WidgetSpan(
@@ -593,6 +637,17 @@ class BibleScreen extends HookConsumerWidget {
                       ),
                     );
                     final verseBody = InkWell(
+                      onTap: () async {
+                        final saved = await _showVerseActionSheet(
+                          context,
+                          ref,
+                          verse: verse,
+                          existingNotes: verseNotes,
+                        );
+                        if (saved) {
+                          notesRefreshTick.value++;
+                        }
+                      },
                       onLongPress: () async {
                         final saved = await _showVerseActionSheet(
                           context,
@@ -705,38 +760,6 @@ class BibleScreen extends HookConsumerWidget {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: _DisplayOptionsBar(
-          onPressed: () {
-            showModalBottomSheet<void>(
-              context: context,
-              useSafeArea: true,
-              builder: (context) {
-                return _DisplayOptionsSheet(
-                  fontScale: fontScale.value,
-                  onFontScaleChanged: (value) => fontScale.value = value,
-                  fontStyle: readingFontStyle.value,
-                  onFontStyleChanged: (value) => readingFontStyle.value = value,
-                  translation: translation.value,
-                  onTranslationChanged: (value) {
-                    translation.value = value;
-                    selectedBookNumber.value = null;
-                    selectedChapter.value = 1;
-                    final profile = profileAsync.valueOrNull;
-                    if (profile != null) {
-                      ref
-                          .read(appDatabaseProvider)
-                          .upsertProfile(
-                            profile.copyWith(translation: value),
-                          );
-                    }
-                  },
-                );
-              },
-            );
-          },
-        ),
       ),
     );
   }
@@ -885,17 +908,26 @@ Future<bool> _showVerseActionSheet(
 
   final db = ref.read(appDatabaseProvider);
   if (action == 'remove_bookmark' && existingBookmark != null) {
-    await db.deleteNote(existingBookmark.id);
+    final bookmarks = existingNotes.where(_isBookmark).toList();
+    for (final marker in bookmarks) {
+      await db.deleteNote(marker.id);
+    }
     return true;
   }
 
   if (action == 'remove_highlight' && existingHighlight != null) {
-    await db.deleteNote(existingHighlight.id);
+    final highlights = existingNotes.where(_isHighlight).toList();
+    for (final marker in highlights) {
+      await db.deleteNote(marker.id);
+    }
     return true;
   }
 
   if (action == 'remove_note' && existingPersonal != null) {
-    await db.deleteNote(existingPersonal.id);
+    final personal = existingNotes.where(_isPersonalNote).toList();
+    for (final marker in personal) {
+      await db.deleteNote(marker.id);
+    }
     return true;
   }
 
@@ -937,8 +969,21 @@ Future<bool> _showVerseActionSheet(
   final isHighlight = action == 'highlight';
   final prefix = isHighlight ? '[highlight]' : '[bookmark]';
   final existing = isHighlight ? existingHighlight : existingBookmark;
+
+  // Clean up any stray duplicates (if any crept in), but strictly preserve the one we're keeping.
+  final sameTypeNotes = existingNotes
+      .where(isHighlight ? _isHighlight : _isBookmark)
+      .toList();
+  final keepId = existing?.id;
+  for (final duplicate in sameTypeNotes) {
+    if (keepId != null && duplicate.id == keepId) {
+      continue;
+    }
+    await db.deleteNote(duplicate.id);
+  }
+
   final note = Note(
-    id: existing?.id ?? const Uuid().v4(),
+    id: keepId ?? const Uuid().v4(),
     userId: 'local_user',
     ref: BibleRef(
       book: verse.book,
@@ -1043,6 +1088,8 @@ class _QuickNavigationBar extends StatelessWidget {
     required this.onPrevious,
     required this.onNext,
     required this.onJumpToVerse,
+    required this.onOpenWheel,
+    required this.onDisplayOptions,
   });
 
   final String? bookName;
@@ -1052,6 +1099,8 @@ class _QuickNavigationBar extends StatelessWidget {
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final Future<void> Function()? onJumpToVerse;
+  final Future<void> Function()? onOpenWheel;
+  final VoidCallback? onDisplayOptions;
 
   @override
   Widget build(BuildContext context) {
@@ -1101,6 +1150,18 @@ class _QuickNavigationBar extends StatelessWidget {
               ),
               label: const Text('Verse'),
             ),
+            IconButton(
+              icon: const Icon(Icons.unfold_more),
+              color: _bibleTextPrimary,
+              tooltip: 'Wheel navigation',
+              onPressed: onOpenWheel,
+            ),
+            IconButton(
+              icon: const Icon(Icons.text_fields),
+              color: _bibleTextPrimary,
+              tooltip: 'Display options',
+              onPressed: onDisplayOptions,
+            ),
             const SizedBox(width: 4),
           ],
         ),
@@ -1121,16 +1182,36 @@ class _VerseJumpSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = standardBottomContentPadding(context);
+    final theme = Theme.of(context);
+
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.55,
       child: Column(
         children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 48,
+            height: 4,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.35),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
           const SizedBox(height: 16),
           Text(
             'Jump to verse',
-            style: Theme.of(context).textTheme.titleLarge,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
+          Text(
+            'Select a verse to jump directly to it',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 16),
           Expanded(
             child: GridView.builder(
               padding: EdgeInsets.fromLTRB(16, 8, 16, bottomInset),
@@ -1143,17 +1224,30 @@ class _VerseJumpSheet extends StatelessWidget {
               itemBuilder: (context, index) {
                 final verseNo = index + 1;
                 final isSelected = verseNo == selectedVerse;
+
                 return FilledButton.tonal(
                   style: FilledButton.styleFrom(
                     backgroundColor: isSelected
-                        ? Theme.of(context).colorScheme.primary
-                        : null,
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.surfaceContainerHighest,
                     foregroundColor: isSelected
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : null,
+                        ? theme.colorScheme.onPrimary
+                        : theme.colorScheme.onSurface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: EdgeInsets.zero,
                   ),
                   onPressed: () => Navigator.of(context).pop(verseNo),
-                  child: Text('$verseNo'),
+                  child: Text(
+                    '$verseNo',
+                    style: TextStyle(
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
+                      fontSize: 16,
+                    ),
+                  ),
                 );
               },
             ),
@@ -1289,44 +1383,6 @@ class _MarkerList extends StatelessWidget {
   }
 }
 
-class _DisplayOptionsBar extends StatelessWidget {
-  const _DisplayOptionsBar({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      child: PremiumGlassCard(
-        padding: EdgeInsets.zero,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.text_fields, color: Colors.white),
-                const SizedBox(width: 8),
-                Text(
-                  'Display options',
-                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _DisplayOptionsSheet extends StatefulWidget {
   const _DisplayOptionsSheet({
     required this.fontScale,
@@ -1356,9 +1412,14 @@ class _DisplayOptionsSheetState extends State<_DisplayOptionsSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bottomInset = standardBottomContentPadding(context);
-    return Padding(
-      padding: EdgeInsets.fromLTRB(24, 24, 24, bottomInset),
+    final mediaQuery = MediaQuery.of(context);
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(
+        24,
+        24,
+        24,
+        24 + mediaQuery.viewPadding.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1453,7 +1514,8 @@ class _PassageSelectorSheet extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bottomInset = standardBottomContentPadding(context);
+    final mediaQuery = MediaQuery.of(context);
+    final bottomInset = 16 + mediaQuery.viewPadding.bottom;
     final activeBookNumber = useState<int?>(
       initialBookNumber ?? books.first.number,
     );
@@ -1511,121 +1573,144 @@ class _PassageSelectorSheet extends HookWidget {
       <Object?>[books],
     );
 
-    final handleColor = theme.colorScheme.onSurfaceVariant.withOpacity(0.3);
+    final handleColor = Colors.white.withValues(alpha: 0.35);
 
     return SafeArea(
       child: SizedBox(
-        height: MediaQuery.of(context).size.height * 0.82,
-        child: Column(
-          children: <Widget>[
-            const SizedBox(height: 12),
-            Container(
-              width: 48,
-              height: 4,
-              decoration: BoxDecoration(
-                color: handleColor,
-                borderRadius: BorderRadius.circular(999),
+        height: mediaQuery.size.height * 0.84,
+        child: Container(
+          decoration: BoxDecoration(
+            color: _bibleChrome,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(color: _bibleChromeBorder),
+          ),
+          child: Column(
+            children: <Widget>[
+              const SizedBox(height: 12),
+              Container(
+                width: 48,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: handleColor,
+                  borderRadius: BorderRadius.circular(999),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Text('Select passage', style: theme.textTheme.titleLarge),
-            const SizedBox(height: 12),
-            TabBar(
-              controller: tabController,
-              tabs: const <Widget>[
-                Tab(text: 'Old Testament'),
-                Tab(text: 'New Testament'),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: Column(
-                children: <Widget>[
-                  Expanded(
-                    flex: 3,
-                    child: TabBarView(
-                      controller: tabController,
-                      children: <Widget>[
-                        _BookGrid(
-                          books: oldTestamentBooks,
-                          activeBook: activeBook,
-                          onSelected: (book) =>
-                              activeBookNumber.value = book.number,
-                        ),
-                        _BookGrid(
-                          books: newTestamentBooks,
-                          activeBook: activeBook,
-                          onSelected: (book) =>
-                              activeBookNumber.value = book.number,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'Chapters in ${activeBook.name}',
-                        style: theme.textTheme.titleMedium,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    flex: 4,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      child: Builder(
-                        key: ValueKey<int?>(activeBook.number),
-                        builder: (context) {
-                          if (chapterCountSnapshot.hasError) {
-                            return Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Text(
-                                  'Unable to load chapters for ${activeBook.name}.',
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            );
-                          }
-                          if (chapterCountSnapshot.connectionState !=
-                              ConnectionState.done) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
-                          final count = chapterCountSnapshot.data ?? 0;
-                          if (count == 0) {
-                            return const Center(
-                              child: Text('No chapters available.'),
-                            );
-                          }
-
-                          return _ChapterGrid(
-                            chapterCount: count,
-                            selectedChapter: selectedChapter.value,
-                            onSelected: (chapter) {
-                              Navigator.of(context).pop(
-                                _PassageSelectionResult(
-                                  book: activeBook,
-                                  chapter: chapter,
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
+              const SizedBox(height: 16),
+              Text(
+                'Select passage',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  color: _bibleTextPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TabBar(
+                controller: tabController,
+                labelColor: _bibleTextPrimary,
+                unselectedLabelColor: _bibleTextSecondary,
+                indicatorColor: const Color(0xFFB8C7DB),
+                tabs: const <Widget>[
+                  Tab(text: 'Old Testament'),
+                  Tab(text: 'New Testament'),
                 ],
               ),
-            ),
-            SizedBox(height: bottomInset * 0.7),
-          ],
+              const SizedBox(height: 12),
+              Expanded(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: TabBarView(
+                        controller: tabController,
+                        children: <Widget>[
+                          _BookGrid(
+                            books: oldTestamentBooks,
+                            activeBook: activeBook,
+                            onSelected: (book) =>
+                                activeBookNumber.value = book.number,
+                          ),
+                          _BookGrid(
+                            books: newTestamentBooks,
+                            activeBook: activeBook,
+                            onSelected: (book) =>
+                                activeBookNumber.value = book.number,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Chapters in ${activeBook.name}',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: _bibleTextPrimary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      flex: 4,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: Builder(
+                          key: ValueKey<int?>(activeBook.number),
+                          builder: (context) {
+                            if (chapterCountSnapshot.hasError) {
+                              return Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Text(
+                                    'Unable to load chapters for ${activeBook.name}.',
+                                    style: const TextStyle(
+                                      color: _bibleTextSecondary,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              );
+                            }
+                            if (chapterCountSnapshot.connectionState !=
+                                ConnectionState.done) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+
+                            final count = chapterCountSnapshot.data ?? 0;
+                            if (count == 0) {
+                              return const Center(
+                                child: Text(
+                                  'No chapters available.',
+                                  style: TextStyle(color: _bibleTextSecondary),
+                                ),
+                              );
+                            }
+
+                            return _ChapterGrid(
+                              chapterCount: count,
+                              selectedChapter: selectedChapter.value,
+                              onSelected: (chapter) {
+                                Navigator.of(context).pop(
+                                  _PassageSelectionResult(
+                                    book: activeBook,
+                                    chapter: chapter,
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: bottomInset),
+            ],
+          ),
         ),
       ),
     );
@@ -1649,8 +1734,6 @@ class _BookGrid extends StatelessWidget {
       return const Center(child: Text('No books available.'));
     }
 
-    final theme = Theme.of(context);
-
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1666,11 +1749,16 @@ class _BookGrid extends StatelessWidget {
         return OutlinedButton(
           style: OutlinedButton.styleFrom(
             backgroundColor: isSelected
-                ? theme.colorScheme.primaryContainer
-                : null,
+                ? const Color(0xFFB8C7DB)
+                : Colors.white.withValues(alpha: 0.08),
             foregroundColor: isSelected
-                ? theme.colorScheme.onPrimaryContainer
-                : null,
+                ? const Color(0xFF0E1A2B)
+                : _bibleTextPrimary,
+            side: BorderSide(
+              color: isSelected
+                  ? const Color(0xFFB8C7DB)
+                  : Colors.white.withValues(alpha: 0.14),
+            ),
           ),
           onPressed: () => onSelected(book),
           child: Text(
@@ -1698,7 +1786,6 @@ class _ChapterGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1712,8 +1799,12 @@ class _ChapterGrid extends StatelessWidget {
         final isSelected = selectedChapter == chapter;
         return FilledButton.tonal(
           style: FilledButton.styleFrom(
-            backgroundColor: isSelected ? theme.colorScheme.primary : null,
-            foregroundColor: isSelected ? theme.colorScheme.onPrimary : null,
+            backgroundColor: isSelected
+                ? const Color(0xFFB8C7DB)
+                : Colors.white.withValues(alpha: 0.08),
+            foregroundColor: isSelected
+                ? const Color(0xFF0E1A2B)
+                : _bibleTextPrimary,
           ),
           onPressed: () => onSelected(chapter),
           child: Text('$chapter'),
@@ -1728,6 +1819,322 @@ class _PassageSelectionResult {
 
   final BibleBook book;
   final int chapter;
+}
+
+class _WheelNavigationResult {
+  const _WheelNavigationResult({
+    required this.book,
+    required this.chapter,
+    this.verse,
+  });
+
+  final BibleBook book;
+  final int chapter;
+  final int? verse;
+}
+
+class _ScrollWheelNavigationSheet extends StatefulWidget {
+  const _ScrollWheelNavigationSheet({
+    required this.books,
+    required this.initialBookNumber,
+    required this.initialChapter,
+    required this.initialVerse,
+    required this.translation,
+    required this.bibleService,
+  });
+
+  final List<BibleBook> books;
+  final int? initialBookNumber;
+  final int initialChapter;
+  final int? initialVerse;
+  final Translation translation;
+  final BibleService bibleService;
+
+  @override
+  State<_ScrollWheelNavigationSheet> createState() =>
+      _ScrollWheelNavigationSheetState();
+}
+
+class _ScrollWheelNavigationSheetState
+    extends State<_ScrollWheelNavigationSheet> {
+  late BibleBook _selectedBook;
+  late int _selectedChapter;
+  late int _selectedVerse;
+  int _chapterCount = 1;
+  int _verseCount = 1;
+  bool _isLoading = true;
+
+  late FixedExtentScrollController _bookController;
+  late FixedExtentScrollController _chapterController;
+  late FixedExtentScrollController _verseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedBook =
+        widget.books.firstWhereOrNull(
+          (book) => book.number == widget.initialBookNumber,
+        ) ??
+        widget.books.first;
+    _selectedChapter = widget.initialChapter;
+    _selectedVerse = widget.initialVerse ?? 1;
+
+    final initialBookIndex = widget.books.indexWhere(
+      (book) => book.number == _selectedBook.number,
+    );
+    _bookController = FixedExtentScrollController(
+      initialItem: initialBookIndex < 0 ? 0 : initialBookIndex,
+    );
+    _chapterController = FixedExtentScrollController();
+    _verseController = FixedExtentScrollController();
+    _loadCounts();
+  }
+
+  @override
+  void dispose() {
+    _bookController.dispose();
+    _chapterController.dispose();
+    _verseController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCounts() async {
+    setState(() => _isLoading = true);
+    final chapterCount = await widget.bibleService.getChapterCount(
+      _selectedBook.name,
+      widget.translation,
+    );
+    final normalizedChapter = chapterCount <= 0
+        ? 1
+        : _selectedChapter.clamp(1, chapterCount);
+    final verseCount = (await widget.bibleService.getChapter(
+      _selectedBook.name,
+      normalizedChapter,
+      widget.translation,
+    )).length;
+    final normalizedVerse = verseCount <= 0
+        ? 1
+        : _selectedVerse.clamp(1, verseCount);
+
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _chapterCount = chapterCount <= 0 ? 1 : chapterCount;
+      _verseCount = verseCount <= 0 ? 1 : verseCount;
+      _selectedChapter = normalizedChapter;
+      _selectedVerse = normalizedVerse;
+      _isLoading = false;
+    });
+
+    _jumpToControllers();
+  }
+
+  Future<void> _loadVerseCount() async {
+    setState(() => _isLoading = true);
+    final verseCount = (await widget.bibleService.getChapter(
+      _selectedBook.name,
+      _selectedChapter,
+      widget.translation,
+    )).length;
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _verseCount = verseCount <= 0 ? 1 : verseCount;
+      if (_selectedVerse > _verseCount) {
+        _selectedVerse = _verseCount;
+      }
+      _isLoading = false;
+    });
+    _jumpToControllers();
+  }
+
+  void _jumpToControllers() {
+    if (_chapterController.hasClients) {
+      _chapterController.jumpToItem(_selectedChapter - 1);
+    }
+    if (_verseController.hasClients) {
+      _verseController.jumpToItem(_selectedVerse - 1);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
+
+    final textStyle = theme.textTheme.titleMedium;
+    final selectedTextStyle = textStyle?.copyWith(
+      fontWeight: FontWeight.w700,
+      color: theme.colorScheme.primary,
+    );
+
+    return SizedBox(
+      height: mediaQuery.size.height * 0.72,
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          16 + mediaQuery.viewPadding.bottom,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Center(
+              child: Container(
+                width: 48,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.onSurfaceVariant.withValues(
+                    alpha: 0.35,
+                  ),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Wheel navigation',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleLarge,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Scroll to select book, chapter, and verse',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    flex: 5,
+                    child: _buildWheel(
+                      controller: _bookController,
+                      itemCount: widget.books.length,
+                      itemBuilder: (index, isSelected) => Text(
+                        widget.books[index].name,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: isSelected ? selectedTextStyle : textStyle,
+                      ),
+                      selectedIndex: widget.books.indexWhere(
+                        (book) => book.number == _selectedBook.number,
+                      ),
+                      onSelected: (index) async {
+                        setState(() {
+                          _selectedBook = widget.books[index];
+                          _selectedChapter = 1;
+                          _selectedVerse = 1;
+                        });
+                        await _loadCounts();
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: _buildWheel(
+                      controller: _chapterController,
+                      itemCount: _chapterCount,
+                      itemBuilder: (index, isSelected) => Text(
+                        '${index + 1}',
+                        textAlign: TextAlign.center,
+                        style: isSelected ? selectedTextStyle : textStyle,
+                      ),
+                      selectedIndex: _selectedChapter - 1,
+                      onSelected: (index) async {
+                        setState(() {
+                          _selectedChapter = index + 1;
+                          _selectedVerse = 1;
+                        });
+                        await _loadVerseCount();
+                      },
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: _buildWheel(
+                      controller: _verseController,
+                      itemCount: _verseCount,
+                      itemBuilder: (index, isSelected) => Text(
+                        '${index + 1}',
+                        textAlign: TextAlign.center,
+                        style: isSelected ? selectedTextStyle : textStyle,
+                      ),
+                      selectedIndex: _selectedVerse - 1,
+                      onSelected: (index) {
+                        setState(() {
+                          _selectedVerse = index + 1;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            Navigator.of(context).pop(
+                              _WheelNavigationResult(
+                                book: _selectedBook,
+                                chapter: _selectedChapter,
+                                verse: _selectedVerse,
+                              ),
+                            );
+                          },
+                    child: const Text('Go'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWheel({
+    required FixedExtentScrollController controller,
+    required int itemCount,
+    required Widget Function(int index, bool isSelected) itemBuilder,
+    required int selectedIndex,
+    required ValueChanged<int> onSelected,
+  }) {
+    final clampedSelected = selectedIndex.clamp(0, itemCount - 1);
+    return ListWheelScrollView.useDelegate(
+      controller: controller,
+      itemExtent: 44,
+      diameterRatio: 1.6,
+      onSelectedItemChanged: onSelected,
+      physics: const FixedExtentScrollPhysics(),
+      childDelegate: ListWheelChildBuilderDelegate(
+        childCount: itemCount,
+        builder: (context, index) {
+          if (index < 0 || index >= itemCount) {
+            return null;
+          }
+          return Center(child: itemBuilder(index, index == clampedSelected));
+        },
+      ),
+    );
+  }
 }
 
 class _PassageLocation {

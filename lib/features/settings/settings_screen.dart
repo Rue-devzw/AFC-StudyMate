@@ -1,9 +1,11 @@
+import 'package:afc_studymate/data/services/cloud_backup_service.dart';
 import 'package:afc_studymate/data/services/notification_service.dart';
 import 'package:afc_studymate/theme/app_theme.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -143,6 +145,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _backupNow() async {
+    try {
+      await ref.read(cloudBackupServiceProvider).backupNow();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cloud backup completed.')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cloud backup failed: $error')),
+        );
+      }
+    }
+  }
+
+  Future<void> _restoreFromCloud() async {
+    try {
+      await ref.read(cloudBackupServiceProvider).restoreLatest();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Cloud restore completed. Restart app to refresh all screens.')),
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cloud restore failed: $error')),
+        );
+      }
+    }
+  }
+
   Future<void> _onPickTime() async {
     final hour = ref.read(_reminderHourProvider);
     final minute = ref.read(_reminderMinuteProvider);
@@ -199,6 +235,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       minute: ref.watch(_sundayReminderMinuteProvider),
     ).format(context);
     final appThemeMode = ref.watch(appThemeModeProvider);
+    final fontPack = ref.watch(appFontPackProvider);
+    final backgroundMode = ref.watch(appBackgroundModeProvider);
+    final lowResourceMode = ref.watch(lowResourceModeProvider);
+    final cloudBackupEnabled = ref.watch(cloudBackupEnabledProvider);
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_journal.png',
@@ -353,6 +393,84 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   const Divider(height: 1, color: Colors.white10),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.font_download_outlined,
+                      color: Colors.white70,
+                    ),
+                    title: const Text(
+                      'App Font',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      appFontPackLabel(fontPack),
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: DropdownButtonHideUnderline(
+                      child: DropdownButton<AppFontPack>(
+                        value: fontPack,
+                        dropdownColor: const Color(0xFF1C1C1E),
+                        style: const TextStyle(color: Colors.white),
+                        items: AppFontPack.values
+                            .map(
+                              (pack) => DropdownMenuItem<AppFontPack>(
+                                value: pack,
+                                child: Text(appFontPackLabel(pack)),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value == null) return;
+                          ref
+                              .read(appFontPackProvider.notifier)
+                              .setFontPack(value);
+                        },
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.wallpaper_rounded,
+                      color: Colors.white70,
+                    ),
+                    title: const Text(
+                      'Global Background',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      appBackgroundModeLabel(backgroundMode),
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                    trailing: DropdownButtonHideUnderline(
+                      child: DropdownButton<AppBackgroundMode>(
+                        value: backgroundMode,
+                        dropdownColor: const Color(0xFF1C1C1E),
+                        style: const TextStyle(color: Colors.white),
+                        items: AppBackgroundMode.values
+                            .map(
+                              (mode) => DropdownMenuItem<AppBackgroundMode>(
+                                value: mode,
+                                child: Text(appBackgroundModeLabel(mode)),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          if (value == null) return;
+                          ref
+                              .read(appBackgroundModeProvider.notifier)
+                              .setBackgroundMode(value);
+                        },
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
                   const ListTile(
                     leading: Icon(
                       Icons.language_rounded,
@@ -420,6 +538,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     onTap: _openAboutSheet,
                   ),
+                  const Divider(height: 1, color: Colors.white10),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.ios_share_rounded,
+                      color: Colors.white70,
+                    ),
+                    title: const Text(
+                      'Share App',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: const Text(
+                      'Share download details with others',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                    onTap: () {
+                      Share.share(
+                        'StudyMate - Bible study companion\n'
+                        'Download link: https://www.afmsear.org',
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -429,11 +571,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             // ── DATA ──────────────────────────────────────────────────────
             _settingSectionLabel(context, 'DATA'),
             const SizedBox(height: 12),
-            const PremiumGlassCard(
+            PremiumGlassCard(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
-                  ListTile(
+                  const ListTile(
                     leading: Icon(
                       Icons.download_rounded,
                       color: Colors.white70,
@@ -451,6 +593,97 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       color: Colors.greenAccent,
                     ),
                   ),
+                  const Divider(height: 1, color: Colors.white10),
+                  const ListTile(
+                    leading: Icon(
+                      Icons.archive_rounded,
+                      color: Colors.white70,
+                    ),
+                    title: Text(
+                      'Storage Optimization',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      'App assets are bundle-compressed and optimized on first launch',
+                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
+                  SwitchListTile.adaptive(
+                    value: lowResourceMode,
+                    onChanged: (value) {
+                      ref
+                          .read(lowResourceModeProvider.notifier)
+                          .setValue(value);
+                    },
+                    secondary: const Icon(
+                      Icons.memory_rounded,
+                      color: Colors.white70,
+                    ),
+                    title: const Text(
+                      'Low Resource Mode',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: const Text(
+                      'Reduces visual effects and heavy backgrounds',
+                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
+                  SwitchListTile.adaptive(
+                    value: cloudBackupEnabled,
+                    onChanged: (value) {
+                      ref
+                          .read(cloudBackupEnabledProvider.notifier)
+                          .setValue(value);
+                    },
+                    secondary: const Icon(
+                      Icons.cloud_sync_outlined,
+                      color: Colors.white70,
+                    ),
+                    title: const Text(
+                      'Cloud Backup',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: const Text(
+                      'Save profile/settings and study state to cloud',
+                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                  ),
+                  if (cloudBackupEnabled) ...<Widget>[
+                    const Divider(height: 1, color: Colors.white10),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.cloud_upload_outlined,
+                        color: Colors.white70,
+                      ),
+                      title: const Text(
+                        'Backup Now',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      subtitle: const Text(
+                        'Upload your latest app data immediately',
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ),
+                      onTap: _backupNow,
+                    ),
+                    const Divider(height: 1, color: Colors.white10),
+                    ListTile(
+                      leading: const Icon(
+                        Icons.cloud_download_outlined,
+                        color: Colors.white70,
+                      ),
+                      title: const Text(
+                        'Restore from Cloud',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      subtitle: const Text(
+                        'Download and replace local app data',
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ),
+                      onTap: _restoreFromCloud,
+                    ),
+                  ],
                 ],
               ),
             ),

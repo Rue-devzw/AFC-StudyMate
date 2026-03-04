@@ -232,6 +232,7 @@ class _SplashScreenState extends State<SplashScreen>
                             fontSize: 30,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
+                            decoration: TextDecoration.none,
                             letterSpacing: -0.5,
                             shadows: [
                               Shadow(
@@ -248,6 +249,7 @@ class _SplashScreenState extends State<SplashScreen>
                             fontSize: 16,
                             color: Colors.white60,
                             fontStyle: FontStyle.italic,
+                            decoration: TextDecoration.none,
                             letterSpacing: 0.3,
                           ),
                         ),

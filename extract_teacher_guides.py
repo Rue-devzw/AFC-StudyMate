@@ -20,10 +20,13 @@ def extract_pdf_text(filepath):
     return text
 
 def parse_discovery_guides():
-    # Discovery Teacher Guides use a different format... let's just dump the raw text per unit for now
-    # Actually, if we just want to show the guide, maybe parsing it entirely into structured JSON is overkill
-    # Let's extract raw text and split by Lesson
-    pass
+    # Discovery guides are parsed with the same lesson-header strategy used
+    # for the other teacher guide tracks.
+    parse_guides(
+        "assets/pdfs/discovery_teachers",
+        "discovery",
+        "assets/data/discovery_teacher_guides.json",
+    )
 
 def parse_guides(directory, track_prefix, output_file):
     all_lessons = []
@@ -69,5 +72,4 @@ print("\nParsing Answer/Search Teacher Guides...")
 parse_guides("assets/pdfs/answer_teachers", "answer", "assets/data/answer_teacher_guides.json")
 
 print("\nParsing Discovery Teacher Guides...")
-parse_guides("assets/pdfs/discovery_teachers", "discovery", "assets/data/discovery_teacher_guides.json")
-
+parse_discovery_guides()

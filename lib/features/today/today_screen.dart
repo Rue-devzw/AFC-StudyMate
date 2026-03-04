@@ -6,6 +6,7 @@ import 'package:afc_studymate/data/repositories/lesson_repository.dart';
 import 'package:afc_studymate/data/services/progress_service.dart';
 import 'package:afc_studymate/data/services/sync_service.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/linked_verse.dart';
 import 'package:afc_studymate/widgets/retry_error_card.dart';
 import 'package:afc_studymate/widgets/skeleton_widgets.dart';
 import 'package:flutter/material.dart';
@@ -354,12 +355,10 @@ class _VotdCard extends StatelessWidget {
 
     // Find a verse snippet or use title
     var verseText = 'Spend time in prayer and reflection today.';
-    var reference = 'Verse of the Day';
-
-    if (lesson.bibleReferences.isNotEmpty) {
-      final ref = lesson.bibleReferences.first;
-      reference = ref.toString();
-    }
+    final bibleRef = lesson.bibleReferences.isNotEmpty
+        ? lesson.bibleReferences.first
+        : null;
+    String? fallbackLabel;
 
     final payload = lesson.payload;
     if (payload.containsKey('devotion')) {
@@ -374,8 +373,11 @@ class _VotdCard extends StatelessWidget {
 
       if (focusVerseMatch != null && focusVerseMatch.group(1)!.isNotEmpty) {
         verseText = focusVerseMatch.group(1)!;
-        if (focusVerseMatch.group(2) != null) {
-          reference = focusVerseMatch.group(2)!;
+        // If the regex captured a parenthetical reference and we have no
+        // structured BibleRef, store it as fallback label.
+        final parenthetical = focusVerseMatch.group(2);
+        if (parenthetical != null && bibleRef == null) {
+          fallbackLabel = parenthetical;
         }
       } else {
         // Fallback to previous logic if no focus verse pattern is matched
@@ -388,11 +390,29 @@ class _VotdCard extends StatelessWidget {
           // Strip any trailing references for the fallback
           verseText = verseText.replaceAll(RegExp(r'\s*\([^)]+\)\s*$'), '');
           if (verseText.length > 150) {
-            verseText = r'${verseText.substring(0, 147)}...';
+            verseText = '${verseText.substring(0, 147)}...';
           }
         }
       }
     }
+
+    final referenceWidget = bibleRef != null
+        ? LinkedVerse(
+            reference: bibleRef,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w800,
+              decoration: TextDecoration.underline,
+              decorationColor: Colors.white.withOpacity(0.5),
+            ),
+          )
+        : Text(
+            fallbackLabel ?? 'Verse of the Day',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: Colors.white.withOpacity(0.9),
+              fontWeight: FontWeight.w800,
+            ),
+          );
 
     return PremiumGlassCard(
       padding: const EdgeInsets.all(24),
@@ -417,13 +437,7 @@ class _VotdCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Text(
-            reference,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: Colors.white.withOpacity(0.9),
-              fontWeight: FontWeight.w800,
-            ),
-          ),
+          referenceWidget,
         ],
       ),
     );

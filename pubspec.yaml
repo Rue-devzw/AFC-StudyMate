@@ -46,11 +46,13 @@ dependencies:
   meta: ^1.16.0
   google_fonts: ^8.0.2
   syncfusion_flutter_pdfviewer: ^28.1.33
+  crypto: ^3.0.6
 
 flutter:
   uses-material-design: true
   assets:
     - assets/data/
+    - assets/data_packs/
     - assets/db/
     - assets/images/
     - assets/pdfs/answer/

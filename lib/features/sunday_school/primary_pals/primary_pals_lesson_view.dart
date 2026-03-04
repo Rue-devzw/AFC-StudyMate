@@ -1,6 +1,8 @@
+import 'package:afc_studymate/data/models/bible_ref.dart';
 import 'package:afc_studymate/data/models/lesson.dart';
 import 'package:afc_studymate/utils/scripture_reference_parser.dart';
 import 'package:afc_studymate/widgets/activity_matching.dart';
+import 'package:afc_studymate/widgets/linked_verse.dart';
 import 'package:afc_studymate/widgets/primary_pals_generic_activity.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -347,45 +349,80 @@ class _ParentsCorner extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ...devotions.map(
-            (devotion) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Card(
-                elevation: 0,
-                color: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
+            (devotion) {
+              final readingJson = devotion['reading'] as Map<String, dynamic>?;
+              final reading = readingJson != null
+                  ? (() {
+                      try {
+                        return BibleRef(
+                          book: readingJson['book'] as String,
+                          chapter: readingJson['chapter'] as int,
+                          verseStart: readingJson['verseStart'] as int?,
+                          verseEnd: readingJson['verseEnd'] as int?,
+                        );
+                      } catch (_) {
+                        return null;
+                      }
+                    })()
+                  : null;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Card(
+                  elevation: 0,
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
                   ),
-                  title: Text(
-                    devotion['day'] as String? ?? 'Day',
-                    style: GoogleFonts.nunito(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Theme.of(context).colorScheme.primary,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
                     ),
-                  ),
-                  subtitle: Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text.rich(
-                      TextSpan(
-                        children: ScriptureReferenceParser.buildLinkedTextSpans(
-                          context,
-                          devotion['prompt'] as String? ?? 'Prompt',
-                          GoogleFonts.nunito(
-                            fontSize: 16,
-                            color: Colors.black87,
+                    title: Text(
+                      devotion['day'] as String? ?? 'Day',
+                      style: GoogleFonts.nunito(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text.rich(
+                            TextSpan(
+                              children:
+                                  ScriptureReferenceParser.buildLinkedTextSpans(
+                                    context,
+                                    devotion['prompt'] as String? ?? 'Prompt',
+                                    GoogleFonts.nunito(
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                            ),
                           ),
-                        ),
+                          if (reading != null) ...[
+                            const SizedBox(height: 8),
+                            LinkedVerse(
+                              reference: reading,
+                              style: GoogleFonts.nunito(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           ),
           const SizedBox(height: 24),
         ],

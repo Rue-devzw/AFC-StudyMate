@@ -118,11 +118,15 @@ class ScriptureReferenceParser {
   };
 
   static final RegExp _bookPattern = RegExp(
-    r'((?:[1-3]|I{1,3})\s+)?[A-Za-z]+(?:\s+[A-Za-z]+)*\s+\d+(?::\d+(?:[-–]\d+)?(?:,\s?\d+(?:[-–]\d+)?)*)?',
+    r'((?:[1-3]|I{1,3})\s*)?[A-Za-z]+(?:\s+[A-Za-z]+)*\s+\d+(?::\d+(?:[-–]\d+)?)?',
   );
 
   static final RegExp _fallbackPattern = RegExp(
     r'(?<=;|\(|,)\s*\d+(?::\d+(?:[-–]\d+)?(?:,\s?\d+(?:[-–]\d+)?)*)?',
+  );
+
+  static final RegExp _referencePattern = RegExp(
+    r'^((?:(?:[1-3]|I{1,3})\s*)?[A-Za-z]+(?:\s+[A-Za-z]+)*)\s+(\d+)(.*)$',
   );
 
   static List<ScriptureReferenceMatch> findInText(String text) {
@@ -132,16 +136,35 @@ class ScriptureReferenceParser {
 
     for (var i = 0; i < bookMatches.length; i++) {
       final match = bookMatches[i];
-      final raw = text.substring(match.start, match.end);
-      final parsed = _parseReference(raw);
+      var parsedStart = match.start;
+      var parsedRaw = text.substring(match.start, match.end);
+
+      // If regex starts at the base book name (e.g., "Samuel"), but the text
+      // immediately before it carries a numeric prefix (e.g., "1 "), include it.
+      final prefixTail = RegExp(
+        r'((?:[1-3]|I{1,3})\s+)$',
+      ).firstMatch(text.substring(0, match.start));
+      if (prefixTail != null) {
+        final candidateStart = match.start - prefixTail.group(1)!.length;
+        if (candidateStart >= 0) {
+          final candidateRaw = text.substring(candidateStart, match.end);
+          final candidateParsed = _parseReference(candidateRaw);
+          if (candidateParsed != null) {
+            parsedStart = candidateStart;
+            parsedRaw = candidateRaw;
+          }
+        }
+      }
+
+      final parsed = _parseReference(parsedRaw);
       if (parsed != null) {
         matches.add(
           ScriptureReferenceMatch(
             reference: parsed.reference,
-            start: match.start,
+            start: parsedStart,
             end: match.end,
-            rawText: raw,
-            displayText: raw.trim(),
+            rawText: parsedRaw,
+            displayText: parsedRaw.trim(),
           ),
         );
         currentBook = parsed.book;
@@ -238,20 +261,28 @@ class ScriptureReferenceParser {
     }
 
     final cleaned = trimmed.replaceAll(RegExp('[“”]'), '"').replaceAll('—', '-');
-    final firstDigitMatch = RegExp(r'\d').firstMatch(cleaned);
-    if (firstDigitMatch == null) {
-      return null;
-    }
-    final firstDigitIndex = firstDigitMatch.start;
-
-    var bookPart = cleaned.substring(0, firstDigitIndex).trim();
-    var referencePart = cleaned.substring(firstDigitIndex).trim();
-
-    if (bookPart.isEmpty) {
-      if (fallbackBook == null) {
+    String bookPart;
+    String referencePart;
+    final structuredMatch = _referencePattern.firstMatch(cleaned);
+    if (structuredMatch != null) {
+      bookPart = structuredMatch.group(1)!.trim();
+      referencePart =
+          '${structuredMatch.group(2)!}${(structuredMatch.group(3) ?? '').trim()}';
+    } else {
+      final firstDigitMatch = RegExp(r'\d').firstMatch(cleaned);
+      if (firstDigitMatch == null) {
         return null;
       }
-      bookPart = fallbackBook;
+      final firstDigitIndex = firstDigitMatch.start;
+      bookPart = cleaned.substring(0, firstDigitIndex).trim();
+      referencePart = cleaned.substring(firstDigitIndex).trim();
+
+      if (bookPart.isEmpty) {
+        if (fallbackBook == null) {
+          return null;
+        }
+        bookPart = fallbackBook;
+      }
     }
 
     final normalizedBook = _normalizeBookName(bookPart);

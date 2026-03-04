@@ -4,9 +4,11 @@ import 'package:afc_studymate/data/models/progress.dart';
 import 'package:afc_studymate/data/models/user_profile.dart';
 import 'package:afc_studymate/data/providers/progress_providers.dart';
 import 'package:afc_studymate/data/services/progress_service.dart';
+import 'package:afc_studymate/features/settings/settings_screen.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -166,6 +168,15 @@ class ProfileScreen extends HookConsumerWidget {
                                   ref,
                                   effectiveProfile,
                                 ),
+                              ),
+                              const Divider(height: 1, color: Colors.white10),
+                              _ProfileOption(
+                                icon: Icons.tune_rounded,
+                                label: 'App Settings',
+                                value: 'Theme, fonts, background, data',
+                                onTap: () {
+                                  context.pushNamed(SettingsScreen.routeName);
+                                },
                               ),
                             ],
                           ),

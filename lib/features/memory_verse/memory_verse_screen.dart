@@ -1,3 +1,4 @@
+import 'package:afc_studymate/data/models/bible_ref.dart';
 import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/memory_verse.dart';
 import 'package:afc_studymate/data/models/verse.dart';
@@ -300,9 +301,25 @@ class _MemoryVerseScreenState extends ConsumerState<MemoryVerseScreen> {
                         );
                         return;
                       }
+                      final parsedRef = parsed.first;
+                      final verseNumber = parsedRef.verseStart;
+                      if (verseNumber == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Include a specific verse (e.g. John 3:16).',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+                      final singleVerseRef = parsedRef.copyWith(
+                        verseStart: verseNumber,
+                        verseEnd: verseNumber,
+                      );
                       final verse = MemoryVerse(
                         id: const Uuid().v4(),
-                        ref: parsed.first,
+                        ref: singleVerseRef,
                         translation: translation,
                         dueDate: DateTime.now(),
                       );
@@ -336,7 +353,8 @@ class _MemoryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final label = verse.ref.displayText;
+    final reviewRef = _singleVerseRef(verse.ref);
+    final label = reviewRef.displayText;
 
     if (!showAnswer) {
       return Center(
@@ -356,7 +374,7 @@ class _MemoryCard extends ConsumerWidget {
       future: ref
           .read(bibleServiceProvider)
           .getPassage(
-            verse.ref,
+            reviewRef,
             verse.translation,
           ),
       builder: (context, snapshot) {
@@ -402,6 +420,14 @@ class _MemoryCard extends ConsumerWidget {
     final diff = due.difference(DateTime.now()).inDays;
     if (diff <= 0) return 'Now';
     return 'in $diff day${diff == 1 ? '' : 's'}';
+  }
+
+  BibleRef _singleVerseRef(BibleRef original) {
+    final verseNumber = original.verseStart ?? 1;
+    return original.copyWith(
+      verseStart: verseNumber,
+      verseEnd: verseNumber,
+    );
   }
 }
 

@@ -1,9 +1,11 @@
 import 'dart:ui';
 
 import 'package:afc_studymate/data/models/enums.dart';
+import 'package:afc_studymate/theme/app_theme.dart';
 import 'package:afc_studymate/widgets/drop_cap_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class AppCard extends StatelessWidget {
   const AppCard({
@@ -296,14 +298,32 @@ class PremiumBackground extends StatelessWidget {
     super.key,
     this.overlayColors,
     this.overlayStops,
+    this.lowResourceMode = false,
   });
 
   final String assetPath;
   final List<Color>? overlayColors;
   final List<double>? overlayStops;
+  final bool lowResourceMode;
 
   @override
   Widget build(BuildContext context) {
+    if (lowResourceMode) {
+      return Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF17202A),
+              Color(0xFF111827),
+              Color(0xFF0B1020),
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+      );
+    }
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -432,7 +452,7 @@ class PremiumTextField extends StatelessWidget {
   }
 }
 
-class PremiumScaffold extends StatelessWidget {
+class PremiumScaffold extends HookConsumerWidget {
   const PremiumScaffold({
     required this.body,
     required this.backgroundAsset,
@@ -449,7 +469,13 @@ class PremiumScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final backgroundMode = ref.watch(appBackgroundModeProvider);
+    final lowResourceMode = ref.watch(lowResourceModeProvider);
+    final resolvedAsset = _resolveBackgroundAsset(
+      backgroundAsset,
+      backgroundMode,
+    );
     final topInset = appBar == null
         ? 0.0
         : MediaQuery.paddingOf(context).top + appBar!.preferredSize.height;
@@ -459,7 +485,10 @@ class PremiumScaffold extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          PremiumBackground(assetPath: backgroundAsset),
+          PremiumBackground(
+            assetPath: resolvedAsset,
+            lowResourceMode: lowResourceMode,
+          ),
           Padding(
             padding: EdgeInsets.only(top: topInset),
             child: body,
@@ -469,6 +498,26 @@ class PremiumScaffold extends StatelessWidget {
       bottomNavigationBar: bottomNavigationBar,
       floatingActionButton: floatingActionButton,
     );
+  }
+
+  String _resolveBackgroundAsset(
+    String fallback,
+    AppBackgroundMode mode,
+  ) {
+    switch (mode) {
+      case AppBackgroundMode.trackDefault:
+        return fallback;
+      case AppBackgroundMode.dashboard:
+        return 'assets/images/bg_dashboard.png';
+      case AppBackgroundMode.journal:
+        return 'assets/images/bg_journal.png';
+      case AppBackgroundMode.sundaySchool:
+        return 'assets/images/bg_sunday_school.png';
+      case AppBackgroundMode.bible:
+        return 'assets/images/bg_bible.png';
+      case AppBackgroundMode.discovery:
+        return 'assets/images/bg_discovery.png';
+    }
   }
 }
 
