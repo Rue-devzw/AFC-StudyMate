@@ -2,12 +2,14 @@
 
 AFM SEAR StudyMate is an offline-first Flutter application designed to support Apostolic Faith Church Sunday School learners across Beginners, Primary Pals, Answer, Search, Discovery, and Daybreak tracks. The app bundles curriculum content and Scripture locally, providing a gentle British English interface with accessible, large-tap experiences.
 
+The current production scope is mobile-first: Android and iPhone.
+
 ## Getting started
 
 1. Install [Flutter](https://flutter.dev/docs/get-started/install) (latest stable) and Dart 3.x.
 2. Run `flutter pub get`.
 3. Copy curriculum assets into place (already provided in `assets/data/` and `assets/db/`).
-4. Launch with `flutter run --dart-define=USE_FIREBASE=false` to disable Firebase during local development.
+4. Launch with `flutter run --dart-define=USE_FIREBASE=false` for local development if you do not want Firebase analytics or messaging active.
 
 > **Platform shells**
 >
@@ -21,17 +23,18 @@ AFM SEAR StudyMate is an offline-first Flutter application designed to support A
 > This command is idempotent—it will only create the missing platform directories and leave your Dart code untouched. After the
 > scaffolding is in place, `flutter run` will detect the relevant devices (for example `-d windows`) and start the app normally.
 
-## Firebase configuration
+## Google account and cloud setup
 
-Firebase is optional in debug. Create `lib/firebase_options.dart` via `flutterfire configure` for production builds. The following services are expected:
+StudyMate now stores user-owned backups in the signed-in user's Google Drive app data folder rather than in Firestore or Firebase Storage.
 
-- Authentication (anonymous, email/password, optional phone)
-- Cloud Firestore
-- Cloud Storage
-- Cloud Messaging
-- Analytics
+Current cloud-related expectations:
 
-Set platform configuration files (`google-services.json`, `GoogleService-Info.plist`) under the respective `android/` and `ios/` directories when ready.
+- `google_sign_in` is used for user authentication with Google
+- Google Drive `appDataFolder` is used for backup and restore
+- Firebase remains optional for analytics and push messaging only
+
+For iPhone, make sure the Google sign-in URL scheme is present in `ios/Runner/Info.plist`.
+For Android and iPhone, keep platform configuration files (`google-services.json`, `GoogleService-Info.plist`) in place if Firebase analytics or messaging will still be used.
 
 ## Testing
 
@@ -43,6 +46,8 @@ flutter test
 ```
 
 Golden tests use `golden_toolkit` and render a single lesson screen snapshot; CI is configured to execute them headlessly.
+
+For mobile release setup, see [docs/mobile-release.md](docs/mobile-release.md).
 
 ## Offline data
 
@@ -73,7 +78,7 @@ lib/
 
 ## Continuous integration
 
-A GitHub Actions workflow (see `.github/workflows/ci.yml`) runs analysis, unit/widget/golden tests, and produces Android/iOS build artefacts (unsigned). Adjust signing as required for release builds.
+A GitHub Actions workflow (see `.github/workflows/ci.yml`) runs analysis, unit/widget/golden tests, Android builds on Ubuntu, and iPhone no-codesign builds on macOS. Adjust signing as required for release builds.
 
 ## Accessibility
 
@@ -81,6 +86,13 @@ A GitHub Actions workflow (see `.github/workflows/ci.yml`) runs analysis, unit/w
 - Dynamic type up to 200%
 - VoiceOver/TalkBack friendly labels and copy
 - Offline-first to reduce cognitive load from loading spinners
+
+## Release scope
+
+- Android and iPhone are the current production targets
+- Web is not part of the current release scope
+- Realtime cloud sync is not part of the current release scope
+- Optional backup and restore use the signed-in user's Google Drive app data folder
 
 ## Licence
 

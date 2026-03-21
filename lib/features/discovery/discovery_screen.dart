@@ -65,6 +65,7 @@ class DiscoveryScreen extends HookConsumerWidget {
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_discovery.png',
+      backgroundSlot: PremiumBackgroundSlots.discovery,
       appBar: AppBar(
         title: const Text('Discovery', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.transparent,

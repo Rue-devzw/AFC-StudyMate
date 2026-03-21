@@ -26,6 +26,7 @@ class ProfileScreen extends HookConsumerWidget {
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_journal.png',
+      backgroundSlot: PremiumBackgroundSlots.profile,
       appBar: AppBar(
         title: const Text(
           'Profile & Progress',
@@ -220,7 +221,7 @@ class ProfileScreen extends HookConsumerWidget {
     _showPicker<Role>(
       context,
       title: 'Select Role',
-      items: Role.values,
+      items: Role.selectableValues,
       selected: profile.role,
       labelBuilder: (r) => _formatName(r.name),
       onSelected: (role) async {

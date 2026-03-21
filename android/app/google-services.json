@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "651911317483",
+    "project_id": "afc-studymate",
+    "storage_bucket": "afc-studymate.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:651911317483:android:8f992ad8514ecfcff43bae",
+        "android_client_info": {
+          "package_name": "org.afmsear.studymate"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "651911317483-0vov52vnmuqmb3d0rlccp0mh5bt7k90k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.afmsear.studymate",
+            "certificate_hash": "a49b64d84cf366441483b402f89c2ab778f8236a"
+          }
+        },
+        {
+          "client_id": "651911317483-i924j4or5b547dq70ui660u4j4v06blf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvkLHlaM_MXrvbvWEwLYs46SaFLgpR17o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "651911317483-i924j4or5b547dq70ui660u4j4v06blf.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "651911317483-8mccr264lck5o26hbi1ukjblghh5ihc9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.afmsear.studymate"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

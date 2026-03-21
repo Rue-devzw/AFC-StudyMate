@@ -1,0 +1,13 @@
+{
+  "appName": "AFM SEAR StudyMate",
+  "channel": "production",
+  "releaseLabel": "Version 1",
+  "latestVersion": "1.0.0",
+  "latestBuildNumber": 1,
+  "minimumSupportedBuildNumber": 1,
+  "releaseDate": "2026-03-21",
+  "releaseNotes": "Version 1 is the first Android and iPhone release of StudyMate, with local-first study tools and optional Google Drive backup.",
+  "releasePageUrl": "https://afc-studymate.web.app/app-updates.html",
+  "androidUrl": "https://afc-studymate.web.app/app-updates.html",
+  "iosUrl": "https://afc-studymate.web.app/app-updates.html"
+}

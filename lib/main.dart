@@ -175,7 +175,7 @@ class _BootstrapSplash extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'AFC StudyMate',
+                  'AFM SEAR StudyMate',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineMedium?.copyWith(
                     color: Colors.white,

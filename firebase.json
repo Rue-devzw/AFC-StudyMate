@@ -1,0 +1,38 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "afc-studymate",
+          "appId": "1:651911317483:android:8f992ad8514ecfcff43bae",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "afc-studymate",
+          "appId": "1:651911317483:ios:f743712b4c8353d9f43bae",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "afc-studymate",
+          "configurations": {
+            "android": "1:651911317483:android:8f992ad8514ecfcff43bae",
+            "ios": "1:651911317483:ios:f743712b4c8353d9f43bae"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

@@ -31,6 +31,7 @@ class SundaySchoolScreen extends HookConsumerWidget {
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_sunday_school.png',
+      backgroundSlot: PremiumBackgroundSlots.sundaySchool,
       appBar: AppBar(
         title: const Text(
           'Sunday School',

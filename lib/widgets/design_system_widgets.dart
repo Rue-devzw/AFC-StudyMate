@@ -7,6 +7,134 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
+class PremiumSurfacePalette {
+  const PremiumSurfacePalette({
+    required this.primaryText,
+    required this.secondaryText,
+    required this.tertiaryText,
+    required this.icon,
+    required this.divider,
+    required this.cardBaseColor,
+    required this.cardOpacity,
+    required this.borderBaseColor,
+    required this.borderOpacity,
+    required this.inputFill,
+    required this.dropdownBackground,
+    required this.shadowColor,
+    required this.backdropPrimaryText,
+    required this.backdropSecondaryText,
+    required this.backdropTertiaryText,
+    required this.backdropIcon,
+    required this.backdropDivider,
+  });
+
+  final Color primaryText;
+  final Color secondaryText;
+  final Color tertiaryText;
+  final Color icon;
+  final Color divider;
+  final Color cardBaseColor;
+  final double cardOpacity;
+  final Color borderBaseColor;
+  final double borderOpacity;
+  final Color inputFill;
+  final Color dropdownBackground;
+  final Color shadowColor;
+  final Color backdropPrimaryText;
+  final Color backdropSecondaryText;
+  final Color backdropTertiaryText;
+  final Color backdropIcon;
+  final Color backdropDivider;
+
+  bool get usesDarkCardSurfaces => cardBaseColor.computeLuminance() < 0.2;
+}
+
+PremiumSurfacePalette premiumSurfacePaletteForBackground(
+  AppBackgroundConfig config, {
+  required bool lowResourceMode,
+}) {
+  if (lowResourceMode || config.tone == AppBackgroundTone.dark) {
+    return const PremiumSurfacePalette(
+      primaryText: Colors.white,
+      secondaryText: Color(0xCCFFFFFF),
+      tertiaryText: Color(0x99FFFFFF),
+      icon: Color(0xCCFFFFFF),
+      divider: Color(0x1AFFFFFF),
+      cardBaseColor: Colors.white,
+      cardOpacity: 0.14,
+      borderBaseColor: Colors.white,
+      borderOpacity: 0.22,
+      inputFill: Color(0x14FFFFFF),
+      dropdownBackground: Color(0xFF1C1C1E),
+      shadowColor: Color(0x2D000000),
+      backdropPrimaryText: Colors.white,
+      backdropSecondaryText: Color(0xD9FFFFFF),
+      backdropTertiaryText: Color(0xA6FFFFFF),
+      backdropIcon: Color(0xE6FFFFFF),
+      backdropDivider: Color(0x33FFFFFF),
+    );
+  }
+  return const PremiumSurfacePalette(
+    primaryText: Colors.white,
+    secondaryText: Color(0xF0FFFFFF),
+    tertiaryText: Color(0xB3FFFFFF),
+    icon: Color(0xE6FFFFFF),
+    divider: Color(0x24FFFFFF),
+    cardBaseColor: Color(0xFF101722),
+    cardOpacity: 0.56,
+    borderBaseColor: Colors.white,
+    borderOpacity: 0.16,
+    inputFill: Color(0x66101722),
+    dropdownBackground: Color(0xFF121926),
+    shadowColor: Color(0x33000000),
+    backdropPrimaryText: Color(0xFF263242),
+    backdropSecondaryText: Color(0xCC263242),
+    backdropTertiaryText: Color(0x99263242),
+    backdropIcon: Color(0xCC263242),
+    backdropDivider: Color(0x3D263242),
+  );
+}
+
+class PremiumSurfaceScope extends InheritedWidget {
+  const PremiumSurfaceScope({
+    required this.palette,
+    required super.child,
+    super.key,
+  });
+
+  final PremiumSurfacePalette palette;
+
+  static PremiumSurfacePalette of(BuildContext context) {
+    final scope = context
+        .dependOnInheritedWidgetOfExactType<PremiumSurfaceScope>();
+    return scope?.palette ??
+        const PremiumSurfacePalette(
+          primaryText: Colors.white,
+          secondaryText: Color(0xCCFFFFFF),
+          tertiaryText: Color(0x99FFFFFF),
+          icon: Color(0xCCFFFFFF),
+          divider: Color(0x1AFFFFFF),
+          cardBaseColor: Colors.white,
+          cardOpacity: 0.14,
+          borderBaseColor: Colors.white,
+          borderOpacity: 0.22,
+          inputFill: Color(0x14FFFFFF),
+          dropdownBackground: Color(0xFF1C1C1E),
+          shadowColor: Color(0x2D000000),
+          backdropPrimaryText: Colors.white,
+          backdropSecondaryText: Color(0xD9FFFFFF),
+          backdropTertiaryText: Color(0xA6FFFFFF),
+          backdropIcon: Color(0xE6FFFFFF),
+          backdropDivider: Color(0x33FFFFFF),
+        );
+  }
+
+  @override
+  bool updateShouldNotify(PremiumSurfaceScope oldWidget) {
+    return palette != oldWidget.palette;
+  }
+}
+
 class AppCard extends StatelessWidget {
   const AppCard({
     required this.child,
@@ -294,16 +422,12 @@ class AppDropCapText extends StatelessWidget {
 
 class PremiumBackground extends StatelessWidget {
   const PremiumBackground({
-    required this.assetPath,
+    required this.config,
     super.key,
-    this.overlayColors,
-    this.overlayStops,
     this.lowResourceMode = false,
   });
 
-  final String assetPath;
-  final List<Color>? overlayColors;
-  final List<double>? overlayStops;
+  final AppBackgroundConfig config;
   final bool lowResourceMode;
 
   @override
@@ -324,11 +448,33 @@ class PremiumBackground extends StatelessWidget {
         ),
       );
     }
+    if (!config.usesImage) {
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: config.baseColors,
+            stops: config.baseStops,
+          ),
+        ),
+      );
+    }
     return Stack(
       fit: StackFit.expand,
       children: [
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: config.baseColors,
+              stops: config.baseStops,
+            ),
+          ),
+        ),
         Image.asset(
-          assetPath,
+          config.assetPath!,
           fit: BoxFit.cover,
         ),
         Container(
@@ -336,17 +482,26 @@ class PremiumBackground extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors:
-                  overlayColors ??
-                  [
-                    Colors.black.withOpacity(0.2),
-                    Colors.black.withOpacity(0.5),
-                    Colors.black.withOpacity(0.9),
-                  ],
-              stops: overlayStops ?? const [0.0, 0.4, 1.0],
+              colors: config.overlayColors,
+              stops: config.overlayStops ?? const [0.0, 0.4, 1.0],
             ),
           ),
         ),
+        if (config.tone == AppBackgroundTone.light)
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x24060A12),
+                  Color(0x70060A12),
+                  Color(0xB3060A12),
+                ],
+                stops: [0.0, 0.45, 1.0],
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -373,18 +528,34 @@ class PremiumGlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveRadius = borderRadius ?? BorderRadius.circular(24);
+    final palette = PremiumSurfaceScope.of(context);
+    final effectiveOpacity = palette.usesDarkCardSurfaces
+        ? opacity.clamp(palette.cardOpacity, 0.72)
+        : opacity;
+    final effectiveBorderOpacity = palette.usesDarkCardSurfaces
+        ? borderOpacity.clamp(palette.borderOpacity, 0.32)
+        : borderOpacity;
     return ClipRRect(
       borderRadius: effectiveRadius,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(opacity),
+            color: palette.cardBaseColor.withOpacity(effectiveOpacity),
             borderRadius: effectiveRadius,
             border: Border.all(
-              color: Colors.white.withOpacity(borderOpacity),
+              color: palette.borderBaseColor.withOpacity(
+                effectiveBorderOpacity,
+              ),
               width: 1.5,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: palette.shadowColor,
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           padding: padding ?? const EdgeInsets.all(24),
           child: child,
@@ -394,7 +565,7 @@ class PremiumGlassCard extends StatelessWidget {
   }
 }
 
-class PremiumTextField extends StatelessWidget {
+class PremiumTextField extends StatefulWidget {
   const PremiumTextField({
     required this.label,
     required this.value,
@@ -411,40 +582,68 @@ class PremiumTextField extends StatelessWidget {
   final TextInputType? keyboardType;
 
   @override
+  State<PremiumTextField> createState() => _PremiumTextFieldState();
+}
+
+class _PremiumTextFieldState extends State<PremiumTextField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.value);
+  }
+
+  @override
+  void didUpdateWidget(covariant PremiumTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != _controller.text) {
+      _controller.value = TextEditingValue(
+        text: widget.value,
+        selection: TextSelection.collapsed(offset: widget.value.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final palette = PremiumSurfaceScope.of(context);
     return PremiumGlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
-            style: const TextStyle(
+            widget.label,
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 13,
               letterSpacing: 1.2,
-              color: Colors.white70,
+              color: palette.secondaryText,
             ),
           ),
           const SizedBox(height: 8),
           TextField(
-            onChanged: onChanged,
-            keyboardType: keyboardType,
-            style: const TextStyle(
-              color: Colors.white,
+            controller: _controller,
+            onChanged: widget.onChanged,
+            keyboardType: widget.keyboardType,
+            style: TextStyle(
+              color: palette.primaryText,
               fontSize: 18,
               fontWeight: FontWeight.w500,
             ),
             decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+              hintText: widget.hint,
+              hintStyle: TextStyle(color: palette.tertiaryText),
               border: InputBorder.none,
               isDense: true,
               contentPadding: EdgeInsets.zero,
             ),
-            controller: TextEditingController(text: value)
-              ..selection = TextSelection.fromPosition(
-                TextPosition(offset: value.length),
-              ),
           ),
         ],
       ),
@@ -452,10 +651,29 @@ class PremiumTextField extends StatelessWidget {
   }
 }
 
+class PremiumBackgroundSlots {
+  const PremiumBackgroundSlots._();
+
+  static const AppBackgroundSlot today = AppBackgroundSlot.today;
+  static const AppBackgroundSlot journal = AppBackgroundSlot.journal;
+  static const AppBackgroundSlot bible = AppBackgroundSlot.bible;
+  static const AppBackgroundSlot discovery = AppBackgroundSlot.discovery;
+  static const AppBackgroundSlot discoveryArchive =
+      AppBackgroundSlot.discoveryArchive;
+  static const AppBackgroundSlot sundaySchool = AppBackgroundSlot.sundaySchool;
+  static const AppBackgroundSlot classRoster = AppBackgroundSlot.classRoster;
+  static const AppBackgroundSlot teacherGuides =
+      AppBackgroundSlot.teacherGuides;
+  static const AppBackgroundSlot memoryVerse = AppBackgroundSlot.memoryVerse;
+  static const AppBackgroundSlot profile = AppBackgroundSlot.profile;
+  static const AppBackgroundSlot settings = AppBackgroundSlot.settings;
+}
+
 class PremiumScaffold extends HookConsumerWidget {
   const PremiumScaffold({
     required this.body,
     required this.backgroundAsset,
+    required this.backgroundSlot,
     super.key,
     this.appBar,
     this.bottomNavigationBar,
@@ -464,60 +682,52 @@ class PremiumScaffold extends HookConsumerWidget {
 
   final Widget body;
   final String backgroundAsset;
+  final AppBackgroundSlot backgroundSlot;
   final PreferredSizeWidget? appBar;
   final Widget? bottomNavigationBar;
   final Widget? floatingActionButton;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final backgroundMode = ref.watch(appBackgroundModeProvider);
+    final globalBackgroundMode = ref.watch(appBackgroundModeProvider);
+    final screenBackgroundMode = ref.watch(
+      screenBackgroundModeProvider(backgroundSlot),
+    );
     final lowResourceMode = ref.watch(lowResourceModeProvider);
-    final resolvedAsset = _resolveBackgroundAsset(
-      backgroundAsset,
-      backgroundMode,
+    final resolvedConfig = resolveAppBackgroundConfig(
+      fallbackAsset: backgroundAsset,
+      globalMode: globalBackgroundMode,
+      screenMode: screenBackgroundMode,
+    );
+    final surfacePalette = premiumSurfacePaletteForBackground(
+      resolvedConfig,
+      lowResourceMode: lowResourceMode,
     );
     final topInset = appBar == null
         ? 0.0
         : MediaQuery.paddingOf(context).top + appBar!.preferredSize.height;
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: appBar,
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          PremiumBackground(
-            assetPath: resolvedAsset,
-            lowResourceMode: lowResourceMode,
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: topInset),
-            child: body,
-          ),
-        ],
+    return PremiumSurfaceScope(
+      palette: surfacePalette,
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        appBar: appBar,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            PremiumBackground(
+              config: resolvedConfig,
+              lowResourceMode: lowResourceMode,
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: topInset),
+              child: body,
+            ),
+          ],
+        ),
+        bottomNavigationBar: bottomNavigationBar,
+        floatingActionButton: floatingActionButton,
       ),
-      bottomNavigationBar: bottomNavigationBar,
-      floatingActionButton: floatingActionButton,
     );
-  }
-
-  String _resolveBackgroundAsset(
-    String fallback,
-    AppBackgroundMode mode,
-  ) {
-    switch (mode) {
-      case AppBackgroundMode.trackDefault:
-        return fallback;
-      case AppBackgroundMode.dashboard:
-        return 'assets/images/bg_dashboard.png';
-      case AppBackgroundMode.journal:
-        return 'assets/images/bg_journal.png';
-      case AppBackgroundMode.sundaySchool:
-        return 'assets/images/bg_sunday_school.png';
-      case AppBackgroundMode.bible:
-        return 'assets/images/bg_bible.png';
-      case AppBackgroundMode.discovery:
-        return 'assets/images/bg_discovery.png';
-    }
   }
 }
 

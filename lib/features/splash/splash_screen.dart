@@ -227,7 +227,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Column(
                       children: [
                         Text(
-                          'AFC StudyMate',
+                          'AFM SEAR StudyMate',
                           style: GoogleFonts.inter(
                             fontSize: 30,
                             fontWeight: FontWeight.w800,

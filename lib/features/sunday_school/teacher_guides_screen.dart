@@ -44,6 +44,7 @@ class TeacherGuidesScreen extends HookConsumerWidget {
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_sunday_school.png',
+      backgroundSlot: PremiumBackgroundSlots.teacherGuides,
       appBar: AppBar(
         title: const Text(
           "Teacher's Guides",

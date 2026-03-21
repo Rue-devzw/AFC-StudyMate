@@ -91,7 +91,7 @@ class NotificationService {
   Future<void> scheduleDaily({
     required int hour,
     required int minute,
-    String title = 'AFC StudyMate',
+    String title = 'AFM SEAR StudyMate',
     String body = 'Time for your daily devotion and study! 📖',
   }) async {
     await _notifications.cancel(id: _dailyReminderId);

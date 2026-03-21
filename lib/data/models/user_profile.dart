@@ -13,10 +13,7 @@ class UserProfile {
     return UserProfile(
       userId: json['userId'] as String,
       name: json['name'] as String? ?? 'User',
-      role: Role.values.firstWhere(
-        (e) => e.name == json['role'],
-        orElse: () => Role.learner,
-      ),
+      role: Role.fromStorage(json['role'] as String?),
       targetTrack: Track.values.firstWhere(
         (e) => e.name == json['targetTrack'],
         orElse: () => Track.search,

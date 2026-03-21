@@ -19,7 +19,9 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
   try {
     if (Firebase.apps.isEmpty) {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
     }
   } catch (_) {
     // Ignore background init failures in local-first mode.
@@ -81,11 +83,19 @@ class FirebasePushMessagingService implements PushMessagingService {
 
     try {
       final messaging = FirebaseMessaging.instance;
-      final settings = await messaging.requestPermission(
-        
-      );
+      final settings = await messaging.getNotificationSettings();
 
       logger.i('FCM permission status: ${settings.authorizationStatus.name}');
+
+      final authorized =
+          settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+      if (!authorized) {
+        logger.i(
+          'Push messaging remains inactive until the user grants notification access.',
+        );
+        return;
+      }
 
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 

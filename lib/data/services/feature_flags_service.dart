@@ -6,12 +6,11 @@ final featureFlagsProvider = Provider<FeatureFlags>((ref) {
 });
 
 final cloudFeaturesAvailableProvider = Provider<bool>((ref) {
-  return ref.watch(featureFlagsProvider).isFirebaseConfigured;
+  return ref.watch(featureFlagsProvider).cloudFeaturesReady;
 });
 
 final remoteSyncAvailableProvider = Provider<bool>((ref) {
-  final flags = ref.watch(featureFlagsProvider);
-  return flags.isFirebaseConfigured && flags.enableRemoteSync;
+  return false;
 });
 
 class FeatureFlags {
@@ -22,14 +21,17 @@ class FeatureFlags {
     this.enablePushMessaging = const bool.fromEnvironment(
       'ENABLE_PUSH_MESSAGING',
     ),
-    this.enableRemoteSync = const bool.fromEnvironment(
-      'ENABLE_REMOTE_SYNC',
+    this.enableAccountCloud = const bool.fromEnvironment(
+      'ENABLE_ACCOUNT_CLOUD',
+      defaultValue: true,
     ),
   });
 
   final bool enableAnalytics;
   final bool enablePushMessaging;
-  final bool enableRemoteSync;
+  final bool enableAccountCloud;
 
   bool get isFirebaseConfigured => DefaultFirebaseOptions.configured;
+
+  bool get cloudFeaturesReady => enableAccountCloud;
 }

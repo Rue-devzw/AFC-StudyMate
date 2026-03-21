@@ -38,6 +38,7 @@ class _MemoryVerseScreenState extends ConsumerState<MemoryVerseScreen> {
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_dashboard.png',
+      backgroundSlot: PremiumBackgroundSlots.memoryVerse,
       appBar: AppBar(
         title: const Text(
           'Memory Verse Review',

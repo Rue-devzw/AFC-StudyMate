@@ -59,30 +59,36 @@ class _JournalScreenState extends ConsumerState<JournalScreen>
 
   @override
   Widget build(BuildContext context) {
+    final palette = PremiumSurfaceScope.of(context);
     final selectedTrack = _tabController.index == 0
         ? Track.daybreak
         : (ref.watch(userProfileProvider).value?.targetTrack ?? Track.search);
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_journal.png',
+      backgroundSlot: PremiumBackgroundSlots.journal,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'My Journal',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: palette.backdropPrimaryText,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
+          labelColor: palette.backdropPrimaryText,
+          unselectedLabelColor: palette.backdropTertiaryText,
           labelStyle: const TextStyle(
             fontWeight: FontWeight.bold,
-            color: Colors.white,
           ),
-          unselectedLabelStyle: TextStyle(
+          unselectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.normal,
-            color: Colors.white.withOpacity(0.6),
           ),
-          indicatorColor: Colors.white,
+          indicatorColor: palette.backdropPrimaryText,
+          dividerColor: palette.backdropDivider,
           indicatorWeight: 3,
           tabs: [
             const Tab(text: 'Daybreak'),
@@ -135,6 +141,7 @@ class _JournalList extends ConsumerWidget {
     return entriesAsync.when(
       data: (entries) {
         if (entries.isEmpty) {
+          final palette = PremiumSurfaceScope.of(context);
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -152,20 +159,20 @@ class _JournalList extends ConsumerWidget {
                       ? Icons.wb_sunny_outlined
                       : Icons.menu_book_outlined,
                   size: 64,
-                  color: Colors.white.withOpacity(0.4),
+                  color: palette.backdropIcon.withValues(alpha: 0.55),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'No reflections yet.',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white.withOpacity(0.6),
+                    color: palette.backdropSecondaryText,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Your saved thoughts will appear here.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withOpacity(0.4),
+                    color: palette.backdropTertiaryText,
                   ),
                 ),
               ],
@@ -236,8 +243,11 @@ class _JournalList extends ConsumerWidget {
           },
         );
       },
-      loading: () =>
-          const Center(child: CircularProgressIndicator(color: Colors.white)),
+      loading: () => Center(
+        child: CircularProgressIndicator(
+          color: PremiumSurfaceScope.of(context).backdropPrimaryText,
+        ),
+      ),
       error: (e, st) => Center(
         child: RetryErrorCard(
           message: '$e',
@@ -257,6 +267,7 @@ class _JournalEntryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final palette = PremiumSurfaceScope.of(context);
     final timestampFormat = DateFormat('EEE, MMM d • h:mm a');
     final isFreeForm =
         entry.prompt == 'personal_reflection' ||
@@ -281,7 +292,7 @@ class _JournalEntryCard extends ConsumerWidget {
                 return Text(
                   title,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
+                    color: palette.primaryText,
                     fontWeight: FontWeight.bold,
                   ),
                 );
@@ -301,7 +312,7 @@ class _JournalEntryCard extends ConsumerWidget {
             Text(
               'Question / Prompt',
               style: theme.textTheme.labelMedium?.copyWith(
-                color: Colors.white70,
+                color: palette.secondaryText,
                 letterSpacing: 0.6,
                 fontWeight: FontWeight.w700,
               ),
@@ -315,7 +326,7 @@ class _JournalEntryCard extends ConsumerWidget {
                   promptText,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontStyle: FontStyle.italic,
-                    color: Colors.white.withOpacity(0.7),
+                    color: palette.secondaryText,
                   ),
                 );
               },
@@ -325,19 +336,19 @@ class _JournalEntryCard extends ConsumerWidget {
               Text(
                 'Prompt key: ${entry.prompt}',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white54,
+                  color: palette.tertiaryText,
                 ),
               ),
             ],
             const SizedBox(height: 12),
             Divider(
-              color: Colors.white.withOpacity(0.1),
+              color: palette.divider,
             ),
             const SizedBox(height: 12),
             Text(
               'Response',
               style: theme.textTheme.labelMedium?.copyWith(
-                color: Colors.white70,
+                color: palette.secondaryText,
                 letterSpacing: 0.6,
                 fontWeight: FontWeight.w700,
               ),
@@ -346,7 +357,7 @@ class _JournalEntryCard extends ConsumerWidget {
             Text(
               entry.response,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: Colors.white,
+                color: palette.primaryText,
                 height: 1.5,
               ),
             ),
@@ -354,13 +365,13 @@ class _JournalEntryCard extends ConsumerWidget {
             Text(
               'Created: ${timestampFormat.format(entry.createdAt)}',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white60,
+                color: palette.tertiaryText,
               ),
             ),
             Text(
               'Updated: ${timestampFormat.format(entry.updatedAt)}',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white60,
+                color: palette.tertiaryText,
               ),
             ),
           ],
@@ -479,17 +490,22 @@ class _MetaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final palette = PremiumSurfaceScope.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
+        color: palette.inputFill,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(
+          color: palette.borderBaseColor.withValues(
+            alpha: palette.borderOpacity,
+          ),
+        ),
       ),
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: Colors.white70,
+          color: palette.secondaryText,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.3,
         ),
@@ -601,10 +617,11 @@ class _BookmarksList extends ConsumerWidget {
     return bookmarksAsync.when(
       data: (notes) {
         if (notes.isEmpty) {
-          return const Center(
+          final palette = PremiumSurfaceScope.of(context);
+          return Center(
             child: Text(
               'No bookmarks yet. Long-press a verse in Bible to add one.',
-              style: TextStyle(color: Colors.white70),
+              style: TextStyle(color: palette.backdropSecondaryText),
               textAlign: TextAlign.center,
             ),
           );
@@ -650,13 +667,17 @@ class _BookmarksList extends ConsumerWidget {
                   ),
                   title: Text(
                     note.ref.displayText,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: PremiumSurfaceScope.of(context).primaryText,
+                    ),
                   ),
                   subtitle: Text(
                     content,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.white70),
+                    style: TextStyle(
+                      color: PremiumSurfaceScope.of(context).secondaryText,
+                    ),
                   ),
                   onTap: () {
                     context.goNamed(
@@ -675,8 +696,10 @@ class _BookmarksList extends ConsumerWidget {
           },
         );
       },
-      loading: () => const Center(
-        child: CircularProgressIndicator(color: Colors.white),
+      loading: () => Center(
+        child: CircularProgressIndicator(
+          color: PremiumSurfaceScope.of(context).backdropPrimaryText,
+        ),
       ),
       error: (error, stackTrace) => Center(
         child: RetryErrorCard(

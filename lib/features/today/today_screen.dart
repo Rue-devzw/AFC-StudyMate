@@ -1,12 +1,9 @@
-import 'package:afc_studymate/data/drift/app_database.dart';
 import 'package:afc_studymate/data/models/lesson.dart';
 import 'package:afc_studymate/data/models/user_profile.dart';
 import 'package:afc_studymate/data/providers/app_refresh_providers.dart';
 import 'package:afc_studymate/data/providers/user_providers.dart';
 import 'package:afc_studymate/data/repositories/lesson_repository.dart';
 import 'package:afc_studymate/data/services/feature_flags_service.dart';
-import 'package:afc_studymate/data/services/progress_service.dart';
-import 'package:afc_studymate/data/services/sync_service.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
 import 'package:afc_studymate/widgets/linked_verse.dart';
 import 'package:afc_studymate/widgets/retry_error_card.dart';
@@ -90,6 +87,7 @@ class TodayScreen extends HookConsumerWidget {
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_dashboard.png',
+      backgroundSlot: PremiumBackgroundSlots.today,
       body: RefreshIndicator(
         onRefresh: () async {
           if (syncAvailable) {
@@ -266,38 +264,18 @@ class TodayScreen extends HookConsumerWidget {
   }
 
   Future<void> _syncNow(BuildContext context, WidgetRef ref) async {
-    const userId = 'local_user';
-    var success = false;
-    try {
-      final db = ref.read(appDatabaseProvider);
-      final progress = await ref
-          .read(progressServiceProvider)
-          .getUserProgress(
-            userId,
-          );
-      final notes = await db.getAllNotes(userId);
-      await ref.read(syncServiceProvider).syncProgress(userId, progress);
-      await ref.read(syncServiceProvider).syncNotes(userId, notes);
-      success = true;
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sync complete.')),
-        );
-      }
-    } catch (_) {
-      success = false;
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sync unavailable. Using offline data.'),
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_syncMetaKey, DateTime.now().toIso8601String());
+    await prefs.setBool(_syncSuccessKey, false);
+    ref.read(_syncRefreshTickProvider.notifier).state++;
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Realtime cloud sync is disabled. Use Google Drive backup in Settings instead.',
           ),
-        );
-      }
-    } finally {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_syncMetaKey, DateTime.now().toIso8601String());
-      await prefs.setBool(_syncSuccessKey, success);
-      ref.read(_syncRefreshTickProvider.notifier).state++;
+        ),
+      );
     }
   }
 }

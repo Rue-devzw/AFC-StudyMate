@@ -1,4 +1,5 @@
 import 'package:afc_studymate/data/services/feature_flags_service.dart';
+import 'package:afc_studymate/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:logger/logger.dart';
@@ -34,7 +35,9 @@ class FirebaseRuntimeService {
 
     try {
       if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp();
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
       }
       _initialised = true;
       return true;

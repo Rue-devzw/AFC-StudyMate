@@ -27,7 +27,8 @@ class DiscoveryArchiveScreen extends ConsumerStatefulWidget {
       _DiscoveryArchiveScreenState();
 }
 
-class _DiscoveryArchiveScreenState extends ConsumerState<DiscoveryArchiveScreen> {
+class _DiscoveryArchiveScreenState
+    extends ConsumerState<DiscoveryArchiveScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
 
@@ -44,6 +45,7 @@ class _DiscoveryArchiveScreenState extends ConsumerState<DiscoveryArchiveScreen>
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_discovery.png',
+      backgroundSlot: PremiumBackgroundSlots.discoveryArchive,
       appBar: AppBar(
         title: const Text(
           'Discovery Index',
@@ -127,7 +129,10 @@ class _DiscoveryArchiveScreenState extends ConsumerState<DiscoveryArchiveScreen>
 }
 
 class _DiscoveryIndexTile extends StatelessWidget {
-  const _DiscoveryIndexTile({required this.lesson, required this.fallbackNumber});
+  const _DiscoveryIndexTile({
+    required this.lesson,
+    required this.fallbackNumber,
+  });
 
   final Lesson lesson;
   final int fallbackNumber;
@@ -135,7 +140,9 @@ class _DiscoveryIndexTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lessonNumber = (lesson.weekIndex ?? (fallbackNumber - 1)) + 1;
-    final references = lesson.bibleReferences.map((e) => e.displayText).join(', ');
+    final references = lesson.bibleReferences
+        .map((e) => e.displayText)
+        .join(', ');
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: PremiumGlassCard(
@@ -202,6 +209,7 @@ bool _isIndexableDiscoveryLesson(Lesson lesson) {
   if (title == 'UNIT') {
     return false;
   }
-  final questions = lesson.payload['questions'] as List<dynamic>? ?? <dynamic>[];
+  final questions =
+      lesson.payload['questions'] as List<dynamic>? ?? <dynamic>[];
   return lesson.bibleReferences.isNotEmpty || questions.isNotEmpty;
 }

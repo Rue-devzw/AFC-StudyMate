@@ -101,7 +101,7 @@ class OnboardingScreen extends HookConsumerWidget {
                               _DropdownCard<Role>(
                                 label: 'Who are you?',
                                 value: state.role,
-                                items: Role.values,
+                                items: Role.selectableValues,
                                 labelBuilder: (role) =>
                                     _formatRoleName(role.name),
                                 onChanged: (val) => controller.updateRole(val!),

@@ -43,6 +43,7 @@ class _ClassRosterScreenState extends ConsumerState<ClassRosterScreen> {
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_sunday_school.png',
+      backgroundSlot: PremiumBackgroundSlots.classRoster,
       appBar: AppBar(
         title: const Text(
           'Class Roster',
@@ -567,7 +568,9 @@ class _RosterListState extends ConsumerState<_RosterList> {
     required bool present,
   }) async {
     final id = '$lessonId|$dateKey|${student.id}';
-    await ref.read(appDatabaseProvider).upsertAttendance(
+    await ref
+        .read(appDatabaseProvider)
+        .upsertAttendance(
           AttendanceRecord(
             id: id,
             studentId: student.id,
@@ -577,7 +580,9 @@ class _RosterListState extends ConsumerState<_RosterList> {
             updatedAt: DateTime.now(),
           ),
         );
-    await ref.read(analyticsServiceProvider).logTeacherAttendanceMarked(
+    await ref
+        .read(analyticsServiceProvider)
+        .logTeacherAttendanceMarked(
           studentId: student.id,
           present: present,
           lessonId: lessonId,
@@ -736,7 +741,8 @@ class _RosterListState extends ConsumerState<_RosterList> {
                               const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final summary = history.summaries[index];
-                            final lesson = history.lessonsById[summary.lessonId];
+                            final lesson =
+                                history.lessonsById[summary.lessonId];
                             return PremiumGlassCard(
                               borderRadius: BorderRadius.circular(18),
                               child: InkWell(
@@ -785,15 +791,18 @@ class _RosterListState extends ConsumerState<_RosterList> {
                                       runSpacing: 8,
                                       children: [
                                         _SummaryChip(
-                                          label: 'Present ${summary.presentCount}',
+                                          label:
+                                              'Present ${summary.presentCount}',
                                           icon: Icons.check_circle_outline,
                                         ),
                                         _SummaryChip(
-                                          label: 'Absent ${summary.absentCount}',
+                                          label:
+                                              'Absent ${summary.absentCount}',
                                           icon: Icons.cancel_outlined,
                                         ),
                                         _SummaryChip(
-                                          label: 'Marked ${summary.markedCount}',
+                                          label:
+                                              'Marked ${summary.markedCount}',
                                           icon: Icons.fact_check_outlined,
                                         ),
                                       ],
@@ -917,8 +926,7 @@ class _AttendanceInsightSummary {
     return _AttendanceInsightSummary(
       caption:
           'Based on the last ${summaries.length} saved ${summaries.length == 1 ? 'session' : 'sessions'} for ${DateFormat.MMMd().format(DateTime.parse(mostRecent.dateKey))}.',
-      recentAverageLabel:
-          '${averagePresent.toStringAsFixed(1)}/$rosterSize',
+      recentAverageLabel: '${averagePresent.toStringAsFixed(1)}/$rosterSize',
       bestTurnoutLabel: '$bestPresent/$rosterSize',
       trendLabel: trendLabel,
     );
