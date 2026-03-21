@@ -2,6 +2,7 @@ import 'package:afc_studymate/data/models/bible_ref.dart';
 import 'package:afc_studymate/data/models/lesson.dart';
 import 'package:afc_studymate/utils/scripture_reference_parser.dart';
 import 'package:afc_studymate/widgets/activity_matching.dart';
+import 'package:afc_studymate/widgets/lesson_display_options.dart';
 import 'package:afc_studymate/widgets/linked_verse.dart';
 import 'package:afc_studymate/widgets/primary_pals_generic_activity.dart';
 import 'package:collection/collection.dart';
@@ -84,7 +85,10 @@ class _PrimaryPalsLessonViewState extends ConsumerState<PrimaryPalsLessonView> {
       return Center(
         child: Text(
           'Lesson content will appear here soon.',
-          style: GoogleFonts.nunito(fontSize: 18),
+          style: lessonReadingTextStyle(
+            context,
+            baseStyle: GoogleFonts.nunito(fontSize: 18),
+          ),
         ),
       );
     }
@@ -114,10 +118,13 @@ class _PrimaryPalsLessonViewState extends ConsumerState<PrimaryPalsLessonView> {
                 children: [
                   Text(
                     currentLabel,
-                    style: GoogleFonts.nunito(
-                      textStyle: Theme.of(context).textTheme.headlineMedium,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black87,
+                    style: lessonReadingTextStyle(
+                      context,
+                      baseStyle: GoogleFonts.nunito(
+                        textStyle: Theme.of(context).textTheme.headlineMedium,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                 ],
@@ -235,10 +242,13 @@ class _StorySection extends StatelessWidget {
                     children: ScriptureReferenceParser.buildLinkedTextSpans(
                       context,
                       paragraph,
-                      GoogleFonts.nunito(
-                        fontSize: 20,
-                        height: 1.6,
-                        color: Colors.black87,
+                      lessonReadingTextStyle(
+                        context,
+                        baseStyle: GoogleFonts.nunito(
+                          fontSize: 20,
+                          height: 1.6,
+                          color: Colors.black87,
+                        ),
                       ),
                     ),
                   ),
@@ -248,9 +258,12 @@ class _StorySection extends StatelessWidget {
               if (paragraphs.isEmpty)
                 Text(
                   'Story content will be available soon.',
-                  style: GoogleFonts.nunito(
-                    fontSize: 18,
-                    color: Colors.black54,
+                  style: lessonReadingTextStyle(
+                    context,
+                    baseStyle: GoogleFonts.nunito(
+                      fontSize: 18,
+                      color: Colors.black54,
+                    ),
                   ),
                 ),
             ],
@@ -302,10 +315,13 @@ class _ParentsCorner extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'Tips for Parents',
-                          style: GoogleFonts.nunito(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                          style: lessonReadingTextStyle(
+                            context,
+                            baseStyle: GoogleFonts.nunito(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                       ),
@@ -318,10 +334,13 @@ class _ParentsCorner extends StatelessWidget {
                         context,
                         parentGuide['parentsCorner'] as String? ??
                             'Tips for this week will appear here.',
-                        GoogleFonts.nunito(
-                          fontSize: 18,
-                          height: 1.5,
-                          color: Colors.black87,
+                        lessonReadingTextStyle(
+                          context,
+                          baseStyle: GoogleFonts.nunito(
+                            fontSize: 18,
+                            height: 1.5,
+                            color: Colors.black87,
+                          ),
                         ),
                       ),
                     ),
@@ -339,9 +358,12 @@ class _ParentsCorner extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   'Family Devotions',
-                  style: GoogleFonts.nunito(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                  style: lessonReadingTextStyle(
+                    context,
+                    baseStyle: GoogleFonts.nunito(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -381,10 +403,13 @@ class _ParentsCorner extends StatelessWidget {
                     ),
                     title: Text(
                       devotion['day'] as String? ?? 'Day',
-                      style: GoogleFonts.nunito(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: Theme.of(context).colorScheme.primary,
+                      style: lessonReadingTextStyle(
+                        context,
+                        baseStyle: GoogleFonts.nunito(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                     ),
                     subtitle: Padding(
@@ -398,9 +423,12 @@ class _ParentsCorner extends StatelessWidget {
                                   ScriptureReferenceParser.buildLinkedTextSpans(
                                     context,
                                     devotion['prompt'] as String? ?? 'Prompt',
-                                    GoogleFonts.nunito(
-                                      fontSize: 16,
-                                      color: Colors.black87,
+                                    lessonReadingTextStyle(
+                                      context,
+                                      baseStyle: GoogleFonts.nunito(
+                                        fontSize: 16,
+                                        color: Colors.black87,
+                                      ),
                                     ),
                                   ),
                             ),
@@ -409,10 +437,13 @@ class _ParentsCorner extends StatelessWidget {
                             const SizedBox(height: 8),
                             LinkedVerse(
                               reference: reading,
-                              style: GoogleFonts.nunito(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).colorScheme.primary,
+                              style: lessonReadingTextStyle(
+                                context,
+                                baseStyle: GoogleFonts.nunito(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                               ),
                             ),
                           ],

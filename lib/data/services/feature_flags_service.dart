@@ -5,6 +5,15 @@ final featureFlagsProvider = Provider<FeatureFlags>((ref) {
   return const FeatureFlags();
 });
 
+final cloudFeaturesAvailableProvider = Provider<bool>((ref) {
+  return ref.watch(featureFlagsProvider).isFirebaseConfigured;
+});
+
+final remoteSyncAvailableProvider = Provider<bool>((ref) {
+  final flags = ref.watch(featureFlagsProvider);
+  return flags.isFirebaseConfigured && flags.enableRemoteSync;
+});
+
 class FeatureFlags {
   const FeatureFlags({
     this.enableAnalytics = const bool.fromEnvironment(

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:afc_studymate/data/models/attendance_record.dart';
+import 'package:afc_studymate/data/models/attendance_session_summary.dart';
 import 'package:afc_studymate/data/models/bible_ref.dart';
 import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/journal_entry.dart';
@@ -10,7 +11,6 @@ import 'package:afc_studymate/data/models/memory_verse.dart';
 import 'package:afc_studymate/data/models/note.dart';
 import 'package:afc_studymate/data/models/progress.dart';
 import 'package:afc_studymate/data/models/student.dart';
-import 'package:afc_studymate/data/models/teacher_guide.dart';
 import 'package:afc_studymate/data/models/user_profile.dart';
 import 'package:afc_studymate/utils/scripture_reference_parser.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -22,30 +22,48 @@ final appDatabaseProvider = Provider<AppDatabase>((ref) {
   return AppDatabase();
 });
 
-Map<String, TeacherGuide> mergeTeacherGuides(
-  List<Map<String, dynamic>> entries,
-) {
-  final merged = <String, TeacherGuide>{};
-  for (final rawGuide in entries) {
-    final guide = TeacherGuide.fromJson(rawGuide);
-    final existing = merged[guide.lessonId];
-    if (existing == null) {
-      merged[guide.lessonId] = guide;
-      continue;
-    }
-    final normalizedExisting = existing.content.trim();
-    final normalizedIncoming = guide.content.trim();
-    if (normalizedIncoming.isEmpty ||
-        normalizedExisting.contains(normalizedIncoming)) {
-      continue;
-    }
-    merged[guide.lessonId] = existing.copyWith(
-      content: '$normalizedExisting\n\n$normalizedIncoming',
-      pdfPath: existing.pdfPath.isNotEmpty ? existing.pdfPath : guide.pdfPath,
-    );
-  }
-  return merged;
-}
+const Map<String, String> _discoveryQuestionLessonTitles = <String, String>{
+  'discovery_2': 'Kings of Israel and Judah',
+  'discovery_8': 'The Continued Sermons of the Prophet',
+  'discovery_9': 'The Conflicts of the Prophet',
+  'discovery_11': 'The Circumstances of the Prophet',
+  'discovery_12': 'The Pronouncement of Judgment on the Nations',
+  'discovery_13': 'The Lamentations of Jeremiah',
+  'discovery_17': 'David’s Reign, Part 3',
+  'discovery_19': 'Solomon’s Reign',
+  'discovery_21': 'Kings of Judah, Part 2',
+  'discovery_22': 'Final Kings of Judah and Captivity',
+  'discovery_25': 'The Book of Haggai',
+  'discovery_27': 'The Book of Malachi',
+  'discovery_32':
+      'Inserted Lesson: Old Testament Prophecies Fulfilled in Christ',
+  'discovery_33': 'Judgment for Enemy Nations',
+  'discovery_34': 'Inserted Lesson: Prophecies of End Times',
+  'discovery_35': 'Israel’s Restoration Prophesied',
+  'discovery_37': 'Daniel Used by God',
+  'discovery_46': 'Abraham, Man of Faith',
+  'discovery_47': 'Isaac, Son of Promise',
+  'discovery_48': 'Jacob, Heir to the Promises of God',
+  'discovery_51': 'The Deliverance',
+  'discovery_53': 'The Establishing of Israel’s Worship',
+  'discovery_59': 'The Prophecy of Amos',
+  'discovery_67': 'The Prophetic Consolation',
+  'discovery_72': '2nd Era of Judges: Gideon',
+  'discovery_73': '3rd Era of Judges: Samson',
+  'discovery_75': 'Samuel',
+  'discovery_79': 'David’s Sin',
+  'discovery_80': 'David’s Struggles',
+  'discovery_81': 'Solomon’s Reign',
+  'discovery_86': 'Lessons from the Levitical Priesthood',
+  'discovery_94': 'Last Instructions from a Faithful Leader',
+  'discovery_97': 'Committing to Faithful Service',
+  'discovery_100': 'Jesus’ Public Ministry',
+  'discovery_110': 'Part 2 of Paul’s Letter to the Romans',
+  'discovery_120': 'Paul’s Second Letter to the Corinthians',
+  'discovery_128': 'Proclamation and Proof of Kingship',
+  'discovery_129': 'Instructions of the King',
+  'discovery_139': 'Paul’s Second Letter to the Thessalonians',
+};
 
 class AppDatabase {
   AppDatabase();
@@ -55,7 +73,6 @@ class AppDatabase {
   final Map<String, Note> _notes = <String, Note>{};
   final Map<String, JournalEntry> _journalEntries = <String, JournalEntry>{};
   final Map<String, String> _settings = <String, String>{};
-  final Map<String, TeacherGuide> _teacherGuides = <String, TeacherGuide>{};
   final Map<String, Student> _students = <String, Student>{};
   final Map<String, AttendanceRecord> _attendance =
       <String, AttendanceRecord>{};
@@ -127,12 +144,11 @@ class AppDatabase {
 
     final progressList = data['progress'] as List<dynamic>? ?? <dynamic>[];
     _progress.addAll(
-      progressList
-          .whereType<Map<String, dynamic>>()
-          .map(Progress.fromJson),
+      progressList.whereType<Map<String, dynamic>>().map(Progress.fromJson),
     );
 
-    final notesMap = data['notes'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final notesMap =
+        data['notes'] as Map<String, dynamic>? ?? <String, dynamic>{};
     _notes.addAll(
       notesMap.map(
         (k, v) => MapEntry(k, Note.fromJson(v as Map<String, dynamic>)),
@@ -191,51 +207,6 @@ class AppDatabase {
     for (final lesson in lessons) {
       _lessons[lesson.id] = lesson;
     }
-  }
-
-  Future<void> importTeacherGuidesFromAsset(
-    String assetPath, {
-    Future<String> Function(String assetPath)? textLoader,
-  }) async {
-    final raw = textLoader == null
-        ? await rootBundle.loadString(assetPath)
-        : await textLoader(assetPath);
-    final decoded = jsonDecode(raw);
-    if (decoded is List) {
-      final entries = decoded.whereType<Map<String, dynamic>>().toList();
-      _teacherGuides.addAll(mergeTeacherGuides(entries));
-    }
-  }
-
-  Future<TeacherGuide?> getTeacherGuide(String lessonId) async {
-    await _ensureInitialized();
-    if (_seedFuture != null) await _seedFuture;
-
-    // Search track shares Answer track's guides
-    // Answer lessons have id 'answer_lesson_X', Search lessons have 'search_lesson_X'
-    // But the payload id for Answer is actually `answer_1` or `answer_lesson_1`?
-    // Let's resolve the underlying ID. Our generated JSON has `primary_pals_1`, `answer_1`.
-
-    // First, check direct hit
-    if (_teacherGuides.containsKey(lessonId)) {
-      return _teacherGuides[lessonId];
-    }
-
-    // Try regex matching to adapt 'primary_pals_lesson_1' to 'primary_pals_1'
-    final match = RegExp(
-      r'(primary_pals|answer|discovery|search)_.*?(\d+)',
-    ).firstMatch(lessonId);
-    if (match != null) {
-      var trackPrefix = match.group(1);
-      final numStr = match.group(2);
-      if (trackPrefix == 'search') {
-        trackPrefix = 'answer';
-      }
-      final mappedId = '${trackPrefix}_$numStr';
-      return _teacherGuides[mappedId];
-    }
-
-    return null;
   }
 
   List<Lesson> _parseLessonsForTrack(dynamic decoded, Track track) {
@@ -471,6 +442,7 @@ class AppDatabase {
 
   Lesson _mapDiscoveryLesson(Map<String, dynamic> raw, int index) {
     final bibleReferences = _parseBibleReferences(raw['bibleReference']);
+    final lessonId = _coerceString(raw['id'], 'discovery_lesson_$index');
     final payload = <String, dynamic>{
       'background': raw['background'] ?? '',
       'conclusion': raw['conclusion'] ?? '',
@@ -479,10 +451,11 @@ class AppDatabase {
     };
 
     return Lesson(
-      id: _coerceString(raw['id'], 'discovery_lesson_$index'),
+      id: lessonId,
       track: Track.discovery,
       title: _resolveDiscoveryTitle(
         raw['title'],
+        lessonId,
         bibleReferences,
         raw['questions'],
       ),
@@ -496,12 +469,17 @@ class AppDatabase {
 
   String _resolveDiscoveryTitle(
     dynamic rawTitle,
+    String lessonId,
     List<BibleRef> bibleReferences,
     dynamic rawQuestions,
   ) {
     final title = _coerceString(rawTitle, 'Discovery Lesson');
     if (title.trim().toUpperCase() != 'QUESTIONS') {
       return title;
+    }
+    final canonicalTitle = _discoveryQuestionLessonTitles[lessonId];
+    if (canonicalTitle != null) {
+      return canonicalTitle;
     }
     if (bibleReferences.isNotEmpty) {
       return 'Study Questions: ${bibleReferences.first.displayText}';
@@ -697,19 +675,6 @@ class AppDatabase {
       Track.daybreak,
       textLoader: textLoader,
     );
-
-    await importTeacherGuidesFromAsset(
-      'assets/data/primary_pals_teacher_guides.json',
-      textLoader: textLoader,
-    );
-    await importTeacherGuidesFromAsset(
-      'assets/data/answer_teacher_guides.json',
-      textLoader: textLoader,
-    );
-    await importTeacherGuidesFromAsset(
-      'assets/data/discovery_teacher_guides.json',
-      textLoader: textLoader,
-    );
   }
 
   Future<List<Lesson>> getLessonsByTrack(Track track) async {
@@ -860,5 +825,58 @@ class AppDatabase {
           entry.value.lessonId == lessonId && entry.value.dateKey == dateKey,
     );
     return Map<String, AttendanceRecord>.fromEntries(entries);
+  }
+
+  Future<List<AttendanceSessionSummary>> getAttendanceSessionHistory({
+    required Track track,
+    int limit = 8,
+  }) async {
+    await _ensureInitialized();
+    final grouped = <String, List<AttendanceRecord>>{};
+
+    for (final record in _attendance.values) {
+      if (!_trackMatchesLessonId(record.lessonId, track)) {
+        continue;
+      }
+      final sessionKey = '${record.dateKey}|${record.lessonId}';
+      grouped.putIfAbsent(sessionKey, () => <AttendanceRecord>[]).add(record);
+    }
+
+    final summaries =
+        grouped.values.map((records) {
+          final presentCount = records.where((record) => record.present).length;
+          final latestUpdate = records
+              .map((record) => record.updatedAt)
+              .reduce((a, b) => a.isAfter(b) ? a : b);
+          return AttendanceSessionSummary(
+            lessonId: records.first.lessonId,
+            dateKey: records.first.dateKey,
+            presentCount: presentCount,
+            absentCount: records.length - presentCount,
+            markedCount: records.length,
+            updatedAt: latestUpdate,
+          );
+        }).toList()..sort((a, b) {
+          final dateComparison = b.dateKey.compareTo(a.dateKey);
+          if (dateComparison != 0) {
+            return dateComparison;
+          }
+          return b.updatedAt.compareTo(a.updatedAt);
+        });
+
+    if (summaries.length <= limit) {
+      return summaries;
+    }
+    return summaries.take(limit).toList();
+  }
+
+  bool _trackMatchesLessonId(String lessonId, Track track) {
+    final lowercaseLessonId = lessonId.toLowerCase();
+    return switch (track) {
+      Track.primaryPals =>
+        lowercaseLessonId.startsWith('primary_') ||
+            lowercaseLessonId.startsWith('${track.name.toLowerCase()}_'),
+      _ => lowercaseLessonId.startsWith('${track.name.toLowerCase()}_'),
+    };
   }
 }

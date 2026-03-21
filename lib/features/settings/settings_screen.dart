@@ -1,4 +1,6 @@
+import 'package:afc_studymate/data/providers/app_refresh_providers.dart';
 import 'package:afc_studymate/data/services/cloud_backup_service.dart';
+import 'package:afc_studymate/data/services/feature_flags_service.dart';
 import 'package:afc_studymate/data/services/notification_service.dart';
 import 'package:afc_studymate/theme/app_theme.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
@@ -12,11 +14,14 @@ import 'package:url_launcher/url_launcher.dart';
 // ─── Providers ────────────────────────────────────────────────────────────────
 
 final _reminderEnabledProvider = StateProvider<bool>((ref) => false);
-final _reminderHourProvider = StateProvider<int>((ref) => 7);
+final _reminderHourProvider = StateProvider<int>((ref) => 6);
 final _reminderMinuteProvider = StateProvider<int>((ref) => 0);
 final _sundayReminderEnabledProvider = StateProvider<bool>((ref) => false);
 final _sundayReminderHourProvider = StateProvider<int>((ref) => 8);
 final _sundayReminderMinuteProvider = StateProvider<int>((ref) => 0);
+final _discoveryReminderEnabledProvider = StateProvider<bool>((ref) => false);
+final _discoveryReminderHourProvider = StateProvider<int>((ref) => 18);
+final _discoveryReminderMinuteProvider = StateProvider<int>((ref) => 0);
 final _packageInfoProvider = FutureProvider<PackageInfo>((ref) async {
   return PackageInfo.fromPlatform();
 });
@@ -42,11 +47,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _loadSavedPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final enabled = prefs.getBool('reminder_enabled') ?? false;
-    final hour = prefs.getInt('reminder_hour') ?? 7;
+    final hour = prefs.getInt('reminder_hour') ?? 6;
     final minute = prefs.getInt('reminder_minute') ?? 0;
     final sundayEnabled = prefs.getBool('sunday_reminder_enabled') ?? false;
     final sundayHour = prefs.getInt('sunday_reminder_hour') ?? 8;
     final sundayMinute = prefs.getInt('sunday_reminder_minute') ?? 0;
+    final discoveryEnabled =
+        prefs.getBool('discovery_reminder_enabled') ?? false;
+    final discoveryHour = prefs.getInt('discovery_reminder_hour') ?? 18;
+    final discoveryMinute = prefs.getInt('discovery_reminder_minute') ?? 0;
 
     ref.read(_reminderEnabledProvider.notifier).state = enabled;
     ref.read(_reminderHourProvider.notifier).state = hour;
@@ -54,6 +63,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ref.read(_sundayReminderEnabledProvider.notifier).state = sundayEnabled;
     ref.read(_sundayReminderHourProvider.notifier).state = sundayHour;
     ref.read(_sundayReminderMinuteProvider.notifier).state = sundayMinute;
+    ref.read(_discoveryReminderEnabledProvider.notifier).state =
+        discoveryEnabled;
+    ref.read(_discoveryReminderHourProvider.notifier).state = discoveryHour;
+    ref.read(_discoveryReminderMinuteProvider.notifier).state = discoveryMinute;
   }
 
   Future<void> _savePrefs({
@@ -76,6 +89,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     await prefs.setBool('sunday_reminder_enabled', enabled);
     await prefs.setInt('sunday_reminder_hour', hour);
     await prefs.setInt('sunday_reminder_minute', minute);
+  }
+
+  Future<void> _saveDiscoveryPrefs({
+    required bool enabled,
+    required int hour,
+    required int minute,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('discovery_reminder_enabled', enabled);
+    await prefs.setInt('discovery_reminder_hour', hour);
+    await prefs.setInt('discovery_reminder_minute', minute);
   }
 
   Future<void> _onToggleReminder(bool enabled) async {
@@ -145,6 +169,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _onToggleDiscoveryReminder(bool enabled) async {
+    final svc = ref.read(notificationServiceProvider);
+    ref.read(_discoveryReminderEnabledProvider.notifier).state = enabled;
+
+    if (enabled) {
+      final granted = await svc.requestPermission();
+      if (!granted) {
+        ref.read(_discoveryReminderEnabledProvider.notifier).state = false;
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Notification permission denied. Please enable in system settings.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+      final hour = ref.read(_discoveryReminderHourProvider);
+      final minute = ref.read(_discoveryReminderMinuteProvider);
+      await svc.scheduleWeeklyDiscoveryReminder(hour: hour, minute: minute);
+      await _saveDiscoveryPrefs(enabled: true, hour: hour, minute: minute);
+    } else {
+      await svc.cancelWeeklyDiscoveryReminder();
+      await _saveDiscoveryPrefs(
+        enabled: false,
+        hour: ref.read(_discoveryReminderHourProvider),
+        minute: ref.read(_discoveryReminderMinuteProvider),
+      );
+    }
+  }
+
   Future<void> _backupNow() async {
     try {
       await ref.read(cloudBackupServiceProvider).backupNow();
@@ -165,9 +222,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Future<void> _restoreFromCloud() async {
     try {
       await ref.read(cloudBackupServiceProvider).restoreLatest();
+      triggerAppDataRefresh(ref);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cloud restore completed. Restart app to refresh all screens.')),
+          const SnackBar(
+            content: Text(
+              'Cloud restore completed. Updated screens are refreshing now.',
+            ),
+          ),
         );
       }
     } catch (error) {
@@ -179,10 +241,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  Future<void> _onPickTime() async {
-    final hour = ref.read(_reminderHourProvider);
-    final minute = ref.read(_reminderMinuteProvider);
-
+  Future<TimeOfDay?> _pickTime({
+    required int hour,
+    required int minute,
+  }) async {
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: hour, minute: minute),
@@ -191,7 +253,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         child: child!,
       ),
     );
+    return picked;
+  }
 
+  Future<void> _onPickTime() async {
+    final picked = await _pickTime(
+      hour: ref.read(_reminderHourProvider),
+      minute: ref.read(_reminderMinuteProvider),
+    );
     if (picked != null) {
       ref.read(_reminderHourProvider.notifier).state = picked.hour;
       ref.read(_reminderMinuteProvider.notifier).state = picked.minute;
@@ -220,12 +289,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _onPickSundayTime() async {
+    final picked = await _pickTime(
+      hour: ref.read(_sundayReminderHourProvider),
+      minute: ref.read(_sundayReminderMinuteProvider),
+    );
+    if (picked == null) {
+      return;
+    }
+
+    ref.read(_sundayReminderHourProvider.notifier).state = picked.hour;
+    ref.read(_sundayReminderMinuteProvider.notifier).state = picked.minute;
+
+    final enabled = ref.read(_sundayReminderEnabledProvider);
+    if (enabled) {
+      await ref
+          .read(notificationServiceProvider)
+          .scheduleWeeklySundayReminder(
+            hour: picked.hour,
+            minute: picked.minute,
+          );
+    }
+    await _saveSundayPrefs(
+      enabled: enabled,
+      hour: picked.hour,
+      minute: picked.minute,
+    );
+  }
+
+  Future<void> _onPickDiscoveryTime() async {
+    final picked = await _pickTime(
+      hour: ref.read(_discoveryReminderHourProvider),
+      minute: ref.read(_discoveryReminderMinuteProvider),
+    );
+    if (picked == null) {
+      return;
+    }
+
+    ref.read(_discoveryReminderHourProvider.notifier).state = picked.hour;
+    ref.read(_discoveryReminderMinuteProvider.notifier).state = picked.minute;
+
+    final enabled = ref.read(_discoveryReminderEnabledProvider);
+    if (enabled) {
+      await ref
+          .read(notificationServiceProvider)
+          .scheduleWeeklyDiscoveryReminder(
+            hour: picked.hour,
+            minute: picked.minute,
+          );
+    }
+    await _saveDiscoveryPrefs(
+      enabled: enabled,
+      hour: picked.hour,
+      minute: picked.minute,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final reminderEnabled = ref.watch(_reminderEnabledProvider);
     final reminderHour = ref.watch(_reminderHourProvider);
     final reminderMinute = ref.watch(_reminderMinuteProvider);
     final sundayReminderEnabled = ref.watch(_sundayReminderEnabledProvider);
+    final discoveryReminderEnabled = ref.watch(
+      _discoveryReminderEnabledProvider,
+    );
     final timeStr = TimeOfDay(
       hour: reminderHour,
       minute: reminderMinute,
@@ -234,11 +362,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       hour: ref.watch(_sundayReminderHourProvider),
       minute: ref.watch(_sundayReminderMinuteProvider),
     ).format(context);
+    final discoveryTime = TimeOfDay(
+      hour: ref.watch(_discoveryReminderHourProvider),
+      minute: ref.watch(_discoveryReminderMinuteProvider),
+    ).format(context);
     final appThemeMode = ref.watch(appThemeModeProvider);
     final fontPack = ref.watch(appFontPackProvider);
     final backgroundMode = ref.watch(appBackgroundModeProvider);
     final lowResourceMode = ref.watch(lowResourceModeProvider);
     final cloudBackupEnabled = ref.watch(cloudBackupEnabledProvider);
+    final cloudFeaturesAvailable = ref.watch(cloudFeaturesAvailableProvider);
 
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_journal.png',
@@ -328,6 +461,78 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                     activeColor: const Color(0xFF2C1B5E),
                     activeTrackColor: const Color(0xFFD4A017),
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
+                  ListTile(
+                    enabled: sundayReminderEnabled,
+                    leading: const Icon(
+                      Icons.schedule_rounded,
+                      color: Colors.white70,
+                    ),
+                    title: const Text(
+                      'Sunday Reminder Time',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    trailing: Text(
+                      sundayTime,
+                      style: TextStyle(
+                        color: sundayReminderEnabled
+                            ? const Color(0xFFD4A017)
+                            : Colors.white24,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    onTap: sundayReminderEnabled ? _onPickSundayTime : null,
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
+                  SwitchListTile.adaptive(
+                    value: discoveryReminderEnabled,
+                    onChanged: _onToggleDiscoveryReminder,
+                    secondary: const Icon(
+                      Icons.explore_rounded,
+                      color: Colors.white70,
+                    ),
+                    title: const Text(
+                      'Discovery Reminder',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      discoveryReminderEnabled
+                          ? 'Weekly mid-week reminder at $discoveryTime'
+                          : 'Tap to enable Discovery reminders',
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                    activeColor: const Color(0xFF2C1B5E),
+                    activeTrackColor: const Color(0xFFD4A017),
+                  ),
+                  const Divider(height: 1, color: Colors.white10),
+                  ListTile(
+                    enabled: discoveryReminderEnabled,
+                    leading: const Icon(
+                      Icons.schedule_rounded,
+                      color: Colors.white70,
+                    ),
+                    title: const Text(
+                      'Discovery Reminder Time',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    trailing: Text(
+                      discoveryTime,
+                      style: TextStyle(
+                        color: discoveryReminderEnabled
+                            ? const Color(0xFFD4A017)
+                            : Colors.white24,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    onTap: discoveryReminderEnabled
+                        ? _onPickDiscoveryTime
+                        : null,
                   ),
                 ],
               ),
@@ -630,27 +835,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     ),
                   ),
                   const Divider(height: 1, color: Colors.white10),
-                  SwitchListTile.adaptive(
-                    value: cloudBackupEnabled,
-                    onChanged: (value) {
-                      ref
-                          .read(cloudBackupEnabledProvider.notifier)
-                          .setValue(value);
-                    },
-                    secondary: const Icon(
-                      Icons.cloud_sync_outlined,
-                      color: Colors.white70,
+                  if (cloudFeaturesAvailable)
+                    SwitchListTile.adaptive(
+                      value: cloudBackupEnabled,
+                      onChanged: (value) {
+                        ref
+                            .read(cloudBackupEnabledProvider.notifier)
+                            .setValue(value);
+                      },
+                      secondary: const Icon(
+                        Icons.cloud_sync_outlined,
+                        color: Colors.white70,
+                      ),
+                      title: const Text(
+                        'Cloud Backup',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      subtitle: const Text(
+                        'Save profile/settings and study state to cloud',
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ),
+                    )
+                  else
+                    const ListTile(
+                      leading: Icon(
+                        Icons.cloud_off_outlined,
+                        color: Colors.white70,
+                      ),
+                      title: Text(
+                        'Cloud Features Unavailable',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        'This build is running in local-only mode.',
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ),
                     ),
-                    title: const Text(
-                      'Cloud Backup',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    subtitle: const Text(
-                      'Save profile/settings and study state to cloud',
-                      style: TextStyle(color: Colors.white54, fontSize: 12),
-                    ),
-                  ),
-                  if (cloudBackupEnabled) ...<Widget>[
+                  if (cloudFeaturesAvailable && cloudBackupEnabled) ...<Widget>[
                     const Divider(height: 1, color: Colors.white10),
                     ListTile(
                       leading: const Icon(

@@ -2,14 +2,6 @@
   "version": 2,
   "bundles": [
     {
-      "logicalAssetPath": "assets/data/answer_teacher_guides.json",
-      "compressedAssetPath": "assets/data_packs/assets__data__answer_teacher_guides.json.gz",
-      "outputRelativePath": "assets/data/answer_teacher_guides.json",
-      "sha256": "6f18c8d407d0d9e8814f9a1b3ccb1c4d853360298b86eaca8ea5cc9a69c72103",
-      "size": 2248374,
-      "compressedSize": 778045
-    },
-    {
       "logicalAssetPath": "assets/data/beginners_lessons.json",
       "compressedAssetPath": "assets/data_packs/assets__data__beginners_lessons.json.gz",
       "outputRelativePath": "assets/data/beginners_lessons.json",
@@ -34,28 +26,12 @@
       "compressedSize": 269101
     },
     {
-      "logicalAssetPath": "assets/data/discovery_teacher_guides.json",
-      "compressedAssetPath": "assets/data_packs/assets__data__discovery_teacher_guides.json.gz",
-      "outputRelativePath": "assets/data/discovery_teacher_guides.json",
-      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "size": 2,
-      "compressedSize": 22
-    },
-    {
       "logicalAssetPath": "assets/data/primary_pals_lessons.json",
       "compressedAssetPath": "assets/data_packs/assets__data__primary_pals_lessons.json.gz",
       "outputRelativePath": "assets/data/primary_pals_lessons.json",
       "sha256": "0b195acb015c82b33a469278d410870de1f94fa2b818833e2c144c6a97785d89",
       "size": 902708,
       "compressedSize": 242440
-    },
-    {
-      "logicalAssetPath": "assets/data/primary_pals_teacher_guides.json",
-      "compressedAssetPath": "assets/data_packs/assets__data__primary_pals_teacher_guides.json.gz",
-      "outputRelativePath": "assets/data/primary_pals_teacher_guides.json",
-      "sha256": "a6a18b270c5fd14d0fa679b2fe30a80ac6e86c6be9f6c85d25a2d8e5996410bc",
-      "size": 318446,
-      "compressedSize": 111069
     },
     {
       "logicalAssetPath": "assets/data/search_lessons.json",
@@ -74,636 +50,1100 @@
       "compressedSize": 381348
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer/unit_01.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_01.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_01.pdf",
-      "sha256": "0a827c25ae6e15f0be67c36e7ccbc4f785e3bc2fd72d822af6cb72699be9069c",
-      "size": 23737237,
-      "compressedSize": 22310185
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_02.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_02.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_02.pdf",
-      "sha256": "767286dfdd6f0902df415e0904d6def79191ca22164c6b16f147b6a3506a269b",
-      "size": 44499047,
-      "compressedSize": 43134756
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_03.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_03.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_03.pdf",
-      "sha256": "37cd9d26f38299ba4bb8ff270c90828a0cf0362d780ef02d8da0d2a0cc223266",
-      "size": 12276919,
-      "compressedSize": 9804943
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_04.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_04.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_04.pdf",
-      "sha256": "e5c1c244f9a8a358d282eff714115cc40117bae6a4f3892c9ca1467126259417",
-      "size": 30638315,
-      "compressedSize": 29370539
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_05.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_05.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_05.pdf",
-      "sha256": "bd6a19d9660bf76b9ef44f180eef492c532b1f7a267d881b48b13054a304d466",
-      "size": 23736307,
-      "compressedSize": 22706869
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_06.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_06.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_06.pdf",
-      "sha256": "92ef7bc62ce7b124d11076ffc5183155f52860fb156b19a3de95a07a0914f989",
-      "size": 4160684,
-      "compressedSize": 2651685
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_07.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_07.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_07.pdf",
-      "sha256": "2fede58d8ab92d3746a88016eb706210af7e348bc48c761fc8097301ab2c2ce7",
-      "size": 11329546,
-      "compressedSize": 9245361
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_08.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_08.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_08.pdf",
-      "sha256": "9d0d7e0273db1206916d0d9669683871023fcba66bcf33afe37b5a34fc73132c",
-      "size": 23884469,
-      "compressedSize": 20561653
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_09.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_09.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_09.pdf",
-      "sha256": "07f6d24a22ddad3c65496de9d9f8cb05f99dc52f1386a4c54883ff0868c0ecfd",
-      "size": 16056757,
-      "compressedSize": 13602384
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_10.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_10.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_10.pdf",
-      "sha256": "45a3678ab26fa0117f7ffb09cbfb5e678733df36cdf3d0e884767b056b70f028",
-      "size": 11423980,
-      "compressedSize": 9846734
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_11.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_11.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_11.pdf",
-      "sha256": "c53ad33260634af9be68e74d4e45c05978a93d6590b4db21c88ead30859eaeef",
-      "size": 13682623,
-      "compressedSize": 12299948
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_12.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_12.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_12.pdf",
-      "sha256": "bfa6cbc732e0b29d2fba9e62bb91967b47775b0fe673755bf37ff9ea9fe52445",
-      "size": 31111448,
-      "compressedSize": 27743842
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/answer/unit_13.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_13.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_13.pdf",
-      "sha256": "5d189ab729006ada9c9de70cecbed31a9401d44a7a8f9a66b4791b0264f4922c",
-      "size": 36024696,
-      "compressedSize": 33235074
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_01-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_01-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_01-compressed.pdf",
+      "sha256": "1a75b1d1caa49cadec51b835b062de0d8ea12addd76ea94b39ec88fe38bd06fa",
+      "size": 1553169,
+      "compressedSize": 1443372
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_02-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_02-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_02-compressed.pdf",
+      "sha256": "44984bcdf67517ce483f1263c15f08ed725459c67d94d352f3b7ffca5164cbbf",
+      "size": 3246708,
+      "compressedSize": 2683303
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_03-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_03-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_03-compressed.pdf",
+      "sha256": "aeb9822cc632c721774a7d5cebd22628ee7b697b42956565cbcbed21e81a9de9",
+      "size": 1660576,
+      "compressedSize": 1515552
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_04-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_04-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_04-compressed.pdf",
+      "sha256": "73121d963a3ac07ca74510474138ca5ce34fc45c8b6dae03b5d473e9190dc741",
+      "size": 1631009,
+      "compressedSize": 1477691
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_05-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_05-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_05-compressed.pdf",
+      "sha256": "9be5980d11dcc140283816af80286c5ce2343c2289dc717b6914d3cebf199942",
+      "size": 1241972,
+      "compressedSize": 1130349
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_06-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_06-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_06-compressed.pdf",
+      "sha256": "a76d7b8790c12e22f04de5af59783d5a8c99ccc730fd1728d5f1f6471eb20b89",
+      "size": 1415912,
+      "compressedSize": 1018536
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_07-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_07-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_07-compressed.pdf",
+      "sha256": "147b23d6ef0e241d115576f824705c3e277c6b2d363fe1faec48370508c338ae",
+      "size": 1519269,
+      "compressedSize": 1362196
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_08-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_08-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_08-compressed.pdf",
+      "sha256": "1dc87aac4a0cfccd38a9464d581aa0687a08412a81903eaeca0eec0149207a3e",
+      "size": 5179935,
+      "compressedSize": 3668889
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_09-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_09-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_09-compressed.pdf",
+      "sha256": "00b9b5bbb0104a4853fa8d6597fd20eed1207ca05e5d08af489ef7aaa00fdb85",
+      "size": 4144096,
+      "compressedSize": 3903063
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_10-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_10-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_10-compressed.pdf",
+      "sha256": "d2d105ae527e65ea3bb705597d75d09d91311a674ef3d078a3cb048210176f89",
+      "size": 1783949,
+      "compressedSize": 1650336
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_11-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_11-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_11-compressed.pdf",
+      "sha256": "d0f0d0a293fb7daf77c0a47b7d8750f2a049cbfb12cb5ed5ed8dd65a21fbc639",
+      "size": 1478350,
+      "compressedSize": 1318836
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_12-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_12-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_12-compressed.pdf",
+      "sha256": "a60fe57f325ab49810772a56811ae291358bf8239030bd48566b954e08509880",
+      "size": 1742043,
+      "compressedSize": 1591119
+    },
+    {
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_13-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_13-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_13-compressed.pdf",
+      "sha256": "42ea1aabb30eb8fb4713f87409287988b981b9ce7b31793f14dc7643f13622fd",
+      "size": 1621862,
+      "compressedSize": 1478640
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer/unit_14.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_14.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_14.pdf",
-      "sha256": "aca03ce8a6910e03dffe9aaf96c51b1fe508438f95000ff049b4529f51a165b5",
-      "size": 32893287,
-      "compressedSize": 30481589
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_14-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_14-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_14-compressed.pdf",
+      "sha256": "6a0bfe23740ca2ddb29d32c5223f0daae98780782396b568bcabe8aac77e3900",
+      "size": 1690186,
+      "compressedSize": 1563074
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer/unit_15.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_15.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_15.pdf",
-      "sha256": "1ee98b702b5cd63841992b2e626979577d65e3ec276039adc830454319e0f605",
-      "size": 14263035,
-      "compressedSize": 12546435
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_15-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_15-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_15-compressed.pdf",
+      "sha256": "79c0d8c59a5860e4c92dd2fbadc73b825c006636a212c3ffb419f813ef411326",
+      "size": 1192514,
+      "compressedSize": 1102726
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer/unit_16.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer__unit_16.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer/unit_16.pdf",
-      "sha256": "80e5a3d19ca23c4aa1549702865f44d9d890f7ef80cd528366ce12f2e7106b84",
-      "size": 26410579,
-      "compressedSize": 24851215
+      "logicalAssetPath": "collections/Answer/Students_Materials/unit_16-compressed.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__Students_Materials__unit_16-compressed.pdf.gz",
+      "outputRelativePath": "collections/Answer/Students_Materials/unit_16-compressed.pdf",
+      "sha256": "6b41e2e9f6ec2aa1d311ed5340311623fd32b0254773ef2d1e5103b545d63611",
+      "size": 6814148,
+      "compressedSize": 6683570
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 1.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 1.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 1.pdf",
-      "sha256": "347e7d84065ca08759cc55b6e5b624de24d6bb1139502125f9e25164da618542",
-      "size": 3713388,
-      "compressedSize": 3475978
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 1.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_1.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 1.pdf",
+      "sha256": "b3cc616d5a73bce83d64a54c3e831e040f11534ed24870d1b423eb386799a301",
+      "size": 1854766,
+      "compressedSize": 1623304
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 10.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 10.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 10.pdf",
-      "sha256": "c07ab75ace030f42e6cb0306c768ec0cceb984b3fa988efd7ef99639514caa76",
-      "size": 665993,
-      "compressedSize": 617759
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 10.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_10.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 10.pdf",
+      "sha256": "ced1db7bd96c6f0719581570e608d48ace6a8e123a000969787d8df4b356957c",
+      "size": 471398,
+      "compressedSize": 463633
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 11.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 11.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 11.pdf",
-      "sha256": "64c5fd9c73f0e8ee400652d8113bb42753588d0cdfcefc0eabb1b575c0ab2f73",
-      "size": 380406,
-      "compressedSize": 343102
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 11.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_11.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 11.pdf",
+      "sha256": "4c9471341a20646a6c543362c3af71e97a06231deea41ee58fdd7ad42c65ab07",
+      "size": 356289,
+      "compressedSize": 341015
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 12.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 12.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 12.pdf",
-      "sha256": "75ec02d07bb13a5368c811d45099d88fa07767bba41e51fb75645fea33c7133e",
-      "size": 401162,
-      "compressedSize": 370728
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 12.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_12.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 12.pdf",
+      "sha256": "ced261fea3e76cac5938e496d09052548fea373e5358f73b27e9268607d19242",
+      "size": 382190,
+      "compressedSize": 369436
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 13.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 13.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 13.pdf",
-      "sha256": "fa3b6057320b27f707240a9d19354549a1a3ffafb54ed001f061e5113444f4b4",
-      "size": 577691,
-      "compressedSize": 528434
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 13.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_13.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 13.pdf",
+      "sha256": "01a452086cea910399fcb3563d7a20be6a209801203f20f2d60b716b0e644938",
+      "size": 446603,
+      "compressedSize": 438184
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 14.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 14.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 14.pdf",
-      "sha256": "b136b9d2c5d558fafb92dbc88d2e7bf6000fef2df44c75267b8ec4dfdf7bba8a",
-      "size": 2354710,
-      "compressedSize": 2146680
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 14.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_14.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 14.pdf",
+      "sha256": "337fa88c22f1b8d032cfce207e1cbaf4a290a6b110f94fdc0931e45802028b17",
+      "size": 1624541,
+      "compressedSize": 1398672
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 15.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 15.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 15.pdf",
-      "sha256": "eecd112714b240648d66a6f8707a873783d481e42a6a94cc9ac8f512dcdad6f9",
-      "size": 1392727,
-      "compressedSize": 1297105
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 15.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_15.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 15.pdf",
+      "sha256": "e6fbc4eca3610588b47e5e7bb5a5df99b3402e0d90a329e7eabcd6397922a27a",
+      "size": 726762,
+      "compressedSize": 701386
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 16.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 16.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 16.pdf",
-      "sha256": "0cec59f0ff90c9f8934907b4d734e93ee5c424ad906eb6a2791fd3fd6feece6d",
-      "size": 1734531,
-      "compressedSize": 1658813
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 16.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_16.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 16.pdf",
+      "sha256": "0715cf5f86f5ea8f81cb15b5886dd636a578d75e9b48680f86300511f19aecb3",
+      "size": 696002,
+      "compressedSize": 665694
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 2.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 2.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 2.pdf",
-      "sha256": "38568f10d2ab116c53cf1d5e3b45f46449436b9fe6f6889643677aad4ef27d0f",
-      "size": 1862617,
-      "compressedSize": 1726338
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 2.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_2.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 2.pdf",
+      "sha256": "7d15a30e0081baa1559b2e38e3d2be00688862be033212da394185bef85b5563",
+      "size": 1189372,
+      "compressedSize": 1052827
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 3.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 3.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 3.pdf",
-      "sha256": "8c14420c053ea3525a5294a86bf7f08d931c5ee551ef59dabddd15a5157bcbc8",
-      "size": 1186031,
-      "compressedSize": 1116275
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 3.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_3.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 3.pdf",
+      "sha256": "19ce578954f59a115d63d1f1ec4383e0aac5a0c90ee7e8d36f02e0c730f55a80",
+      "size": 1166054,
+      "compressedSize": 1112962
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 4.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 4.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 4.pdf",
-      "sha256": "5d518e9351bd330bbe43a559e5ac4ec4e0a2a4578328e44768bf2be56c4f6822",
-      "size": 2006683,
-      "compressedSize": 1903045
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 4.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_4.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 4.pdf",
+      "sha256": "6251163218f781850d204317deca8f60edab8ab3a13daefa4ec727b52f1cb94c",
+      "size": 1565568,
+      "compressedSize": 1460603
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 5.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 5.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 5.pdf",
-      "sha256": "98a688b9368cb0a393f259290ea974ec9e901902f47c0d2dd1269551d29497fd",
-      "size": 240818,
-      "compressedSize": 217666
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 5.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_5.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 5.pdf",
+      "sha256": "197397ae3134d24f8b6fed69ac158547dab73c90e2a0316fea8d04302d674343",
+      "size": 226372,
+      "compressedSize": 216144
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 6.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 6.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 6.pdf",
-      "sha256": "c6b31b7ed47df887a6c89bca91a098b376e8272bc4ad3766e3386582f82d37df",
-      "size": 636538,
-      "compressedSize": 609650
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 6.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_6.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 6.pdf",
+      "sha256": "370844c08a7ac071aba816cb4574a42d5e11a93d94cf367041f3e142c7b02df2",
+      "size": 621642,
+      "compressedSize": 609451
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 7.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 7.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 7.pdf",
-      "sha256": "61b4e0b83608e9c6945099d1d67f8d8285fbeabb9070dd47efb4ceaf857ff8b1",
-      "size": 328732,
-      "compressedSize": 302780
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 7.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_7.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 7.pdf",
+      "sha256": "b782f78440087a208eba16092d939b6f1902e4897790e1934deb9d3d9f4ac3ed",
+      "size": 314843,
+      "compressedSize": 301511
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 8.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 8.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 8.pdf",
-      "sha256": "87db5b74accf89169043a535e7d0819f7dac22727aee32b58faba2c1b4bc5109",
-      "size": 1753086,
-      "compressedSize": 1497072
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 8.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_8.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 8.pdf",
+      "sha256": "ad9d473ce259a78dfcb93a18307a39eaaa8d20ed8505d8bbf336245adc5acf56",
+      "size": 1361519,
+      "compressedSize": 1307080
     },
     {
-      "logicalAssetPath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 9.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__answer_teachers__Answer Teacher's Guide Unit 9.pdf.gz",
-      "outputRelativePath": "assets/pdfs/answer_teachers/Answer Teacher's Guide Unit 9.pdf",
-      "sha256": "5b5ce90c5a28466f2f4620e069115e33449845a6f696d0ff04a910703f930a8a",
-      "size": 4986549,
-      "compressedSize": 4244843
+      "logicalAssetPath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 9.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Answer__answer_teachers__Answer_Teacher_s_Guide_Unit_9.pdf.gz",
+      "outputRelativePath": "collections/Answer/answer_teachers/Answer Teacher's Guide Unit 9.pdf",
+      "sha256": "d4e43c5b83aa50c81487383fca20bc495c81737efa6208a7b83eacd140120a4c",
+      "size": 993946,
+      "compressedSize": 733969
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/2-KINGS-NAH-ZEPH-JER-LAM-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__2-KINGS-NAH-ZEPH-JER-LAM-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/2-KINGS-NAH-ZEPH-JER-LAM-DISCOVERY-TG.pdf",
-      "sha256": "0532a1aa3b8b9174e094f8e1e869d8191d03453ac2f9b743704a9ecb4236bfd2",
-      "size": 1613307,
-      "compressedSize": 1338929
+      "logicalAssetPath": "collections/Daybreak/2-KINGS-NAH-ZEPH-JER-LAM-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__2-KINGS-NAH-ZEPH-JER-LAM-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/2-KINGS-NAH-ZEPH-JER-LAM-DAYBREAK.pdf",
+      "sha256": "e3727b59cb38cd21bb3be91d548273695968366b9bf1288f6aa2e0bef816ffe1",
+      "size": 1276749,
+      "compressedSize": 1240779
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/CHR-EZRA-NEH-HAG-ZECH-MAL-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__CHR-EZRA-NEH-HAG-ZECH-MAL-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/CHR-EZRA-NEH-HAG-ZECH-MAL-DISCOVERY-TG.pdf",
-      "sha256": "09d263d17981472539e9f3d3ee551c28ab5538e1047e81075b3b23b7c9a3420e",
-      "size": 2123400,
-      "compressedSize": 1805100
+      "logicalAssetPath": "collections/Daybreak/CHR-EZRA-NEH-HAG-ZECH-MAL-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__CHR-EZRA-NEH-HAG-ZECH-MAL-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/CHR-EZRA-NEH-HAG-ZECH-MAL-DAYBREAK.pdf",
+      "sha256": "e4e3ec755948aeb8bddcae35f8dcec4d82c82e86077fa04a9c379a0b3728bc9d",
+      "size": 2064314,
+      "compressedSize": 1989990
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/EZEK-DAN-HAB-OBAD-ESTH-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__EZEK-DAN-HAB-OBAD-ESTH-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/EZEK-DAN-HAB-OBAD-ESTH-DISCOVERY-TG.pdf",
-      "sha256": "9e4f64e9ef5e7aabd7142e8021fe829488b940cc29ef968f4b0183b610a12142",
-      "size": 11299476,
-      "compressedSize": 11044831
+      "logicalAssetPath": "collections/Daybreak/EZEK-DAN-HAB-OBAD-ESTH-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__EZEK-DAN-HAB-OBAD-ESTH-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/EZEK-DAN-HAB-OBAD-ESTH-DAYBREAK.pdf",
+      "sha256": "bd8adfbcf1c7b496f60baa00b931491a69650ab841456f4f0820848729820861",
+      "size": 1469830,
+      "compressedSize": 1419211
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/GEN-EXO-JOB-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__GEN-EXO-JOB-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/GEN-EXO-JOB-DISCOVERY-TG.pdf",
-      "sha256": "b06e1505b4b06a80ff1494857922a1882dfd0f3307c0599c1a0fa8a8a5ccecc2",
-      "size": 2676770,
-      "compressedSize": 2373352
+      "logicalAssetPath": "collections/Daybreak/GEN-EXO-JOB-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__GEN-EXO-JOB-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/GEN-EXO-JOB-DAYBREAK.pdf",
+      "sha256": "5c56a4b09ddf23e577088cad83e10a4431dfd3f9283e032d2186b9823f69b9fa",
+      "size": 1509158,
+      "compressedSize": 1391596
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/JOEL-JON-AMOS-HOS-MIC-ISA-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__JOEL-JON-AMOS-HOS-MIC-ISA-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/JOEL-JON-AMOS-HOS-MIC-ISA-DISCOVERY-TG.pdf",
-      "sha256": "db42893db1e93e79feea40fe2d106c40b86e4974ac4bca459300f70165dab95b",
-      "size": 1457844,
-      "compressedSize": 1261538
+      "logicalAssetPath": "collections/Daybreak/JOEL-JON-AMOS-HOS-MIC-ISA-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__JOEL-JON-AMOS-HOS-MIC-ISA-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/JOEL-JON-AMOS-HOS-MIC-ISA-DAYBREAK.pdf",
+      "sha256": "25caab7e91703e969f4fad1ac9c451eec00bb8da23a4d35c968648e60c134c0f",
+      "size": 1537252,
+      "compressedSize": 1505889
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/JUDG-RUTH-SAM-1-KINGS-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__JUDG-RUTH-SAM-1-KINGS-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/JUDG-RUTH-SAM-1-KINGS-DISCOVERY-TG.pdf",
-      "sha256": "b59080bf4d1ec562482bf0d8c1e35736deb617982491ff611120c64e7bf080f6",
-      "size": 3052809,
-      "compressedSize": 2708128
+      "logicalAssetPath": "collections/Daybreak/JUDG-RUTH-SAM-1-KINGS-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__JUDG-RUTH-SAM-1-KINGS-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/JUDG-RUTH-SAM-1-KINGS-DAYBREAK.pdf",
+      "sha256": "d741f0348ce164a73849bc8f4a4401a1ca20ffe74f8f87ecadbd046cbb7a10fb",
+      "size": 1532451,
+      "compressedSize": 1446617
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/LEV-NUM-DEUT-JOSH-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__LEV-NUM-DEUT-JOSH-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/LEV-NUM-DEUT-JOSH-DISCOVERY-TG.pdf",
-      "sha256": "1be0c2793c503e824ccd31f245fd6910983e806ea7fd3cce0aa1df4fb7a13662",
-      "size": 8009334,
-      "compressedSize": 7453404
+      "logicalAssetPath": "collections/Daybreak/LEV-NUM-DEUT-JOSH-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__LEV-NUM-DEUT-JOSH-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/LEV-NUM-DEUT-JOSH-DAYBREAK.pdf",
+      "sha256": "5e4cdfb220870e656969b94cb676056d8bc04f62ec79e7aa07b791d086651c20",
+      "size": 1592446,
+      "compressedSize": 1473773
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/LUKE-ACTS-JAMES-GAL-ROM-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__LUKE-ACTS-JAMES-GAL-ROM-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/LUKE-ACTS-JAMES-GAL-ROM-DISCOVERY-TG.pdf",
-      "sha256": "b7e0c82a112a972456648bfa7e9610292fafd9315411a61db870ee1cf790bb43",
-      "size": 5642482,
-      "compressedSize": 3318172
+      "logicalAssetPath": "collections/Daybreak/LUKE-ACTS-JAMES-GAL-ROM-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__LUKE-ACTS-JAMES-GAL-ROM-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/LUKE-ACTS-JAMES-GAL-ROM-DAYBREAK.pdf",
+      "sha256": "113dc069f1a33f92ea5ed2d392232839c410d9d75706e97dea75f0898580764d",
+      "size": 5106372,
+      "compressedSize": 2322598
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/MARK-COR-TIM-TIT-PHILEM-PET-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__MARK-COR-TIM-TIT-PHILEM-PET-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/MARK-COR-TIM-TIT-PHILEM-PET-DISCOVERY-TG.pdf",
-      "sha256": "c6cbfcf5517cdd0ad19ce0c8007567009d888d2b465b07b6db38b8dabcba4354",
-      "size": 6333922,
-      "compressedSize": 5745581
+      "logicalAssetPath": "collections/Daybreak/MARK-COR-TIM-TIT-PHILEM-PET-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__MARK-COR-TIM-TIT-PHILEM-PET-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/MARK-COR-TIM-TIT-PHILEM-PET-DAYBREAK.pdf",
+      "sha256": "91f79201d618d41eb62c23a81a6a1cf85b1365dfa33563d66f7dd2b187278b7f",
+      "size": 2435595,
+      "compressedSize": 2166450
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/MATT-HEB-EPH-PHIL-COL-THESS-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__MATT-HEB-EPH-PHIL-COL-THESS-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/MATT-HEB-EPH-PHIL-COL-THESS-DISCOVERY-TG.pdf",
-      "sha256": "b07a790cae366346e0337342d7c9c06488672ee5af07124db028f6a5a06cb8ad",
-      "size": 5400092,
-      "compressedSize": 5001763
+      "logicalAssetPath": "collections/Daybreak/MATT-HEB-EPH-PHIL-COL-THESS-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__MATT-HEB-EPH-PHIL-COL-THESS-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/MATT-HEB-EPH-PHIL-COL-THESS-DAYBREAK.pdf",
+      "sha256": "8df8e7b640ab3049d14feb16f01551d4a85cb4da010719551272a2de783d4ab4",
+      "size": 1803870,
+      "compressedSize": 1622878
     },
     {
-      "logicalAssetPath": "assets/pdfs/discovery_teachers/PROV-ECCL-SONG-PSALMS-DISCOVERY-TG.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__discovery_teachers__PROV-ECCL-SONG-PSALMS-DISCOVERY-TG.pdf.gz",
-      "outputRelativePath": "assets/pdfs/discovery_teachers/PROV-ECCL-SONG-PSALMS-DISCOVERY-TG.pdf",
-      "sha256": "46d4fc5a24943928ce26dec825f7e162cd06b9a07f2c71667cc5b7481b81740c",
-      "size": 950024,
-      "compressedSize": 701332
+      "logicalAssetPath": "collections/Daybreak/PROV-ECCL-SONG-PSALMS-DAYBREAK.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Daybreak__PROV-ECCL-SONG-PSALMS-DAYBREAK.pdf.gz",
+      "outputRelativePath": "collections/Daybreak/PROV-ECCL-SONG-PSALMS-DAYBREAK.pdf",
+      "sha256": "c6f352360b79f5e712e66d47aababe31d045b9bddf26d8cf38c063bb2d9d6253",
+      "size": 1255943,
+      "compressedSize": 1225551
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 1.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 1.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 1.pdf",
-      "sha256": "949a429b9f12db8f197943401cd18dfc611b32e50f5795e623b961ce4bd8f453",
-      "size": 5473923,
-      "compressedSize": 4186421
+      "logicalAssetPath": "collections/Discovery/Discovery Students/2-KINGS-NAH-ZEPH-JER-LAM-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__2-KINGS-NAH-ZEPH-JER-LAM-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/2-KINGS-NAH-ZEPH-JER-LAM-DISCOVERY.pdf",
+      "sha256": "2120163b81502c3130e48b02c4c2404eee0ef886e8ba84ae8fc8706fe92b6e8a",
+      "size": 330656,
+      "compressedSize": 319390
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 10.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 10.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 10.pdf",
-      "sha256": "2e992876670ba9b7947df07888483c919d58813cba04095de12f7fc431e475ab",
-      "size": 1845918,
-      "compressedSize": 1723078
+      "logicalAssetPath": "collections/Discovery/Discovery Students/CHR-EZRA-NEH-HAG-ZECH-MAL-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__CHR-EZRA-NEH-HAG-ZECH-MAL-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/CHR-EZRA-NEH-HAG-ZECH-MAL-DISCOVERY.pdf",
+      "sha256": "3931a327f6612b0a5bd1cb5f8b98658d8e53d7da51ef54666cb9592a2c28dba5",
+      "size": 449929,
+      "compressedSize": 427824
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 11.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 11.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 11.pdf",
-      "sha256": "edab18dff73ee6562b2d9477ed61704194ce2c0fec89ffcf7a4685864137d64a",
-      "size": 7495137,
-      "compressedSize": 6464718
+      "logicalAssetPath": "collections/Discovery/Discovery Students/EZEK-DAN-HAB-OBAD-ESTH-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__EZEK-DAN-HAB-OBAD-ESTH-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/EZEK-DAN-HAB-OBAD-ESTH-DISCOVERY.pdf",
+      "sha256": "02cd799fc65e8d830b0e7308a2487a9c209cee4184d83e6ea44aeb37f2fb49be",
+      "size": 565990,
+      "compressedSize": 536772
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 12.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 12.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 12.pdf",
-      "sha256": "cbc69b4f401c2d797cbc4ea712fcf5a78c5a99a08fb09156cdea08c50c1be3a1",
-      "size": 5552596,
-      "compressedSize": 5366347
+      "logicalAssetPath": "collections/Discovery/Discovery Students/GEN-EXO-JOB-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__GEN-EXO-JOB-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/GEN-EXO-JOB-DISCOVERY.pdf",
+      "sha256": "ac3563c412cf11b0ef9a241d1349db301e34efbaf283995dab0eb33d8239732e",
+      "size": 492768,
+      "compressedSize": 390301
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 13.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 13.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 13.pdf",
-      "sha256": "34297f987130f640330471b8fa8d469230d46d201ff76c2c7e71f9b651585932",
-      "size": 966712,
-      "compressedSize": 909204
+      "logicalAssetPath": "collections/Discovery/Discovery Students/JOEL-JON-AMOS-HOS-MIC-ISA-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__JOEL-JON-AMOS-HOS-MIC-ISA-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/JOEL-JON-AMOS-HOS-MIC-ISA-DISCOVERY.pdf",
+      "sha256": "e6e67661b9c4f27c0e4b140b4d3d714ca7cce8643069beb6f99b43f54db1e979",
+      "size": 338885,
+      "compressedSize": 328441
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 14.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 14.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 14.pdf",
-      "sha256": "33202a1cf4032f0453ef2c4d266940485cc6168718327e033c3628092af37eff",
-      "size": 1511983,
-      "compressedSize": 1436769
+      "logicalAssetPath": "collections/Discovery/Discovery Students/JUDG-RUTH-SAM-1-KINGS-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__JUDG-RUTH-SAM-1-KINGS-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/JUDG-RUTH-SAM-1-KINGS-DISCOVERY.pdf",
+      "sha256": "d5d503cbd09a462dddb72b3b241de1b5932ae3ab1ce816c55eaae209e7e50bf6",
+      "size": 573913,
+      "compressedSize": 514050
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 15.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 15.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 15.pdf",
-      "sha256": "5a4f25569ba2f48a2522ef6a5c3030e2fc04e36cd62ec897afe1f36071f50b3e",
-      "size": 2454766,
-      "compressedSize": 2379052
+      "logicalAssetPath": "collections/Discovery/Discovery Students/LEV-NUM-DEUT-JOSH-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__LEV-NUM-DEUT-JOSH-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/LEV-NUM-DEUT-JOSH-DISCOVERY.pdf",
+      "sha256": "0a0de6cccaa3206199490ee3625bd418ffde268a3418c546fec944e91357c191",
+      "size": 734305,
+      "compressedSize": 640735
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 16.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 16.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 16.pdf",
-      "sha256": "7d4edde4b7909954337f6c23bf329f6a877556d2cfb19028d1960be4337546fe",
-      "size": 3164394,
-      "compressedSize": 3085060
+      "logicalAssetPath": "collections/Discovery/Discovery Students/LUKE-ACTS-JAMES-GAL-ROM-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__LUKE-ACTS-JAMES-GAL-ROM-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/LUKE-ACTS-JAMES-GAL-ROM-DISCOVERY.pdf",
+      "sha256": "b03d24e9ac6954def8d06453a33ca7dd5119687bcfc26d7d984911468770e7bb",
+      "size": 3495839,
+      "compressedSize": 803944
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 17.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 17.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 17.pdf",
-      "sha256": "a3b937a8b8ffbd18cc5c67021568d8057e5b72908515f95f623d785b4d4c0b26",
-      "size": 1028621,
-      "compressedSize": 986155
+      "logicalAssetPath": "collections/Discovery/Discovery Students/MARK-COR-TIM-TIT-PHILEM-PET-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__MARK-COR-TIM-TIT-PHILEM-PET-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/MARK-COR-TIM-TIT-PHILEM-PET-DISCOVERY.pdf",
+      "sha256": "e093b880a6d539e33f570869ace28d2bc5ee1e79d0f0aeef8850cb35218171a3",
+      "size": 780869,
+      "compressedSize": 657154
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 18.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 18.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 18.pdf",
-      "sha256": "04de2ad55bc0aaee120625ce5168f8d1e3a4cb351e9a3780ac7023868abbbb75",
-      "size": 1220805,
-      "compressedSize": 1173225
+      "logicalAssetPath": "collections/Discovery/Discovery Students/MATT-HEB-EPH-PHIL-COL-THESS-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__MATT-HEB-EPH-PHIL-COL-THESS-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/MATT-HEB-EPH-PHIL-COL-THESS-DISCOVERY.pdf",
+      "sha256": "30769bcb88ce247df26337a3a69863582fba16c6272a1cfc7f251843f6c48685",
+      "size": 681183,
+      "compressedSize": 601262
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 19.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 19.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 19.pdf",
-      "sha256": "2d9860d4fee4adf45d9b46fad80bd031f40f9b9b734b008eac00028dbf9d5f4e",
-      "size": 6003880,
-      "compressedSize": 5067176
+      "logicalAssetPath": "collections/Discovery/Discovery Students/PROV-ECCL-SONG-PSALMS-DISCOVERY.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Students__PROV-ECCL-SONG-PSALMS-DISCOVERY.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Students/PROV-ECCL-SONG-PSALMS-DISCOVERY.pdf",
+      "sha256": "9dca7284662bb66d8fcfec012798bac7ece0e6fd930a225bc68d2df5d2c4ea8c",
+      "size": 288590,
+      "compressedSize": 284230
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 2.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 2.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 2.pdf",
-      "sha256": "ead0da7be6e65781f7f56a83125aff6d8c9ea99af491f78bd52af2835d4ac6be",
-      "size": 4084149,
-      "compressedSize": 2842330
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/2-KINGS-NAH-ZEPH-JER-LAM-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__2-KINGS-NAH-ZEPH-JER-LAM-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/2-KINGS-NAH-ZEPH-JER-LAM-DISCOVERY-TG.pdf",
+      "sha256": "7da6b8fa03d9cbe9ed54b2c5006c4cccae8f25e0dbca23f0f4f7213b092759c7",
+      "size": 600990,
+      "compressedSize": 533335
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 20.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 20.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 20.pdf",
-      "sha256": "6126737b3abb71ffc7112c8e47aaa4f384328ddde3f37e84660e7a821da44728",
-      "size": 2243803,
-      "compressedSize": 1740824
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/CHR-EZRA-NEH-HAG-ZECH-MAL-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__CHR-EZRA-NEH-HAG-ZECH-MAL-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/CHR-EZRA-NEH-HAG-ZECH-MAL-DISCOVERY-TG.pdf",
+      "sha256": "60951b4d815d85ad97ef522e35a055aac73da96bab3bb532201612a62f09742a",
+      "size": 731092,
+      "compressedSize": 703769
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 21.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 21.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 21.pdf",
-      "sha256": "e4c37cf64cd6c3a0455460824441a2b5172a1c04afc6727e1fb00b7bb8b87471",
-      "size": 677958,
-      "compressedSize": 640947
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/EZEK-DAN-HAB-OBAD-ESTH-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__EZEK-DAN-HAB-OBAD-ESTH-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/EZEK-DAN-HAB-OBAD-ESTH-DISCOVERY-TG.pdf",
+      "sha256": "45c0cc89291abf2a4e1f5c151d6723394e37af5d9dd5d29cb626a71e3f32ab50",
+      "size": 804436,
+      "compressedSize": 779150
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 22.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 22.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 22.pdf",
-      "sha256": "8dcb52b92f08c5eee888fdaf5adf443de46eb5dcd95c92b10eeab517fb743d96",
-      "size": 8411280,
-      "compressedSize": 6043582
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/GEN-EXO-JOB-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__GEN-EXO-JOB-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/GEN-EXO-JOB-DISCOVERY-TG.pdf",
+      "sha256": "a3d57ada69b291e10ce3909288d1462754cd519f604878959ecb7cc73cfa2904",
+      "size": 720469,
+      "compressedSize": 604962
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 23.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 23.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 23.pdf",
-      "sha256": "0c900be0252b19243ad3f36ac3b7a7b5d7f0082ffa9a938ea3ea76cbc8a40209",
-      "size": 623928,
-      "compressedSize": 615211
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/JOEL-JON-AMOS-HOS-MIC-ISA-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__JOEL-JON-AMOS-HOS-MIC-ISA-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/JOEL-JON-AMOS-HOS-MIC-ISA-DISCOVERY-TG.pdf",
+      "sha256": "5bef0e6d69903b5071e90646aa6dbbd6c081b3b234adb4e89f6e8311c1050add",
+      "size": 492783,
+      "compressedSize": 479283
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 24.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 24.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 24.pdf",
-      "sha256": "a010e9ca7064a7e11de327030f7a415b7dd0f44595b1cdf570a96d8a71f2afdd",
-      "size": 870222,
-      "compressedSize": 859385
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/JUDG-RUTH-SAM-1-KINGS-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__JUDG-RUTH-SAM-1-KINGS-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/JUDG-RUTH-SAM-1-KINGS-DISCOVERY-TG.pdf",
+      "sha256": "94aa3675927ac358de7259ce8dff2b6d5694eb818f662965979d563a92708eae",
+      "size": 743067,
+      "compressedSize": 680313
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 25.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 25.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 25.pdf",
-      "sha256": "a68e1656788fb522caeced8bed0f985a216a4448448d6402fc824951ad696f51",
-      "size": 9782653,
-      "compressedSize": 8257644
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/LEV-NUM-DEUT-JOSH-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__LEV-NUM-DEUT-JOSH-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/LEV-NUM-DEUT-JOSH-DISCOVERY-TG.pdf",
+      "sha256": "6a0cd851adc58fde0a4e625b2353eda52b2cccbb35cb8b58497d3fe9d71f92e5",
+      "size": 827802,
+      "compressedSize": 730339
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 26.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 26.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 26.pdf",
-      "sha256": "87d90c19d0e418b1583f9b2c6459c74d82e567b05970e0e60076b64c0dd53612",
-      "size": 868379,
-      "compressedSize": 821239
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/LUKE-ACTS-JAMES-GAL-ROM-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__LUKE-ACTS-JAMES-GAL-ROM-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/LUKE-ACTS-JAMES-GAL-ROM-DISCOVERY-TG.pdf",
+      "sha256": "e544d37daf1d07a209e5a4694fcb976ebcec83ea49c2ad70f427ea24adbc9388",
+      "size": 3731499,
+      "compressedSize": 1034033
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 27.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 27.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 27.pdf",
-      "sha256": "b740850180e36662949c1a775db7c6b122302ffa94b69e5d129fbc6ad1f0f2c8",
-      "size": 1094163,
-      "compressedSize": 1039523
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/MARK-COR-TIM-TIT-PHILEM-PET-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__MARK-COR-TIM-TIT-PHILEM-PET-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/MARK-COR-TIM-TIT-PHILEM-PET-DISCOVERY-TG.pdf",
+      "sha256": "0a31ee349b1fe77d5899aa7f51c63269f7f36f11304705e80e1e053012cfb53b",
+      "size": 980006,
+      "compressedSize": 856463
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 28.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 28.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 28.pdf",
-      "sha256": "ea25613cf5710b1dc5070686a272b6ea731a12987730cf83665e8e775fa2a425",
-      "size": 1694343,
-      "compressedSize": 1586443
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/MATT-HEB-EPH-PHIL-COL-THESS-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__MATT-HEB-EPH-PHIL-COL-THESS-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/MATT-HEB-EPH-PHIL-COL-THESS-DISCOVERY-TG.pdf",
+      "sha256": "d44ae2d75be153e7f408f5bda6c9bd7b205c7c1cd41acd1c86bd2493c71b5066",
+      "size": 1012074,
+      "compressedSize": 924958
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 29.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 29.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 29.pdf",
-      "sha256": "77e7fa1927f29918899c64d5be9771cd439bdacf6282f6b0db595d2aaa1f8ce8",
-      "size": 2149136,
-      "compressedSize": 2014362
+      "logicalAssetPath": "collections/Discovery/Discovery Teacher's Guide/PROV-ECCL-SONG-PSALMS-DISCOVERY-TG.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Discovery__Discovery_Teacher_s_Guide__PROV-ECCL-SONG-PSALMS-DISCOVERY-TG.pdf.gz",
+      "outputRelativePath": "collections/Discovery/Discovery Teacher's Guide/PROV-ECCL-SONG-PSALMS-DISCOVERY-TG.pdf",
+      "sha256": "1904214edd2e38debd077bb699d185e48cf8cfde481baf60d18316428f2ab2a6",
+      "size": 621871,
+      "compressedSize": 595070
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 3.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 3.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 3.pdf",
-      "sha256": "20d9282da1214ee2b5fee74cfdeb745c70d55268be45831048754cc24c13b912",
-      "size": 2747678,
-      "compressedSize": 2014808
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 1.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_1.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 1.pdf",
+      "sha256": "c5fe3c9f463343f1f9b7b73af2d377020b944e770bfab951405aab16bf2ba8f8",
+      "size": 572489,
+      "compressedSize": 522612
     },
     {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 30.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 30.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 30.pdf",
-      "sha256": "e34f08ce78f02e62dc2986738f49817e515ff80fd8b249dfa451cda27feb55f9",
-      "size": 1846490,
-      "compressedSize": 1734239
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 31.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 31.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 31.pdf",
-      "sha256": "164d6a56383550737aa8e5d645cf8f16ac1397f3f607b5e800e104f681dc1d6b",
-      "size": 931893,
-      "compressedSize": 879167
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 32.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 32.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 32.pdf",
-      "sha256": "397ab8863d0d640860c528e775a4d7abecb7ed75d4a4a429300d141d514145dd",
-      "size": 926519,
-      "compressedSize": 875600
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 33.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 33.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 33.pdf",
-      "sha256": "fde3b50e49c9a1f5b496217d7e0ab151b05bb3f16a991b75a29b2e8411304759",
-      "size": 1080464,
-      "compressedSize": 1020238
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 34.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 34.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 34.pdf",
-      "sha256": "aa41b2bb3c93ef954fc5df97cae342c537571f860fb1f2cfad658d8ba963a96a",
-      "size": 974847,
-      "compressedSize": 917213
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 35.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 35.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 35.pdf",
-      "sha256": "5eff3567ba8131d271d79ad3eae8b0c15c1900c99c687c9d8b07ba5a85912f16",
-      "size": 883778,
-      "compressedSize": 829021
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 36.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 36.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 36.pdf",
-      "sha256": "bb257c6d1e4f6c7d2c0053650c56b23f33f82b3e30ef8ed27e639f29ffac6ee5",
-      "size": 1204966,
-      "compressedSize": 1134786
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 4.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 4.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 4.pdf",
-      "sha256": "085e9448b703f32ef6d49d7ee3eee779a7746fd3872eb64dd31d6569d113e226",
-      "size": 990080,
-      "compressedSize": 932493
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 5.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 5.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 5.pdf",
-      "sha256": "ec490c46e0ad443dd53d1df98f52c12297a3a20e3e12a0d727334e6b5c45ab23",
-      "size": 4760436,
-      "compressedSize": 3411745
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 6.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 6.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 6.pdf",
-      "sha256": "b16456ed0b688fe4855df4221af9b9220ba59e4dc2fae1736c39af1ba3e3e1f9",
-      "size": 3873623,
-      "compressedSize": 3653472
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 7.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 7.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 7.pdf",
-      "sha256": "6212f3c0863113be4e16828d421740eaf041827e4b27497727d775faa68d9aac",
-      "size": 4342063,
-      "compressedSize": 3908476
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 8.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 8.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 8.pdf",
-      "sha256": "8da90f7b7fcec43eb1ffa651cc47492c42175e98eca5738c4eb98adc7724f5d2",
-      "size": 892839,
-      "compressedSize": 844824
-    },
-    {
-      "logicalAssetPath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 9.pdf",
-      "compressedAssetPath": "assets/data_packs/assets__pdfs__primary_pals_teachers__Primary Pals Teacher's Guide Unit 9.pdf.gz",
-      "outputRelativePath": "assets/pdfs/primary_pals_teachers/Primary Pals Teacher's Guide Unit 9.pdf",
-      "sha256": "6868156c2ce66e954e50fb8af9000669d207ce62eb38ab47753c3da8ab595778",
-      "size": 7071897,
-      "compressedSize": 6018187
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 10.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_10.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 10.pdf",
+      "sha256": "ff685d2e556f4a2723d1c8e82def83b88182c1927c31e1050f5087f78c1a02a3",
+      "size": 4600769,
+      "compressedSize": 3835820
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 11.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_11.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 11.pdf",
+      "sha256": "7ee5a7cbf182745444eea333b3e499f212c3bba7194b03dd15053125adabc275",
+      "size": 3628807,
+      "compressedSize": 3025794
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 12.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_12.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 12.pdf",
+      "sha256": "c2c201408449aa1dad307ffe5f64be845ddcf2652f73bbbb26669558f4673cc2",
+      "size": 3645049,
+      "compressedSize": 3081057
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 13.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_13.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 13.pdf",
+      "sha256": "e63a5bbe93480e8ca93cf88a228c37821b08897876ece4351bcf61e6d14477a1",
+      "size": 343901,
+      "compressedSize": 321042
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 14.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_14.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 14.pdf",
+      "sha256": "38db4e44e38ea95138b72c2f0cde3d1c9a74a9ed2ba78dbe295b37d935cd87b9",
+      "size": 1430707,
+      "compressedSize": 1162424
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 15.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_15.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 15.pdf",
+      "sha256": "30656799ea207508c9328cda043b38d0803e26f88c7cbd924d767889ac35a81e",
+      "size": 434321,
+      "compressedSize": 407234
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 16.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_16.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 16.pdf",
+      "sha256": "8624cea439bcbb1e3eb0926138060c65b0d5a9225548cd7c133bc1cb6478ed05",
+      "size": 349471,
+      "compressedSize": 326387
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 17.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_17.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 17.pdf",
+      "sha256": "99216b7172ee8fcde6f2db7c27f5c63a538fd7d7af00df2342c7d0337e5acf2a",
+      "size": 351920,
+      "compressedSize": 326219
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 18.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_18.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 18.pdf",
+      "sha256": "74d53d035bcae6b78fe49174fcb6003523f6e0f44f9fc6f68ba3673740e32dda",
+      "size": 530545,
+      "compressedSize": 487517
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 19.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_19.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 19.pdf",
+      "sha256": "124376b5a38b94e48d311f8bd313abd99f4f8b5b7f3b5741d1e0c5ca9f6b0a41",
+      "size": 383672,
+      "compressedSize": 360093
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 2.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_2.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 2.pdf",
+      "sha256": "660e27247af6c10d715b5c96961b9f9c23b574b4fcc840679f52efe9603877fe",
+      "size": 853847,
+      "compressedSize": 716495
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 20.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_20.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 20.pdf",
+      "sha256": "e308e7cd86d778699149e3fea2f7a27b01c08ada4066a83d266acd72e7e55d27",
+      "size": 722663,
+      "compressedSize": 601992
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 21.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_21.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 21.pdf",
+      "sha256": "d04882c7823503fb1453549ed0929ac26fcf848d66a371fffcb5f42d4563380c",
+      "size": 990051,
+      "compressedSize": 865265
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 22.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_22.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 22.pdf",
+      "sha256": "d5f262ac68e8124bdf07ed911439336997908e0087571a45e4718a2ec40eb126",
+      "size": 365278,
+      "compressedSize": 338952
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 23.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_23.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 23.pdf",
+      "sha256": "ebde0896df6581ecd9e1bd8065c1317a58ec9bd28d43f1b8c373e638dbe613a7",
+      "size": 1537283,
+      "compressedSize": 1261506
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 24.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_24.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 24.pdf",
+      "sha256": "bd7b6c9d6e92d3b09ba0a97a464782f6389860d8da25b20ad928ff3bf389b64e",
+      "size": 908093,
+      "compressedSize": 816704
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 25.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_25.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 25.pdf",
+      "sha256": "e145b040ff3aec2190a505e8c2c629461e35c416575ccf8debd00fc1dd78b3ce",
+      "size": 368512,
+      "compressedSize": 343358
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 26.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_26.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 26.pdf",
+      "sha256": "a0e042410ada131e9c72d7d7071a67391adb245680d8e82b38e7e7dcce5c4ccf",
+      "size": 364181,
+      "compressedSize": 338326
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 27.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_27.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 27.pdf",
+      "sha256": "869cb88f40030055edda506b2e961324b904a9cd5c3f9717e29f6d597f72317f",
+      "size": 437917,
+      "compressedSize": 410019
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 28.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_28.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 28.pdf",
+      "sha256": "28c13cd37b2d41efe03479dba0a3dac74aafd8a744c7d7b7ca927402aad2c6f8",
+      "size": 1045657,
+      "compressedSize": 861707
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 29.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_29.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 29.pdf",
+      "sha256": "57c66425edf2e5650ce6314eeb927799622b135b7e312898e0026cea79801a89",
+      "size": 461138,
+      "compressedSize": 430740
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 3.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_3.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 3.pdf",
+      "sha256": "579f6429cb5a0d2c23b35deb2d3c9cff5ab75f08e8ea6d7fe1b3edf02f7070c2",
+      "size": 328811,
+      "compressedSize": 306367
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 30.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_30.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 30.pdf",
+      "sha256": "6af7cea58f078230c2a879399b44d48a2562d180538cf4787cb34ed5fd59d5c0",
+      "size": 375134,
+      "compressedSize": 348325
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 31.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_31.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 31.pdf",
+      "sha256": "3038d820d36a6c37ec70026eba3fa82fcf932cf2330618f4be452b5490ffd3b3",
+      "size": 388710,
+      "compressedSize": 364555
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 32.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_32.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 32.pdf",
+      "sha256": "f2af7151a388c76af80674e6f9e54e9a281448614a7df7c2ec86fb894547a3a0",
+      "size": 644059,
+      "compressedSize": 592151
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 33.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_33.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 33.pdf",
+      "sha256": "f809c40437c97e25b51c89f03ea4291abe5b3528db849d1d0e6a402cc86cdbc1",
+      "size": 1231753,
+      "compressedSize": 1071324
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 34.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_34.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 34.pdf",
+      "sha256": "678b6431a1632be98aad2d417b1053c1b0df32795e1fb3f1f570c9c0a4a1d940",
+      "size": 346199,
+      "compressedSize": 323191
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 35.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_35.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 35.pdf",
+      "sha256": "55159ddffe08887b638d918bc6f14d2aa0859eac0efbcd4096c70e70c2e772c7",
+      "size": 345846,
+      "compressedSize": 323659
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 36.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_36.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 36.pdf",
+      "sha256": "736d5e711bdc3b3836cf069ee44efa6de47313295305a8164386e358bdb30761",
+      "size": 478362,
+      "compressedSize": 447403
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 4.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_4.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 4.pdf",
+      "sha256": "27fbfc0f8ccb47095c3667fd7a59d2e13e8aadfc2253a0ce6e91d8a9d630eb63",
+      "size": 438087,
+      "compressedSize": 410863
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 5.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_5.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 5.pdf",
+      "sha256": "5b2760bbd1aff2329047fbcb271fe15e0c7c1e1dadf54155fa140b02f59cb46d",
+      "size": 533782,
+      "compressedSize": 477373
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 6.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_6.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 6.pdf",
+      "sha256": "154f267606d4b3a35e68f56131eee96ffd85d19e78237d3f7dc2cd9db0f92a44",
+      "size": 1135084,
+      "compressedSize": 919126
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 7.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_7.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 7.pdf",
+      "sha256": "567eb3ebd47201b78d2ccf66f51d8669173a0c6b9619c9cf4542c7c456891f7a",
+      "size": 895455,
+      "compressedSize": 826989
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 8.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_8.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 8.pdf",
+      "sha256": "e11f112eaf985335f03279f2d3a21202d45967b220b171eba018f3f89be8f99e",
+      "size": 566971,
+      "compressedSize": 526060
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Primary Pals Students/PP Unit 9.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Primary_Pals_Students__PP_Unit_9.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Primary Pals Students/PP Unit 9.pdf",
+      "sha256": "c54566f0e1e34672ea83956990112ec52dc809bfe65022c97c2119031a5fe6c8",
+      "size": 1151893,
+      "compressedSize": 1000863
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 1.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_1.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 1.pdf",
+      "sha256": "d19a04dcbbe1761f52ad729a4c14c614a9bf910e112c41ad84483001a3df2e47",
+      "size": 928488,
+      "compressedSize": 810013
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 10.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_10.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 10.pdf",
+      "sha256": "bd545adea4ed742e3596a3dabf6cc14b0c53b1a6d17baa7303e10e781e034bd7",
+      "size": 475574,
+      "compressedSize": 439521
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 11.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_11.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 11.pdf",
+      "sha256": "0ba44aa93643804a8ff39c14d0d42b88d816eb24edccb710de8f0c296a17e17f",
+      "size": 1011494,
+      "compressedSize": 921579
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 12.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_12.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 12.pdf",
+      "sha256": "1f18d21d798a72c1bdee8a885f31938ad491b8adee33a23c82abfb7734572585",
+      "size": 2129163,
+      "compressedSize": 1687932
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 13.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_13.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 13.pdf",
+      "sha256": "01ea4a208619831c4036963ef8a59b4e7b5308e0df4b528a647245d2b759496a",
+      "size": 459215,
+      "compressedSize": 429788
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 14.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_14.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 14.pdf",
+      "sha256": "0d300dd07d0c1b2b813ea1cb018698796dbe12e30828306fc9416cfbac31cc22",
+      "size": 685359,
+      "compressedSize": 650519
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 15.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_15.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 15.pdf",
+      "sha256": "0510fa7ef4c024fc15ec0b2962669ce2ff5856a947be8be19389ece09c0a0573",
+      "size": 1491504,
+      "compressedSize": 1335958
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 16.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_16.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 16.pdf",
+      "sha256": "15f05c69b061d01bcfad4c3b11cdec3c25f0eb88e19e9037957b4d1746ab5dff",
+      "size": 1469408,
+      "compressedSize": 1342756
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 17.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_17.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 17.pdf",
+      "sha256": "2dfaae41701e95893fc6b3a5fa673fffc44d06e14868a476583449182256d44f",
+      "size": 517569,
+      "compressedSize": 492669
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 18.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_18.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 18.pdf",
+      "sha256": "ea6025531a7d057c59e06d78136acfd2448bc0dfd23e04ab74e8d69240f89215",
+      "size": 623699,
+      "compressedSize": 594105
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 19.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_19.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 19.pdf",
+      "sha256": "06ecc9fbfe762d0efb85941b1beee92bf924918e37893dd53d97d40472fe9fb1",
+      "size": 1117614,
+      "compressedSize": 1037064
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 2.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_2.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 2.pdf",
+      "sha256": "6de041313dee0513e6b195b0de9567393bd295c0d7fb403da23a858b134fcb3c",
+      "size": 706300,
+      "compressedSize": 595132
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 20.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_20.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 20.pdf",
+      "sha256": "ca867acc8709dac6a0795578fcca7941f158239f38c87d08481154b3d672a50e",
+      "size": 764578,
+      "compressedSize": 693930
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 21.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_21.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 21.pdf",
+      "sha256": "95101e74864e605fcac267fee7673d4bc1c0e5f11c41fa8ee2e50407bea53240",
+      "size": 672389,
+      "compressedSize": 637076
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 22.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_22.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 22.pdf",
+      "sha256": "5d1e197a41c5e28f8087597c63bce98e618b9d494e5c380e2418d62f65c54c8b",
+      "size": 1040264,
+      "compressedSize": 870069
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 23.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_23.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 23.pdf",
+      "sha256": "5e0f8be411997ef32d112d26c2a58e03f0e4820e999abedad351341055770d10",
+      "size": 477626,
+      "compressedSize": 452382
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 24.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_24.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 24.pdf",
+      "sha256": "d4fc638f3a317062558b446f698c0c1808cb7ce267181446cf727ea60e9323b8",
+      "size": 668572,
+      "compressedSize": 635128
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 25.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_25.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 25.pdf",
+      "sha256": "5370057a7178502e9abf9d17007d1dec09caa9ca2e8b8b0f524f12ad8d032517",
+      "size": 1279357,
+      "compressedSize": 1177978
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 26.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_26.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 26.pdf",
+      "sha256": "df67ab58b0f6fd6a0f31f0ad09699c6399b2af02c39d7ced3a6e11a32df00fe4",
+      "size": 453855,
+      "compressedSize": 423343
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 27.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_27.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 27.pdf",
+      "sha256": "f6aa68c91f7ceeb1d2ce6320919cd2c49418ca71aa207806f747c193fba2a229",
+      "size": 567255,
+      "compressedSize": 530607
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 28.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_28.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 28.pdf",
+      "sha256": "e12e1bd1f38810cfd5d41b19d5d5dc1c4f59872b6958cca91cdbcf88d0928410",
+      "size": 445706,
+      "compressedSize": 413098
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 29.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_29.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 29.pdf",
+      "sha256": "f7f2f54439a5f712a03fa2b39d72f24c8f88279b058b66f3921aafb178e4952a",
+      "size": 565347,
+      "compressedSize": 524340
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 3.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_3.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 3.pdf",
+      "sha256": "3b7ffd3c78d6cc7ec308be9d17998180afe2a44b6ad13beba83804bf42ea4f44",
+      "size": 638695,
+      "compressedSize": 559777
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 30.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_30.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 30.pdf",
+      "sha256": "108828f78a4a4abba8c9b8481604e1db1024032e32ef8dde12956769ed3ca96f",
+      "size": 486329,
+      "compressedSize": 452272
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 31.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_31.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 31.pdf",
+      "sha256": "9c2b62a86db0f8b60dc96fac11a9cb72c22182151dfb2d08725d0cfbaea06b53",
+      "size": 491584,
+      "compressedSize": 456852
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 32.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_32.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 32.pdf",
+      "sha256": "ee139799a20c3d55b389cc9e27a9930fa4229069b22f35d221fbcb697b37788e",
+      "size": 480391,
+      "compressedSize": 448091
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 33.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_33.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 33.pdf",
+      "sha256": "b52ad93d1524062f4e7a1739258200342e47e62295982785011677ade15ea127",
+      "size": 564607,
+      "compressedSize": 525754
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 34.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_34.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 34.pdf",
+      "sha256": "595727e4df666518014954d92aa54f7205e4247e65079f3128fe5be0bed60e27",
+      "size": 514919,
+      "compressedSize": 470836
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 35.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_35.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 35.pdf",
+      "sha256": "f5883d18012e81c2f16c52510540009dfe9d77ffcce6452225d3d7a284936c00",
+      "size": 470943,
+      "compressedSize": 429817
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 36.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_36.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 36.pdf",
+      "sha256": "203dfc93d609fbec3ae041f21fb2d3c9e7a91f02832ab16555cd74f7150ca3c6",
+      "size": 638226,
+      "compressedSize": 585034
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 4.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_4.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 4.pdf",
+      "sha256": "fbaf069ab33065c7556ef72d25a9e0de81fe54ab40a162a3ca841b1e57fc51ed",
+      "size": 509445,
+      "compressedSize": 478143
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 5.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_5.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 5.pdf",
+      "sha256": "99978deb7454fd2f22de83e45ca0dc662a9acf3694104df6dc9ac6938e89b3d2",
+      "size": 845755,
+      "compressedSize": 690540
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 6.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_6.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 6.pdf",
+      "sha256": "f6ef4fbfd80d2a568a2d3d2e2197d7c5942b7347989a16f8b07b38251991f8ed",
+      "size": 2324390,
+      "compressedSize": 1867778
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 7.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_7.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 7.pdf",
+      "sha256": "5e0c556c3c028ceaf88fcab370be575ed4c4e2a2b025d4f405008f00f0d259ea",
+      "size": 596788,
+      "compressedSize": 524229
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 8.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_8.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 8.pdf",
+      "sha256": "f76bacda51ea1654c0c703f8684cf1938971c39695a102bf30d55a22037d3c11",
+      "size": 458968,
+      "compressedSize": 431237
+    },
+    {
+      "logicalAssetPath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 9.pdf",
+      "compressedAssetPath": "assets/data_packs/collections__Primary_Pals__Teacher_s_Guides__Primary_Pals_Teacher_s_Guide_Unit_9.pdf.gz",
+      "outputRelativePath": "collections/Primary Pals/Teacher's Guides/Primary Pals Teacher's Guide Unit 9.pdf",
+      "sha256": "d94d65d4aa57df8a1715cca09b53609efffc5ffcc0beab805070878c4e2ed7a9",
+      "size": 966016,
+      "compressedSize": 878704
     }
   ]
 }

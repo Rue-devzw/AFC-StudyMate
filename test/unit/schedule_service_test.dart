@@ -14,8 +14,9 @@ class _FakeScheduleService extends ScheduleService {
 void main() {
   group('ScheduleService weekly rollover', () {
     test('beginners planner anchor aligns current live schedule', () {
-      final beforeAnchorWeek =
-          _FakeScheduleService(DateTime(2025, 11, 1, 23, 59));
+      final beforeAnchorWeek = _FakeScheduleService(
+        DateTime(2025, 11, 1, 23, 59),
+      );
       final firstPlannerSunday = _FakeScheduleService(DateTime(2025, 11, 2));
       final followingMonday = _FakeScheduleService(DateTime(2025, 11, 3));
 
@@ -42,6 +43,27 @@ void main() {
       final mondayIndex = monday.discoveryWeekIndex;
 
       expect(mondayIndex, sundayIndex + 1);
+    });
+
+    test('answer, search, and primary pals align to current live cycle', () {
+      final service = _FakeScheduleService(DateTime(2026, 3, 20));
+
+      expect(service.weekIndexForTrack(Track.answer), 80);
+      expect(service.weekIndexForTrack(Track.search), 80);
+      expect(service.weekIndexForTrack(Track.primaryPals), 80);
+    });
+
+    test('date-based week lookup uses the requested class date', () {
+      final service = _FakeScheduleService(DateTime(2026, 3, 21));
+
+      expect(
+        service.weekIndexForTrackAt(Track.search, DateTime(2026, 3, 23)),
+        81,
+      );
+      expect(
+        service.weekIndexForTrackAt(Track.search, DateTime(2026, 3, 21)),
+        80,
+      );
     });
   });
 }

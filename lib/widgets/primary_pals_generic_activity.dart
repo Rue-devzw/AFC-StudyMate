@@ -1,3 +1,4 @@
+import 'package:afc_studymate/widgets/lesson_display_options.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -50,19 +51,25 @@ class PrimaryPalsGenericActivity extends StatelessWidget {
           const SizedBox(height: 32),
           Text(
             title ?? activityType,
-            style: GoogleFonts.nunito(
-              textStyle: Theme.of(context).textTheme.headlineMedium,
-              fontWeight: FontWeight.w800,
-              color: Colors.black87,
+            style: lessonReadingTextStyle(
+              context,
+              baseStyle: GoogleFonts.nunito(
+                textStyle: Theme.of(context).textTheme.headlineMedium,
+                fontWeight: FontWeight.w800,
+                color: Colors.black87,
+              ),
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           Text(
             instructions,
-            style: GoogleFonts.nunito(
-              textStyle: Theme.of(context).textTheme.titleLarge,
-              color: Colors.black87,
+            style: lessonReadingTextStyle(
+              context,
+              baseStyle: GoogleFonts.nunito(
+                textStyle: Theme.of(context).textTheme.titleLarge,
+                color: Colors.black87,
+              ),
             ),
             textAlign: TextAlign.center,
           ),
@@ -85,10 +92,13 @@ class PrimaryPalsGenericActivity extends StatelessWidget {
                 Flexible(
                   child: Text(
                     'Grab your pencil, crayons, or printed worksheet!',
-                    style: GoogleFonts.nunito(
-                      textStyle: Theme.of(context).textTheme.titleMedium,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    style: lessonReadingTextStyle(
+                      context,
+                      baseStyle: GoogleFonts.nunito(
+                        textStyle: Theme.of(context).textTheme.titleMedium,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
                     ),
                   ),
                 ),

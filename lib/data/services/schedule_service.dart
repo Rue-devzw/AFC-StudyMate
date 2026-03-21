@@ -14,7 +14,7 @@ class ScheduleService {
 
   int get discoveryWeekIndex {
     // Anchored so the current cycle aligns with live Discovery planning.
-    return _weekIndexFromAnchor(DateTime(2026, 2, 23));
+    return discoveryWeekIndexForDate(today);
   }
 
   int get daybreakIndex {
@@ -30,21 +30,33 @@ class ScheduleService {
   Track trackForRole(Track preferred) => preferred;
 
   int weekIndexForTrack(Track track) {
+    return weekIndexForTrackAt(track, today);
+  }
+
+  int discoveryWeekIndexForDate(DateTime date) {
+    // Anchored so the current cycle aligns with live Discovery planning.
+    return _weekIndexFromAnchor(DateTime(2026, 2, 23), date);
+  }
+
+  int weekIndexForTrackAt(Track track, DateTime date) {
     switch (track) {
       case Track.beginners:
         // Adjusted to align current live planner position.
-        return _weekIndexFromAnchor(DateTime(2025, 11, 2));
+        return _weekIndexFromAnchor(DateTime(2025, 11, 2), date);
+      case Track.answer:
       case Track.search:
       case Track.primaryPals:
-        return _weekIndexFromAnchor(DateTime(2024, 8, 25));
+        // Anchored so the current Sunday School cycle aligns with lesson 81
+        // for Answer/Search and 19c for Primary Pals on March 20, 2026.
+        return _weekIndexFromAnchor(DateTime(2024, 9, 2), date);
       default:
-        final anchor = DateTime(today.year);
-        return _weekIndexFromAnchor(anchor);
+        final anchor = DateTime(date.year);
+        return _weekIndexFromAnchor(anchor, date);
     }
   }
 
-  int _weekIndexFromAnchor(DateTime anchor) {
-    final startOfCurrentWeek = _startOfWeek(today);
+  int _weekIndexFromAnchor(DateTime anchor, DateTime date) {
+    final startOfCurrentWeek = _startOfWeek(date);
     final startOfAnchorWeek = _startOfWeek(anchor);
     final diffDays = startOfCurrentWeek.difference(startOfAnchorWeek).inDays;
     final weeks = diffDays ~/ DateTime.daysPerWeek;

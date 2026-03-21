@@ -3,6 +3,7 @@ import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/progress.dart';
 import 'package:afc_studymate/data/models/user_profile.dart';
 import 'package:afc_studymate/data/providers/progress_providers.dart';
+import 'package:afc_studymate/data/providers/user_providers.dart';
 import 'package:afc_studymate/data/services/progress_service.dart';
 import 'package:afc_studymate/features/settings/settings_screen.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
@@ -12,20 +13,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 
-// ─── Providers ────────────────────────────────────────────────────────────────
-
-const _userId = 'local_user';
-
-final FutureProviderFamily<UserProfile?, String> _userProfileProvider =
-    FutureProvider.family<UserProfile?, String>((
-      ref,
-      userId,
-    ) {
-      return ref.read(appDatabaseProvider).getProfile(userId);
-    });
-
-// ─── ProfileScreen ────────────────────────────────────────────────────────────
-
 class ProfileScreen extends HookConsumerWidget {
   const ProfileScreen({super.key});
 
@@ -33,8 +20,8 @@ class ProfileScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncProfile = ref.watch(_userProfileProvider(_userId));
-    final asyncProgress = ref.watch(userProgressProvider(_userId));
+    final asyncProfile = ref.watch(userProfileProvider);
+    final asyncProgress = ref.watch(userProgressProvider(userProfileUserId));
     final nameController = useTextEditingController();
 
     return PremiumScaffold(
@@ -57,15 +44,7 @@ class ProfileScreen extends HookConsumerWidget {
                 width: width,
                 child: asyncProfile.when(
                   data: (profile) {
-                    final effectiveProfile =
-                        profile ??
-                        const UserProfile(
-                          userId: _userId,
-                          name: 'Learner',
-                          role: Role.learner,
-                          targetTrack: Track.search,
-                          translation: Translation.kjv,
-                        );
+                    final effectiveProfile = profile;
                     if (nameController.text != effectiveProfile.name) {
                       nameController.text = effectiveProfile.name;
                     }
@@ -193,7 +172,7 @@ class ProfileScreen extends HookConsumerWidget {
                             await ref
                                 .read(appDatabaseProvider)
                                 .upsertProfile(updated);
-                            ref.invalidate(_userProfileProvider(_userId));
+                            triggerUserProfileRefresh(ref);
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Profile updated successfully!'),
@@ -247,7 +226,7 @@ class ProfileScreen extends HookConsumerWidget {
       onSelected: (role) async {
         final db = ref.read(appDatabaseProvider);
         await db.upsertProfile(profile.copyWith(role: role));
-        ref.invalidate(_userProfileProvider(profile.userId));
+        triggerUserProfileRefresh(ref);
       },
     );
   }
@@ -268,7 +247,7 @@ class ProfileScreen extends HookConsumerWidget {
       onSelected: (track) async {
         final db = ref.read(appDatabaseProvider);
         await db.upsertProfile(profile.copyWith(targetTrack: track));
-        ref.invalidate(_userProfileProvider(profile.userId));
+        triggerUserProfileRefresh(ref);
       },
     );
   }
@@ -288,7 +267,7 @@ class ProfileScreen extends HookConsumerWidget {
       onSelected: (t) async {
         final db = ref.read(appDatabaseProvider);
         await db.upsertProfile(profile.copyWith(translation: t));
-        ref.invalidate(_userProfileProvider(profile.userId));
+        triggerUserProfileRefresh(ref);
       },
     );
   }

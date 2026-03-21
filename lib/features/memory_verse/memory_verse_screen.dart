@@ -2,6 +2,7 @@ import 'package:afc_studymate/data/models/bible_ref.dart';
 import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/memory_verse.dart';
 import 'package:afc_studymate/data/models/verse.dart';
+import 'package:afc_studymate/data/providers/app_refresh_providers.dart';
 import 'package:afc_studymate/data/services/bible_service.dart';
 import 'package:afc_studymate/data/services/memory_verse_service.dart';
 import 'package:afc_studymate/utils/scripture_reference_parser.dart';
@@ -14,6 +15,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
 
 final _memoryQueueProvider = FutureProvider<List<MemoryVerse>>((ref) {
+  ref.watch(appDataRefreshTickProvider);
   return ref.read(memoryVerseServiceProvider).getDueQueue();
 });
 

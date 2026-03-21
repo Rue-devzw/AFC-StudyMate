@@ -6,6 +6,7 @@ import 'package:afc_studymate/data/services/analytics_service.dart';
 import 'package:afc_studymate/data/services/progress_service.dart';
 import 'package:afc_studymate/utils/scripture_reference_parser.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/lesson_display_options.dart';
 import 'package:afc_studymate/widgets/linked_verse.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -106,7 +107,10 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
               Expanded(
                 child: Text(
                   widget.lesson.title,
-                  style: textTheme.headlineMedium?.copyWith(),
+                  style: lessonReadingTextStyle(
+                    context,
+                    baseStyle: textTheme.headlineMedium,
+                  ),
                 ),
               ),
             ],
@@ -165,9 +169,12 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
                   .map(
                     (ref) => LinkedVerse(
                       reference: ref,
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w600,
+                      style: lessonReadingTextStyle(
+                        context,
+                        baseStyle: textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   )
@@ -191,7 +198,13 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
             ),
             const SizedBox(height: 16),
             AppCard(
-              child: Text(resourceMaterial, style: textTheme.bodyLarge),
+              child: Text(
+                resourceMaterial,
+                style: lessonReadingTextStyle(
+                  context,
+                  baseStyle: textTheme.bodyLarge,
+                ),
+              ),
             ),
           ],
 
@@ -238,8 +251,11 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
                         children: [
                           Text(
                             '${index + 1}. ',
-                            style: textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
+                            style: lessonReadingTextStyle(
+                              context,
+                              baseStyle: textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           Expanded(
@@ -305,8 +321,10 @@ class _SearchLessonViewState extends ConsumerState<SearchLessonView> {
     BuildContext context,
     List<String> exposition,
   ) {
-    final theme = Theme.of(context);
-    final style = theme.textTheme.bodyLarge;
+    final style = lessonReadingTextStyle(
+      context,
+      baseStyle: Theme.of(context).textTheme.bodyLarge,
+    );
     final widgets = <Widget>[];
     for (final paragraph in exposition) {
       if (paragraph.trim().isEmpty) {
@@ -342,8 +360,11 @@ class _KeyVerseBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final style = theme.textTheme.bodyLarge?.copyWith(
-      fontStyle: FontStyle.italic,
+    final style = lessonReadingTextStyle(
+      context,
+      baseStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+        fontStyle: FontStyle.italic,
+      ),
     );
     return Container(
       decoration: BoxDecoration(
@@ -375,8 +396,10 @@ class _LinkedText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final style = theme.textTheme.bodyMedium;
+    final style = lessonReadingTextStyle(
+      context,
+      baseStyle: Theme.of(context).textTheme.bodyMedium,
+    );
     return RichText(
       text: TextSpan(
         style: style,
@@ -446,6 +469,12 @@ class _JournalQuestionInputState extends ConsumerState<_JournalQuestionInput> {
           minLines: 3,
           decoration: InputDecoration(
             hintText: 'Capture your thoughts here',
+            hintStyle: lessonReadingTextStyle(
+              context,
+              baseStyle: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
             filled: true,
             fillColor: theme.colorScheme.surfaceContainerHighest.withValues(
               alpha: 0.3,
@@ -454,6 +483,10 @@ class _JournalQuestionInputState extends ConsumerState<_JournalQuestionInput> {
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none,
             ),
+          ),
+          style: lessonReadingTextStyle(
+            context,
+            baseStyle: theme.textTheme.bodyLarge,
           ),
           onChanged: (_) {
             if (_saved) setState(() => _saved = false);

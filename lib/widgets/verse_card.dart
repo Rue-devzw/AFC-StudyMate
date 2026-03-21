@@ -4,6 +4,7 @@ import 'package:afc_studymate/data/models/verse.dart';
 import 'package:afc_studymate/data/providers/user_providers.dart';
 import 'package:afc_studymate/data/services/bible_service.dart';
 import 'package:afc_studymate/features/bible/bible_screen.dart';
+import 'package:afc_studymate/widgets/lesson_display_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
@@ -59,18 +60,28 @@ class VerseCard extends HookConsumerWidget {
             children: <Widget>[
               Text(
                 ref.displayText,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: lessonReadingTextStyle(
+                  context,
+                  baseStyle: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 '$translationLabel • $effectiveTranslationLabel',
-                style: Theme.of(context).textTheme.labelSmall,
+                style: lessonReadingTextStyle(
+                  context,
+                  baseStyle: Theme.of(context).textTheme.labelSmall,
+                  sizeFactor: 0.9,
+                ),
               ),
               const SizedBox(height: 12),
               if (passageSnapshot.hasError)
                 Text(
                   'Unable to load passage.',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  style: lessonReadingTextStyle(
+                    context,
+                    baseStyle: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 )
               else if (!passageSnapshot.hasData)
                 const SizedBox(
@@ -81,7 +92,10 @@ class VerseCard extends HookConsumerWidget {
               else
                 Text(
                   verseText,
-                  textScaler: const TextScaler.linear(1.05),
+                  style: lessonReadingTextStyle(
+                    context,
+                    baseStyle: Theme.of(context).textTheme.bodyLarge,
+                  ),
                 ),
             ],
           ),

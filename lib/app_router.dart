@@ -1,5 +1,4 @@
 import 'package:afc_studymate/data/models/enums.dart';
-import 'package:afc_studymate/data/models/teacher_guide.dart';
 import 'package:afc_studymate/data/services/app_bootstrap_service.dart';
 import 'package:afc_studymate/features/bible/bible_screen.dart';
 import 'package:afc_studymate/features/daybreak/daybreak_screen.dart';
@@ -16,7 +15,6 @@ import 'package:afc_studymate/features/sunday_school/all_lessons/sunday_school_l
 import 'package:afc_studymate/features/sunday_school/class_roster_screen.dart';
 import 'package:afc_studymate/features/sunday_school/search/lesson_search_screen.dart';
 import 'package:afc_studymate/features/sunday_school/sunday_school_screen.dart';
-import 'package:afc_studymate/features/sunday_school/teacher_guide_view.dart';
 import 'package:afc_studymate/features/sunday_school/teacher_guides_screen.dart';
 import 'package:afc_studymate/features/today/today_screen.dart';
 import 'package:afc_studymate/widgets/pdf_viewer_screen.dart';
@@ -162,7 +160,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final date =
               DateTime.tryParse(state.pathParameters['date'] ?? '') ??
               DateTime.now();
-          return DaybreakScreen(date: date);
+          return DaybreakScreen(
+            date: date,
+            lessonId: state.uri.queryParameters['lessonId'],
+          );
         },
       ),
       GoRoute(
@@ -194,23 +195,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             pdfPath: pdfPath,
             title: title,
             initialPage: initialPage,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/teacher-guide',
-        name: 'teacher-guide',
-        builder: (context, state) {
-          final guide = state.extra as TeacherGuide?;
-          final title = state.uri.queryParameters['title'] ?? "Teacher's Guide";
-          if (guide == null) {
-            return const Scaffold(
-              body: Center(child: Text('Error loading guide')),
-            );
-          }
-          return TeacherGuideView(
-            guide: guide,
-            title: title,
           );
         },
       ),

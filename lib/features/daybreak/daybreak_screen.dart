@@ -21,14 +21,20 @@ import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
 
 class DaybreakScreen extends HookConsumerWidget {
-  const DaybreakScreen({required this.date, super.key});
+  const DaybreakScreen({
+    required this.date,
+    super.key,
+    this.lessonId,
+  });
 
   static const String routeName = 'daybreak';
   final DateTime date;
+  final String? lessonId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lessonAsync = ref.watch(_daybreakLessonProvider(date));
+    final request = _DaybreakRequest(date: date, lessonId: lessonId);
+    final lessonAsync = ref.watch(_daybreakLessonProvider(request));
     final lesson = lessonAsync.valueOrNull;
     final horizontalPadding = responsiveHorizontalPadding(context);
 
@@ -50,11 +56,15 @@ class DaybreakScreen extends HookConsumerWidget {
 
     return Scaffold(
       body: lessonAsync.when(
-        data: (lesson) => _DaybreakContent(lesson: lesson, date: date),
+        data: (lesson) => _DaybreakContent(
+          lesson: lesson,
+          date: date,
+          isDirectLessonOpen: (lessonId ?? '').isNotEmpty,
+        ),
         error: (error, stackTrace) => RetryErrorCard(
           title: "Unable to load today's devotion",
           message: '$error',
-          onRetry: () => ref.invalidate(_daybreakLessonProvider(date)),
+          onRetry: () => ref.invalidate(_daybreakLessonProvider(request)),
         ),
         loading: () => ListView(
           padding: EdgeInsets.fromLTRB(
@@ -76,19 +86,51 @@ class DaybreakScreen extends HookConsumerWidget {
   }
 }
 
-final FutureProviderFamily<Lesson?, DateTime> _daybreakLessonProvider =
-    FutureProvider.family<Lesson?, DateTime>((
+class _DaybreakRequest {
+  const _DaybreakRequest({
+    required this.date,
+    this.lessonId,
+  });
+
+  final DateTime date;
+  final String? lessonId;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _DaybreakRequest &&
+        other.date == date &&
+        other.lessonId == lessonId;
+  }
+
+  @override
+  int get hashCode => Object.hash(date, lessonId);
+}
+
+final FutureProviderFamily<Lesson?, _DaybreakRequest> _daybreakLessonProvider =
+    FutureProvider.family<Lesson?, _DaybreakRequest>((
       ref,
-      date,
+      request,
     ) {
-      return ref.read(lessonRepositoryProvider).getDaybreakLessonForDate(date);
+      if ((request.lessonId ?? '').isNotEmpty) {
+        return ref.read(lessonRepositoryProvider).getLessonById(
+          request.lessonId!,
+        );
+      }
+      return ref
+          .read(lessonRepositoryProvider)
+          .getDaybreakLessonForDate(request.date);
     });
 
 class _DaybreakContent extends ConsumerWidget {
-  const _DaybreakContent({required this.lesson, required this.date});
+  const _DaybreakContent({
+    required this.lesson,
+    required this.date,
+    required this.isDirectLessonOpen,
+  });
 
   final Lesson? lesson;
   final DateTime date;
+  final bool isDirectLessonOpen;
 
   Widget _buildSectionHeader(BuildContext context, String title) {
     final theme = Theme.of(context);
@@ -138,32 +180,36 @@ class _DaybreakContent extends ConsumerWidget {
     return CustomScrollView(
       slivers: [
         SliverAppBar.large(
-          title: Text('Daybreak • ${date.day}/${date.month}'),
+          title: Text(
+            isDirectLessonOpen ? 'Daybreak' : 'Daybreak • ${date.day}/${date.month}',
+          ),
           stretch: true,
           surfaceTintColor: theme.colorScheme.surface,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.chevron_left),
-              tooltip: 'Previous day',
-              onPressed: () {
-                final prev = date.subtract(const Duration(days: 1));
-                context.goNamed(
-                  DaybreakScreen.routeName,
-                  pathParameters: {'date': prev.toIso8601String()},
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.chevron_right),
-              tooltip: 'Next day',
-              onPressed: () {
-                final next = date.add(const Duration(days: 1));
-                context.goNamed(
-                  DaybreakScreen.routeName,
-                  pathParameters: {'date': next.toIso8601String()},
-                );
-              },
-            ),
+            if (!isDirectLessonOpen)
+              IconButton(
+                icon: const Icon(Icons.chevron_left),
+                tooltip: 'Previous day',
+                onPressed: () {
+                  final prev = date.subtract(const Duration(days: 1));
+                  context.goNamed(
+                    DaybreakScreen.routeName,
+                    pathParameters: {'date': prev.toIso8601String()},
+                  );
+                },
+              ),
+            if (!isDirectLessonOpen)
+              IconButton(
+                icon: const Icon(Icons.chevron_right),
+                tooltip: 'Next day',
+                onPressed: () {
+                  final next = date.add(const Duration(days: 1));
+                  context.goNamed(
+                    DaybreakScreen.routeName,
+                    pathParameters: {'date': next.toIso8601String()},
+                  );
+                },
+              ),
             TtsPlayButton(text: ttsText, compact: true),
             IconButton(
               icon: const Icon(Icons.share),

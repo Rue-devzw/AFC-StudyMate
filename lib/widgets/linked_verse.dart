@@ -24,9 +24,10 @@ class LinkedVerse extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final effectiveStyle = (style ?? theme.textTheme.bodyMedium)?.copyWith(
-      color: theme.colorScheme.primary,
-      decoration: TextDecoration.underline,
+    final baseStyle = style ?? theme.textTheme.bodyMedium;
+    final effectiveStyle = baseStyle?.copyWith(
+      color: baseStyle.color ?? theme.colorScheme.primary,
+      decoration: baseStyle.decoration ?? TextDecoration.underline,
     );
 
     return GestureDetector(

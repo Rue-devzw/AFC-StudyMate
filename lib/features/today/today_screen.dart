@@ -1,8 +1,10 @@
 import 'package:afc_studymate/data/drift/app_database.dart';
-import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/lesson.dart';
 import 'package:afc_studymate/data/models/user_profile.dart';
+import 'package:afc_studymate/data/providers/app_refresh_providers.dart';
+import 'package:afc_studymate/data/providers/user_providers.dart';
 import 'package:afc_studymate/data/repositories/lesson_repository.dart';
+import 'package:afc_studymate/data/services/feature_flags_service.dart';
 import 'package:afc_studymate/data/services/progress_service.dart';
 import 'package:afc_studymate/data/services/sync_service.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
@@ -53,22 +55,10 @@ final _syncStatusProvider = FutureProvider<SyncStatus>((ref) async {
 });
 
 final _dashboardDataProvider = FutureProvider<DashboardData>((ref) async {
-  const userId = 'local_user';
-  final db = ref.read(appDatabaseProvider);
+  ref.watch(appDataRefreshTickProvider);
   final repo = ref.read(lessonRepositoryProvider);
-
+  final profile = await ref.watch(userProfileProvider.future);
   final daybreak = await repo.getDaybreakLesson();
-
-  final profile =
-      await db.getProfile(userId) ??
-      const UserProfile(
-        userId: userId,
-        name: 'Learner',
-        role: Role.learner,
-        targetTrack: Track.search,
-        translation: Translation.kjv,
-      );
-
   final sundaySchool = await repo.getCurrentSundayLesson(profile.targetTrack);
   final discovery = await repo.getDiscoveryLesson();
 
@@ -89,6 +79,7 @@ class TodayScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncData = ref.watch(_dashboardDataProvider);
     final asyncSyncStatus = ref.watch(_syncStatusProvider);
+    final syncAvailable = ref.watch(remoteSyncAvailableProvider);
     final theme = Theme.of(context);
     final horizontalPadding = responsiveHorizontalPadding(
       context,
@@ -100,7 +91,13 @@ class TodayScreen extends HookConsumerWidget {
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_dashboard.png',
       body: RefreshIndicator(
-        onRefresh: () => _syncNow(context, ref),
+        onRefresh: () async {
+          if (syncAvailable) {
+            await _syncNow(context, ref);
+            return;
+          }
+          ref.invalidate(_dashboardDataProvider);
+        },
         child: CustomScrollView(
           slivers: [
             SliverAppBar.large(
@@ -154,11 +151,13 @@ class TodayScreen extends HookConsumerWidget {
               sliver: asyncData.when(
                 data: (data) => SliverList(
                   delegate: SliverChildListDelegate([
-                    _SyncStatusBadge(
-                      status: asyncSyncStatus.valueOrNull,
-                      onSyncNow: () => _syncNow(context, ref),
-                    ),
-                    const SizedBox(height: 16),
+                    if (syncAvailable) ...<Widget>[
+                      _SyncStatusBadge(
+                        status: asyncSyncStatus.valueOrNull,
+                        onSyncNow: () => _syncNow(context, ref),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     if (data.daybreak != null)
                       _VotdCard(lesson: data.daybreak!),
                     const SizedBox(height: 32),

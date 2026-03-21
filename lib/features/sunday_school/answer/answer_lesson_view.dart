@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:afc_studymate/data/models/lesson.dart';
 import 'package:afc_studymate/utils/scripture_reference_parser.dart';
-import 'package:afc_studymate/widgets/pdf_viewer_screen.dart';
+import 'package:afc_studymate/widgets/lesson_display_options.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AnswerLessonView extends ConsumerStatefulWidget {
@@ -37,7 +34,6 @@ class _AnswerLessonViewState extends ConsumerState<AnswerLessonView> {
         child: _StorySection(
           story: story,
           keyVerse: keyVerse,
-          lessonId: widget.lesson.id,
         ),
       ),
       if (activities.isNotEmpty)
@@ -65,7 +61,10 @@ class _AnswerLessonViewState extends ConsumerState<AnswerLessonView> {
       return Center(
         child: Text(
           'Lesson content will appear here soon.',
-          style: GoogleFonts.inter(fontSize: 18),
+          style: lessonReadingTextStyle(
+            context,
+            baseStyle: GoogleFonts.inter(fontSize: 18),
+          ),
         ),
       );
     }
@@ -88,11 +87,14 @@ class _AnswerLessonViewState extends ConsumerState<AnswerLessonView> {
                 children: [
                   Text(
                     currentLabel,
-                    style: GoogleFonts.inter(
-                      textStyle: Theme.of(context).textTheme.headlineMedium,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF2C3E50),
-                      letterSpacing: -0.5,
+                    style: lessonReadingTextStyle(
+                      context,
+                      baseStyle: GoogleFonts.inter(
+                        textStyle: Theme.of(context).textTheme.headlineMedium,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF2C3E50),
+                        letterSpacing: -0.5,
+                      ),
                     ),
                   ),
                 ],
@@ -177,12 +179,11 @@ class _AnswerLessonViewState extends ConsumerState<AnswerLessonView> {
 class _StorySection extends StatelessWidget {
   const _StorySection({
     required this.story,
-    required this.lessonId, this.keyVerse,
+    this.keyVerse,
   });
 
   final List<String> story;
   final Map<String, dynamic>? keyVerse;
-  final String lessonId;
 
   @override
   Widget build(BuildContext context) {
@@ -195,43 +196,6 @@ class _StorySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FilledButton.icon(
-                icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
-                label: const Text('View Full PDF Lesson'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF2C3E50),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                onPressed: () {
-                  var pdfPath = 'assets/pdfs/answer/unit_01.pdf';
-                  final match = RegExp(r'answer_(\d+)').firstMatch(lessonId);
-                  if (match != null) {
-                    final lessonNum = int.parse(match.group(1)!);
-                    final unitNum = ((lessonNum - 1) ~/ 13) + 1;
-                    final unitStr = unitNum.toString().padLeft(2, '0');
-                    pdfPath = 'assets/pdfs/answer/unit_$unitStr.pdf';
-                  }
-
-                  unawaited(
-                    context.pushNamed(
-                      PdfViewerScreen.routeName,
-                      queryParameters: {
-                        'path': pdfPath,
-                        'title': 'The Answer: Full Lesson',
-                      },
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           if (keyVerse != null)
             Card(
               elevation: 0,
@@ -256,11 +220,14 @@ class _StorySection extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(
                           keyVerse!['title'] as String? ?? 'KEY VERSE',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                            color: Colors.blue.shade900,
+                          style: lessonReadingTextStyle(
+                            context,
+                            baseStyle: GoogleFonts.inter(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                              color: Colors.blue.shade900,
+                            ),
                           ),
                         ),
                       ],
@@ -271,11 +238,14 @@ class _StorySection extends StatelessWidget {
                         children: ScriptureReferenceParser.buildLinkedTextSpans(
                           context,
                           keyVerse!['text'] as String? ?? '',
-                          GoogleFonts.merriweather(
-                            fontSize: 18,
-                            height: 1.6,
-                            fontStyle: FontStyle.italic,
-                            color: const Color(0xFF2C3E50),
+                          lessonReadingTextStyle(
+                            context,
+                            baseStyle: GoogleFonts.merriweather(
+                              fontSize: 18,
+                              height: 1.6,
+                              fontStyle: FontStyle.italic,
+                              color: const Color(0xFF2C3E50),
+                            ),
                           ),
                         ),
                       ),
@@ -301,10 +271,13 @@ class _StorySection extends StatelessWidget {
                         children: ScriptureReferenceParser.buildLinkedTextSpans(
                           context,
                           paragraph,
-                          GoogleFonts.inter(
-                            fontSize: 18,
-                            height: 1.7,
-                            color: const Color(0xFF34495E),
+                          lessonReadingTextStyle(
+                            context,
+                            baseStyle: GoogleFonts.inter(
+                              fontSize: 18,
+                              height: 1.7,
+                              color: const Color(0xFF34495E),
+                            ),
                           ),
                         ),
                       ),
@@ -314,9 +287,12 @@ class _StorySection extends StatelessWidget {
                   if (paragraphs.isEmpty)
                     Text(
                       'Story content will be available soon.',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: Colors.black54,
+                      style: lessonReadingTextStyle(
+                        context,
+                        baseStyle: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                 ],
@@ -373,20 +349,26 @@ class _ActivitySection extends StatelessWidget {
                       children: [
                         Text(
                           type.toUpperCase(),
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                            color: Colors.grey.shade600,
+                          style: lessonReadingTextStyle(
+                            context,
+                            baseStyle: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           title,
-                          style: GoogleFonts.inter(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF2C3E50),
+                          style: lessonReadingTextStyle(
+                            context,
+                            baseStyle: GoogleFonts.inter(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF2C3E50),
+                            ),
                           ),
                         ),
                       ],
@@ -412,10 +394,13 @@ class _ActivitySection extends StatelessWidget {
                             ? instructions
                             : 'Complete the activity in your student material '
                                   'book.',
-                        GoogleFonts.inter(
-                          fontSize: 16,
-                          height: 1.6,
-                          color: const Color(0xFF4A5568),
+                        lessonReadingTextStyle(
+                          context,
+                          baseStyle: GoogleFonts.inter(
+                            fontSize: 16,
+                            height: 1.6,
+                            color: const Color(0xFF4A5568),
+                          ),
                         ),
                       ),
                     ),
@@ -426,10 +411,13 @@ class _ActivitySection extends StatelessWidget {
               Center(
                 child: Text(
                   '📝 Grab your pen and workbook to complete this section.',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade500,
+                  style: lessonReadingTextStyle(
+                    context,
+                    baseStyle: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade500,
+                    ),
                   ),
                 ),
               ),

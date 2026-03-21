@@ -1,6 +1,7 @@
 import 'package:afc_studymate/data/models/lesson.dart';
 import 'package:afc_studymate/utils/scripture_reference_parser.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/lesson_display_options.dart';
 import 'package:afc_studymate/widgets/verse_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,10 +32,14 @@ class DiscoveryLessonView extends ConsumerWidget {
               Expanded(
                 child: Text(
                   'Lesson ${lesson.displayNumber ?? ""}',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.1,
+                  style: lessonReadingTextStyle(
+                    context,
+                    baseStyle: theme.textTheme.labelLarge?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.1,
+                    ),
+                    sizeFactor: 0.95,
                   ),
                 ),
               ),
@@ -59,8 +64,11 @@ class DiscoveryLessonView extends ConsumerWidget {
                   children: ScriptureReferenceParser.buildLinkedTextSpans(
                     context,
                     keyVerse,
-                    theme.textTheme.bodyLarge?.copyWith(
-                      fontStyle: FontStyle.italic,
+                    lessonReadingTextStyle(
+                      context,
+                      baseStyle: theme.textTheme.bodyLarge?.copyWith(
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ),
                 ),
@@ -75,7 +83,12 @@ class DiscoveryLessonView extends ConsumerWidget {
                 children: ScriptureReferenceParser.buildLinkedTextSpans(
                   context,
                   background,
-                  theme.textTheme.bodyMedium?.copyWith(height: 1.6),
+                  lessonReadingTextStyle(
+                    context,
+                    baseStyle: theme.textTheme.bodyMedium?.copyWith(
+                      height: 1.6,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -110,8 +123,10 @@ class DiscoveryLessonView extends ConsumerWidget {
                                   ScriptureReferenceParser.buildLinkedTextSpans(
                                     context,
                                     questions[i],
-                                    theme.textTheme.bodyMedium?.copyWith(
-                                      height: 1.5,
+                                    lessonReadingTextStyle(
+                                      context,
+                                      baseStyle: theme.textTheme.bodyMedium
+                                          ?.copyWith(height: 1.5),
                                     ),
                                   ),
                             ),
@@ -140,9 +155,12 @@ class DiscoveryLessonView extends ConsumerWidget {
                   children: ScriptureReferenceParser.buildLinkedTextSpans(
                     context,
                     conclusion,
-                    theme.textTheme.bodyMedium?.copyWith(
-                      height: 1.6,
-                      fontWeight: FontWeight.w500,
+                    lessonReadingTextStyle(
+                      context,
+                      baseStyle: theme.textTheme.bodyMedium?.copyWith(
+                        height: 1.6,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -170,10 +188,14 @@ class _Section extends StatelessWidget {
         children: [
           Text(
             title.toUpperCase(),
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurfaceVariant,
-              letterSpacing: 1.2,
+            style: lessonReadingTextStyle(
+              context,
+              baseStyle: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurfaceVariant,
+                letterSpacing: 1.2,
+              ),
+              sizeFactor: 0.95,
             ),
           ),
           const SizedBox(height: 12),

@@ -1,12 +1,13 @@
-import 'package:afc_studymate/data/drift/app_database.dart';
 import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/lesson.dart';
-import 'package:afc_studymate/data/models/user_profile.dart';
+import 'package:afc_studymate/data/providers/user_providers.dart';
+import 'package:afc_studymate/data/repositories/lesson_pdf_repository.dart';
 import 'package:afc_studymate/data/repositories/lesson_repository.dart';
 import 'package:afc_studymate/features/sunday_school/all_lessons/sunday_school_all_lessons_screen.dart';
 import 'package:afc_studymate/features/sunday_school/all_lessons/sunday_school_lesson_detail_screen.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
 import 'package:afc_studymate/widgets/linked_verse.dart';
+import 'package:afc_studymate/widgets/pdf_viewer_screen.dart';
 import 'package:afc_studymate/widgets/retry_error_card.dart';
 import 'package:afc_studymate/widgets/skeleton_widgets.dart';
 import 'package:collection/collection.dart';
@@ -21,8 +22,7 @@ class SundaySchoolScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const userId = 'local_user';
-    final asyncProfile = ref.watch(_userProfileProvider(userId));
+    final asyncProfile = ref.watch(userProfileProvider);
     final asyncLessons = ref.watch(_currentLessonsProvider);
     final theme = Theme.of(context);
 
@@ -61,9 +61,10 @@ class SundaySchoolScreen extends HookConsumerWidget {
                 width: width,
                 child: asyncLessons.when(
                   data: (lessons) {
-                    final profile = asyncProfile.value;
-                    final targetTrack = profile?.targetTrack ?? Track.search;
-                    final isTeacher = profile?.role == Role.teacher;
+                    final profile =
+                        asyncProfile.valueOrNull ?? defaultUserProfile;
+                    final targetTrack = profile.targetTrack;
+                    final isTeacher = profile.role == Role.teacher;
 
                     // Reorder tracks to put targetTrack first
                     final orderedTracks = List<Track>.from(_sundaySchoolTracks);
@@ -355,23 +356,26 @@ class _LessonPreviewCard extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               if (isTeacher && lesson != null)
-                FutureBuilder(
-                  future: ref
-                      .read(appDatabaseProvider)
-                      .getTeacherGuide(lesson!.id),
-                  builder: (context, snapshot) {
-                    final guide = snapshot.data;
-                    if (guide == null) return const SizedBox.shrink();
+                Builder(
+                  builder: (context) {
+                    final guide = ref
+                        .read(lessonPdfRepositoryProvider)
+                        .teacherGuideForLesson(lesson!);
+                    if (guide == null) {
+                      return const SizedBox.shrink();
+                    }
 
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: IconButton.filledTonal(
                         onPressed: () {
                           context.pushNamed(
-                            'teacher-guide',
-                            extra: guide,
+                            PdfViewerScreen.routeName,
                             queryParameters: {
-                              'title': '${lesson!.title} Guide',
+                              'path': guide.path,
+                              'title': guide.title,
+                              if (guide.initialPage != null)
+                                'page': guide.initialPage.toString(),
                             },
                           );
                         },
@@ -581,11 +585,3 @@ class _ToolkitItem extends StatelessWidget {
     );
   }
 }
-
-final FutureProviderFamily<UserProfile?, String> _userProfileProvider =
-    FutureProvider.family<UserProfile?, String>((
-      ref,
-      userId,
-    ) {
-      return ref.read(appDatabaseProvider).getProfile(userId);
-    });

@@ -5,6 +5,7 @@ import 'package:afc_studymate/features/sunday_school/beginners/beginners_lesson_
 import 'package:afc_studymate/features/sunday_school/discovery/discovery_lesson_view.dart';
 import 'package:afc_studymate/features/sunday_school/primary_pals/primary_pals_lesson_view.dart';
 import 'package:afc_studymate/features/sunday_school/search/search_lesson_view.dart';
+import 'package:afc_studymate/widgets/lesson_document_actions.dart';
 import 'package:flutter/material.dart';
 
 class SundaySchoolLessonView extends StatelessWidget {
@@ -14,7 +15,7 @@ class SundaySchoolLessonView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return switch (lesson.track) {
+    final content = switch (lesson.track) {
       Track.beginners => BeginnersLessonView(lesson: lesson),
       Track.primaryPals => PrimaryPalsLessonView(lesson: lesson),
       Track.answer => AnswerLessonView(lesson: lesson),
@@ -22,6 +23,17 @@ class SundaySchoolLessonView extends StatelessWidget {
       Track.discovery => DiscoveryLessonView(lesson: lesson),
       _ => _ComingSoonPlaceholder(lesson: lesson),
     };
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        LessonDocumentActions(
+          lesson: lesson,
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        ),
+        content,
+      ],
+    );
   }
 }
 

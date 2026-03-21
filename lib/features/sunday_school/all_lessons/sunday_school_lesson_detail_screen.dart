@@ -1,16 +1,13 @@
-import 'package:afc_studymate/data/drift/app_database.dart';
-import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/lesson.dart';
-import 'package:afc_studymate/data/providers/user_providers.dart';
 import 'package:afc_studymate/data/repositories/lesson_repository.dart';
 import 'package:afc_studymate/data/services/analytics_service.dart';
 import 'package:afc_studymate/features/sunday_school/widgets/sunday_school_lesson_view.dart';
 import 'package:afc_studymate/widgets/design_system_widgets.dart';
+import 'package:afc_studymate/widgets/lesson_display_options.dart';
 import 'package:afc_studymate/widgets/retry_error_card.dart';
 import 'package:afc_studymate/widgets/skeleton_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -26,6 +23,8 @@ class SundaySchoolLessonDetailScreen extends HookConsumerWidget {
     final asyncLesson = ref.watch(_lessonProvider(lessonId));
     final lesson = asyncLesson.valueOrNull;
     final theme = Theme.of(context);
+    final fontScale = ref.watch(lessonReadingFontScaleProvider);
+    final fontStyle = ref.watch(lessonReadingFontStyleProvider);
 
     useEffect(() {
       if (lesson == null) {
@@ -57,6 +56,39 @@ class SundaySchoolLessonDetailScreen extends HookConsumerWidget {
                 surfaceTintColor: theme.colorScheme.surface,
                 actions: [
                   IconButton(
+                    icon: const Icon(Icons.text_fields_rounded),
+                    tooltip: 'Reading controls',
+                    onPressed: () {
+                      showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        useSafeArea: true,
+                        builder: (sheetContext) {
+                          return LessonDisplayOptionsSheet(
+                            fontScale: fontScale,
+                            onFontScaleChanged: (value) {
+                              ref
+                                      .read(
+                                        lessonReadingFontScaleProvider.notifier,
+                                      )
+                                      .state =
+                                  value;
+                            },
+                            fontStyle: fontStyle,
+                            onFontStyleChanged: (value) {
+                              ref
+                                      .read(
+                                        lessonReadingFontStyleProvider.notifier,
+                                      )
+                                      .state =
+                                  value;
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  IconButton(
                     icon: const Icon(Icons.share),
                     tooltip: 'Share lesson',
                     onPressed: () {
@@ -68,44 +100,16 @@ class SundaySchoolLessonDetailScreen extends HookConsumerWidget {
                       );
                     },
                   ),
-                  ref
-                      .watch(userProfileProvider)
-                      .when(
-                        data: (profile) {
-                          if (profile.role != Role.teacher) {
-                            return const SizedBox.shrink();
-                          }
-                          return FutureBuilder(
-                            future: ref
-                                .read(appDatabaseProvider)
-                                .getTeacherGuide(lesson.id),
-                            builder: (context, snapshot) {
-                              final guide = snapshot.data;
-                              if (guide == null) return const SizedBox.shrink();
-
-                              return IconButton(
-                                icon: const Icon(Icons.school_rounded),
-                                tooltip: "Teacher's Guide",
-                                onPressed: () {
-                                  context.pushNamed(
-                                    'teacher-guide',
-                                    extra: guide,
-                                    queryParameters: {
-                                      'title': '${lesson.title} Guide',
-                                    },
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        },
-                        loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
-                      ),
                 ],
               ),
               SliverToBoxAdapter(
-                child: SundaySchoolLessonView(lesson: lesson),
+                child: LessonReadingScope(
+                  preferences: LessonReadingPreferences(
+                    fontScale: fontScale,
+                    fontStyle: fontStyle,
+                  ),
+                  child: SundaySchoolLessonView(lesson: lesson),
+                ),
               ),
               SliverToBoxAdapter(
                 child: SizedBox(height: standardBottomContentPadding(context)),

@@ -178,6 +178,7 @@ class _LessonSearchScreenState extends ConsumerState<LessonSearchScreen> {
         context.pushNamed(
           'daybreak',
           pathParameters: {'date': DateTime.now().toIso8601String()},
+          queryParameters: {'lessonId': lesson.id},
         );
         return;
       default:

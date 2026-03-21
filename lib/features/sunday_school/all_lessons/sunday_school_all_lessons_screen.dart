@@ -238,10 +238,17 @@ class _LessonsExplorer extends HookConsumerWidget {
                   width: 200,
                   child: DropdownButtonFormField<int?>(
                     initialValue: selectedQuarter.value,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Quarter',
                     ),
+                    selectedItemBuilder: (context) => <Widget>[
+                      _dropdownFieldLabel('All quarters'),
+                      ...quarters.map(
+                        (quarter) => _dropdownFieldLabel('Quarter $quarter'),
+                      ),
+                    ],
                     items: <DropdownMenuItem<int?>>[
                       const DropdownMenuItem<int?>(
                         child: Text('All quarters'),
@@ -261,10 +268,15 @@ class _LessonsExplorer extends HookConsumerWidget {
                   width: 240,
                   child: DropdownButtonFormField<String?>(
                     initialValue: selectedTopic.value,
+                    isExpanded: true,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Topic',
                     ),
+                    selectedItemBuilder: (context) => <Widget>[
+                      _dropdownFieldLabel('All topics'),
+                      ...topics.map(_dropdownFieldLabel),
+                    ],
                     items: <DropdownMenuItem<String?>>[
                       const DropdownMenuItem<String?>(
                         child: Text('All topics'),
@@ -530,6 +542,17 @@ String _trackLabel(Track track) {
       final name = track.name;
       return name[0].toUpperCase() + name.substring(1);
   }
+}
+
+Widget _dropdownFieldLabel(String label) {
+  return Align(
+    alignment: Alignment.centerLeft,
+    child: Text(
+      label,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    ),
+  );
 }
 
 /// A chip-styled widget that wraps a [LinkedVerse].

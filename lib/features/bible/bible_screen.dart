@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:afc_studymate/data/drift/app_database.dart';
 import 'package:afc_studymate/data/models/bible_book.dart';
 import 'package:afc_studymate/data/models/bible_ref.dart';
@@ -19,6 +20,12 @@ const _bibleTextPrimary = Color(0xFFEFF3FF);
 const _bibleTextSecondary = Color(0xFFB7C4D8);
 const _bibleChrome = Color(0xCC111821);
 const _bibleChromeBorder = Color(0x55BFD4F6);
+const _bibleSurface = Color(0xCC18212C);
+const _bibleSurfaceStrong = Color(0xE61A2430);
+const _bibleAccent = Color(0xFF9FD7FF);
+const _bibleAccentSoft = Color(0x33249BFF);
+const _bibleHighlightSurface = Color(0x22F6C454);
+const _bibleNoteSurface = Color(0x14FFFFFF);
 
 class BibleScreen extends HookConsumerWidget {
   const BibleScreen({
@@ -38,7 +45,6 @@ class BibleScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final bibleService = ref.read(bibleServiceProvider);
     final profileAsync = ref.watch(userProfileProvider);
 
@@ -233,6 +239,9 @@ class BibleScreen extends HookConsumerWidget {
         notesByVerse.putIfAbsent(verseNo, () => <Note>[]).add(note);
       }
     }
+    final chapterNotes = notesSnapshot.data ?? <Note>[];
+    final chapterBookmarks = chapterNotes.where(_isBookmark).length;
+    final chapterPersonalNotes = chapterNotes.where(_isPersonalNote).length;
     final isLoading =
         booksSnapshot.connectionState != ConnectionState.done ||
         chapterCountSnapshot.connectionState != ConnectionState.done ||
@@ -292,7 +301,7 @@ class BibleScreen extends HookConsumerWidget {
     return PremiumScaffold(
       backgroundAsset: 'assets/images/bg_bible.png',
       appBar: AppBar(
-        titleSpacing: 12,
+        titleSpacing: 6,
         title: Text(
           title,
           maxLines: 1,
@@ -300,70 +309,13 @@ class BibleScreen extends HookConsumerWidget {
           style: const TextStyle(
             color: _bibleTextPrimary,
             fontWeight: FontWeight.w800,
-            letterSpacing: 0.2,
+            fontSize: 16,
+            letterSpacing: 0,
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
-            child: PremiumGlassCard(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              borderRadius: BorderRadius.circular(12),
-              child: InkWell(
-                onTap:
-                    booksSnapshot.hasData &&
-                        (booksSnapshot.data?.isNotEmpty ?? false)
-                    ? () async {
-                        final books = booksSnapshot.data;
-                        if (books == null || books.isEmpty) {
-                          return;
-                        }
-                        final result =
-                            await showModalBottomSheet<_PassageSelectionResult>(
-                              context: context,
-                              useRootNavigator: true,
-                              isScrollControlled: true,
-                              useSafeArea: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) {
-                                return _PassageSelectorSheet(
-                                  books: books,
-                                  initialBookNumber: selectedBookNumber.value,
-                                  initialChapter: selectedChapter.value,
-                                  translation: translation.value,
-                                  bibleService: bibleService,
-                                );
-                              },
-                            );
-
-                        if (result != null) {
-                          selectedBookNumber.value = result.book.number;
-                          selectedChapter.value = result.chapter;
-                        }
-                      }
-                    : null,
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.menu_book_outlined,
-                      size: 18,
-                      color: _bibleTextPrimary,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Passage',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: _bibleTextPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
           _BibleActionIcon(
             icon: Icons.arrow_back_ios_new,
             tooltip: 'Previous passage',
@@ -460,6 +412,8 @@ class BibleScreen extends HookConsumerWidget {
           _QuickNavigationBar(
             bookName: selectedBook?.name,
             chapter: selectedChapter.value,
+            translationLabel: _translationLabel(translation.value),
+            verseCount: verses.length,
             canGoPrevious: selectedChapter.value > 1,
             canGoNext:
                 (chapterCountSnapshot.data ?? 0) > 0 &&
@@ -494,6 +448,38 @@ class BibleScreen extends HookConsumerWidget {
                     activeHighlightedVerse.value = selected;
                     pendingVerseJump.value = selected;
                   },
+            onSelectPassage:
+                booksSnapshot.hasData &&
+                    (booksSnapshot.data?.isNotEmpty ?? false)
+                ? () async {
+                    final books = booksSnapshot.data;
+                    if (books == null || books.isEmpty) {
+                      return;
+                    }
+                    final result =
+                        await showModalBottomSheet<_PassageSelectionResult>(
+                          context: context,
+                          useRootNavigator: true,
+                          isScrollControlled: true,
+                          useSafeArea: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) {
+                            return _PassageSelectorSheet(
+                              books: books,
+                              initialBookNumber: selectedBookNumber.value,
+                              initialChapter: selectedChapter.value,
+                              translation: translation.value,
+                              bibleService: bibleService,
+                            );
+                          },
+                        );
+
+                    if (result != null) {
+                      selectedBookNumber.value = result.book.number;
+                      selectedChapter.value = result.chapter;
+                    }
+                  }
+                : null,
             onOpenWheel: openScrollWheelNavigation,
             onDisplayOptions: () {
               showModalBottomSheet<void>(
@@ -501,6 +487,7 @@ class BibleScreen extends HookConsumerWidget {
                 isScrollControlled: true,
                 useRootNavigator: true,
                 useSafeArea: true,
+                backgroundColor: Colors.transparent,
                 builder: (context) => _DisplayOptionsSheet(
                   fontScale: fontScale.value,
                   onFontScaleChanged: (value) => fontScale.value = value,
@@ -565,196 +552,129 @@ class BibleScreen extends HookConsumerWidget {
 
                 final highlightVerseNumber = activeHighlightedVerse.value;
 
-                return ListView.separated(
+                return Padding(
                   padding: EdgeInsets.fromLTRB(
-                    20,
-                    18,
-                    20,
+                    16,
+                    0,
+                    16,
                     standardBottomContentPadding(context),
-                  ), // Clear floating bottom bar
-                  itemBuilder: (context, index) {
-                    final verse = verses[index];
-                    final verseNotes = notesByVerse[verse.verse] ?? <Note>[];
-                    final bookmarkNote = verseNotes.firstWhereOrNull(
-                      _isBookmark,
-                    );
-                    final highlightNote = verseNotes.firstWhereOrNull(
-                      _isHighlight,
-                    );
-                    final inlineNote = verseNotes.firstWhereOrNull(
-                      _isPersonalNote,
-                    );
-                    final verseKey = verseItemKeys.putIfAbsent(
-                      verse.verse,
-                      GlobalKey.new,
-                    );
-                    if (pendingVerseJump.value == verse.verse) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        final verseContext = verseKey.currentContext;
-                        if (verseContext != null) {
-                          Scrollable.ensureVisible(
-                            verseContext,
-                            duration: const Duration(milliseconds: 240),
-                            curve: Curves.easeOutCubic,
-                            alignment: 0.15,
+                  ),
+                  child: PremiumGlassCard(
+                    padding: EdgeInsets.zero,
+                    borderRadius: BorderRadius.circular(28),
+                    child: ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 0, 24),
+                      itemCount: verses.length + 1,
+                      separatorBuilder: (context, index) {
+                        if (index == 0) {
+                          return const Divider(
+                            height: 1,
+                            color: _bibleChromeBorder,
                           );
                         }
+                        return const SizedBox(height: 14);
+                      },
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return _PassageReadingHeader(
+                            title: title,
+                            translationLabel: _translationLabel(
+                              translation.value,
+                            ),
+                            verseCount: verses.length,
+                            chapterNotes: chapterPersonalNotes,
+                            chapterBookmarks: chapterBookmarks,
+                            onJumpToVerse: verses.isEmpty
+                                ? null
+                                : () async {
+                                    final selected =
+                                        await showModalBottomSheet<int>(
+                                          context: context,
+                                          useSafeArea: true,
+                                          backgroundColor: Colors.transparent,
+                                          builder: (context) => _VerseJumpSheet(
+                                            verseCount: verses.length,
+                                            selectedVerse:
+                                                activeHighlightedVerse.value,
+                                          ),
+                                        );
+                                    if (selected == null) {
+                                      return;
+                                    }
+                                    activeHighlightedVerse.value = selected;
+                                    pendingVerseJump.value = selected;
+                                  },
+                          );
+                        }
+
+                        final verse = verses[index - 1];
+                        final verseNotes =
+                            notesByVerse[verse.verse] ?? <Note>[];
+                        final bookmarkNote = verseNotes.firstWhereOrNull(
+                          _isBookmark,
+                        );
+                        final highlightNote = verseNotes.firstWhereOrNull(
+                          _isHighlight,
+                        );
+                        final inlineNote = verseNotes.firstWhereOrNull(
+                          _isPersonalNote,
+                        );
+                        final verseKey = verseItemKeys.putIfAbsent(
+                          verse.verse,
+                          GlobalKey.new,
+                        );
                         if (pendingVerseJump.value == verse.verse) {
-                          pendingVerseJump.value = null;
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            final verseContext = verseKey.currentContext;
+                            if (verseContext != null) {
+                              Scrollable.ensureVisible(
+                                verseContext,
+                                duration: const Duration(milliseconds: 240),
+                                curve: Curves.easeOutCubic,
+                                alignment: 0.15,
+                              );
+                            }
+                            if (pendingVerseJump.value == verse.verse) {
+                              pendingVerseJump.value = null;
+                            }
+                          });
                         }
-                      });
-                    }
-                    final verseText = Text.rich(
-                      TextSpan(
-                        children: <InlineSpan>[
-                          WidgetSpan(
-                            baseline: TextBaseline.alphabetic,
-                            alignment: PlaceholderAlignment.aboveBaseline,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: Text(
-                                '${verse.verse}',
-                                style: verseNumberStyle.copyWith(
-                                  color: _bibleTextSecondary,
-                                  fontSize: (textStyle.fontSize ?? 16) * 0.8,
-                                ),
-                              ),
-                            ),
+
+                        final hasReaderHighlight =
+                            highlightVerseNumber == verse.verse;
+
+                        return Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            18,
+                            index == 1 ? 18 : 0,
+                            18,
+                            0,
                           ),
-                          TextSpan(
-                            text: verse.text,
-                            style: textStyle.copyWith(
-                              color: _bibleTextPrimary,
-                              shadows: const [
-                                Shadow(
-                                  color: Color(0x90000000),
-                                  blurRadius: 2,
-                                ),
-                              ],
-                            ),
+                          child: _VerseReadingCard(
+                            key: verseKey,
+                            verse: verse,
+                            textStyle: textStyle,
+                            verseNumberStyle: verseNumberStyle,
+                            bookmarkNote: bookmarkNote,
+                            highlightNote: highlightNote,
+                            inlineNote: inlineNote,
+                            isFocused: hasReaderHighlight,
+                            onPressed: () async {
+                              final saved = await _showVerseActionSheet(
+                                context,
+                                ref,
+                                verse: verse,
+                                existingNotes: verseNotes,
+                              );
+                              if (saved) {
+                                notesRefreshTick.value++;
+                              }
+                            },
                           ),
-                        ],
-                      ),
-                    );
-                    final verseBody = InkWell(
-                      onTap: () async {
-                        final saved = await _showVerseActionSheet(
-                          context,
-                          ref,
-                          verse: verse,
-                          existingNotes: verseNotes,
                         );
-                        if (saved) {
-                          notesRefreshTick.value++;
-                        }
                       },
-                      onLongPress: () async {
-                        final saved = await _showVerseActionSheet(
-                          context,
-                          ref,
-                          verse: verse,
-                          existingNotes: verseNotes,
-                        );
-                        if (saved) {
-                          notesRefreshTick.value++;
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(child: verseText),
-                            if (bookmarkNote != null || highlightNote != null)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8, top: 2),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (bookmarkNote != null)
-                                      const Icon(
-                                        Icons.bookmark,
-                                        size: 18,
-                                        color: Colors.lightBlueAccent,
-                                      ),
-                                    if (highlightNote != null)
-                                      const Padding(
-                                        padding: EdgeInsets.only(left: 4),
-                                        child: Icon(
-                                          Icons.highlight_alt,
-                                          size: 18,
-                                          color: Colors.amberAccent,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                    final verseWithInlineNote = Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        verseBody,
-                        if (inlineNote != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.16),
-                                ),
-                              ),
-                              child: Text(
-                                _noteBody(inlineNote.text),
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.95),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    );
-                    if (highlightVerseNumber == null ||
-                        verse.verse != highlightVerseNumber) {
-                      if (highlightNote != null) {
-                        return Container(
-                          key: verseKey,
-                          child: PremiumGlassCard(
-                            borderRadius: BorderRadius.circular(12),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            child: verseWithInlineNote,
-                          ),
-                        );
-                      }
-                      return Container(
-                        key: verseKey,
-                        child: verseWithInlineNote,
-                      );
-                    }
-                    return Container(
-                      key: verseKey,
-                      child: PremiumGlassCard(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        child: verseWithInlineNote,
-                      ),
-                    );
-                  },
-                  separatorBuilder: (_, __) => const SizedBox(height: 24),
-                  itemCount: verses.length,
+                    ),
+                  ),
                 );
               },
             ),
@@ -783,6 +703,344 @@ TextStyle _readingTextStyle(
     height: 1.6,
     fontFamilyFallback: fontFamilyFallback,
   );
+}
+
+class _PassageReadingHeader extends StatelessWidget {
+  const _PassageReadingHeader({
+    required this.title,
+    required this.translationLabel,
+    required this.verseCount,
+    required this.chapterNotes,
+    required this.chapterBookmarks,
+    required this.onJumpToVerse,
+  });
+
+  final String title;
+  final String translationLabel;
+  final int verseCount;
+  final int chapterNotes;
+  final int chapterBookmarks;
+  final Future<void> Function()? onJumpToVerse;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        color: _bibleTextPrimary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$translationLabel • $verseCount verses',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: _bibleTextSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: onJumpToVerse == null
+                    ? null
+                    : () => onJumpToVerse!(),
+                icon: const Icon(Icons.pin_drop_outlined),
+                style: FilledButton.styleFrom(
+                  backgroundColor: _bibleAccentSoft,
+                  foregroundColor: _bibleTextPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                label: const Text('Jump'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _CompactReaderMetaChip(
+                icon: Icons.sticky_note_2_outlined,
+                label: '$chapterNotes notes',
+              ),
+              _CompactReaderMetaChip(
+                icon: Icons.bookmark_outline_rounded,
+                label: '$chapterBookmarks bookmarks',
+              ),
+              const _CompactReaderMetaChip(
+                icon: Icons.touch_app_outlined,
+                label: 'Tap verse for actions',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompactReaderMetaChip extends StatelessWidget {
+  const _CompactReaderMetaChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: _bibleNoteSurface,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _bibleChromeBorder),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: _bibleTextSecondary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: _bibleTextSecondary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VerseReadingCard extends StatelessWidget {
+  const _VerseReadingCard({
+    required this.verse,
+    required this.textStyle,
+    required this.verseNumberStyle,
+    required this.bookmarkNote,
+    required this.highlightNote,
+    required this.inlineNote,
+    required this.isFocused,
+    required this.onPressed,
+    super.key,
+  });
+
+  final Verse verse;
+  final TextStyle textStyle;
+  final TextStyle verseNumberStyle;
+  final Note? bookmarkNote;
+  final Note? highlightNote;
+  final Note? inlineNote;
+  final bool isFocused;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final verseText = Text(
+      verse.text,
+      style: textStyle.copyWith(
+        color: _bibleTextPrimary,
+        shadows: const [
+          Shadow(
+            color: Color(0x90000000),
+            blurRadius: 2,
+          ),
+        ],
+      ),
+    );
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      decoration: BoxDecoration(
+        color: highlightNote != null
+            ? _bibleHighlightSurface
+            : _bibleNoteSurface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isFocused ? _bibleAccent : _bibleChromeBorder,
+          width: isFocused ? 1.3 : 1,
+        ),
+        boxShadow: isFocused
+            ? const <BoxShadow>[
+                BoxShadow(
+                  color: Color(0x33249BFF),
+                  blurRadius: 22,
+                  offset: Offset(0, 12),
+                ),
+              ]
+            : null,
+      ),
+      child: InkWell(
+        onTap: onPressed,
+        onLongPress: onPressed,
+        borderRadius: BorderRadius.circular(22),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: isFocused ? _bibleAccentSoft : _bibleSurface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: _bibleChromeBorder),
+                    ),
+                    child: Text(
+                      '${verse.verse}',
+                      style: verseNumberStyle.copyWith(
+                        color: isFocused ? _bibleAccent : _bibleTextSecondary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: (textStyle.fontSize ?? 16) * 0.72,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(child: verseText),
+                  if (bookmarkNote != null || highlightNote != null)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10, top: 2),
+                      child: Column(
+                        children: [
+                          if (bookmarkNote != null)
+                            const Icon(
+                              Icons.bookmark_rounded,
+                              size: 18,
+                              color: _bibleAccent,
+                            ),
+                          if (highlightNote != null)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 6),
+                              child: Icon(
+                                Icons.highlight_alt_rounded,
+                                size: 18,
+                                color: Color(0xFFF6D566),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+              if (inlineNote != null) ...[
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: _bibleSurfaceStrong,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: _bibleChromeBorder),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Personal note',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: _bibleAccent,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _noteBody(inlineNote!.text),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: _bibleTextPrimary,
+                          height: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ReaderActionButton extends StatelessWidget {
+  const _ReaderActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.emphasized = false,
+    this.compact = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final FutureOr<void> Function()? onPressed;
+  final bool emphasized;
+  final bool compact;
+
+  @override
+  Widget build(BuildContext context) {
+    final background = emphasized ? _bibleAccentSoft : _bibleNoteSurface;
+    final foreground = emphasized ? _bibleTextPrimary : _bibleTextSecondary;
+    return Material(
+      color: background,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onPressed == null ? null : () => onPressed!(),
+        borderRadius: BorderRadius.circular(compact ? 16 : 18),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 12 : 14,
+            vertical: compact ? 10 : 12,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: compact ? 17 : 18, color: foreground),
+              SizedBox(width: compact ? 6 : 8),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.w700,
+                  fontSize: compact ? 14 : null,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _CenteredMessage extends StatelessWidget {
@@ -819,66 +1077,124 @@ Future<bool> _showVerseActionSheet(
 
   final action = await showModalBottomSheet<String>(
     context: context,
-    builder: (context) => SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.copy_all_outlined),
-            title: const Text('Copy verse text'),
-            onTap: () => Navigator.pop(context, 'copy'),
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      final mediaQuery = MediaQuery.of(context);
+      return SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: mediaQuery.size.height * 0.82,
           ),
-          ListTile(
-            leading: const Icon(Icons.share_outlined),
-            title: const Text('Share verse'),
-            onTap: () => Navigator.pop(context, 'share'),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: _bibleSurfaceStrong,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                18,
+                12,
+                18,
+                22 + mediaQuery.viewInsets.bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: _bibleTextSecondary.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    '${verse.book} ${verse.chapter}:${verse.verse}',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: _bibleTextPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    verse.text,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: _bibleTextSecondary,
+                      height: 1.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 18),
+                  _VerseActionTile(
+                    icon: Icons.copy_all_outlined,
+                    title: 'Copy verse text',
+                    subtitle: 'Keep this verse on your clipboard',
+                    onTap: () => Navigator.pop(context, 'copy'),
+                  ),
+                  _VerseActionTile(
+                    icon: Icons.share_outlined,
+                    title: 'Share verse',
+                    subtitle: 'Send it to someone else quickly',
+                    onTap: () => Navigator.pop(context, 'share'),
+                  ),
+                  _VerseActionTile(
+                    icon: Icons.bookmark_add_rounded,
+                    title: existingBookmark == null
+                        ? 'Bookmark verse'
+                        : 'Update bookmark',
+                    subtitle: 'Save it in your study library',
+                    onTap: () => Navigator.pop(context, 'bookmark'),
+                  ),
+                  _VerseActionTile(
+                    icon: Icons.highlight_alt_rounded,
+                    title: existingHighlight == null
+                        ? 'Highlight verse'
+                        : 'Update highlight',
+                    subtitle: 'Mark it visually in the chapter',
+                    onTap: () => Navigator.pop(context, 'highlight'),
+                  ),
+                  _VerseActionTile(
+                    icon: Icons.sticky_note_2_outlined,
+                    title: existingPersonal == null
+                        ? 'Add personal note'
+                        : 'Edit personal note',
+                    subtitle: 'Capture your reflection or observation',
+                    onTap: () => Navigator.pop(context, 'note'),
+                  ),
+                  if (existingBookmark != null)
+                    _VerseActionTile(
+                      icon: Icons.bookmark_remove_outlined,
+                      title: 'Remove bookmark',
+                      subtitle: 'Clear this saved marker',
+                      destructive: true,
+                      onTap: () => Navigator.pop(context, 'remove_bookmark'),
+                    ),
+                  if (existingHighlight != null)
+                    _VerseActionTile(
+                      icon: Icons.highlight_off_outlined,
+                      title: 'Remove highlight',
+                      subtitle: 'Return the verse to normal reading',
+                      destructive: true,
+                      onTap: () => Navigator.pop(context, 'remove_highlight'),
+                    ),
+                  if (existingPersonal != null)
+                    _VerseActionTile(
+                      icon: Icons.delete_outline,
+                      title: 'Remove personal note',
+                      subtitle: 'Delete your saved note for this verse',
+                      destructive: true,
+                      onTap: () => Navigator.pop(context, 'remove_note'),
+                    ),
+                ],
+              ),
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.bookmark_add),
-            title: Text(
-              existingBookmark == null ? 'Bookmark verse' : 'Update bookmark',
-            ),
-            onTap: () => Navigator.pop(context, 'bookmark'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.highlight_alt),
-            title: Text(
-              existingHighlight == null
-                  ? 'Highlight verse'
-                  : 'Update highlight',
-            ),
-            onTap: () => Navigator.pop(context, 'highlight'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.sticky_note_2_outlined),
-            title: Text(
-              existingPersonal == null
-                  ? 'Add personal note'
-                  : 'Edit personal note',
-            ),
-            onTap: () => Navigator.pop(context, 'note'),
-          ),
-          if (existingBookmark != null)
-            ListTile(
-              leading: const Icon(Icons.bookmark_remove_outlined),
-              title: const Text('Remove bookmark'),
-              onTap: () => Navigator.pop(context, 'remove_bookmark'),
-            ),
-          if (existingHighlight != null)
-            ListTile(
-              leading: const Icon(Icons.highlight_off_outlined),
-              title: const Text('Remove highlight'),
-              onTap: () => Navigator.pop(context, 'remove_highlight'),
-            ),
-          if (existingPersonal != null)
-            ListTile(
-              leading: const Icon(Icons.delete_outline),
-              title: const Text('Remove personal note'),
-              onTap: () => Navigator.pop(context, 'remove_note'),
-            ),
-        ],
-      ),
-    ),
+        ),
+      );
+    },
   );
 
   if (action == null) {
@@ -1014,39 +1330,12 @@ Future<String?> _showPersonalNoteEditor(
   BuildContext context, {
   required String initialValue,
 }) async {
-  final controller = TextEditingController(text: initialValue);
-  try {
-    return await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Personal verse note'),
-          content: TextField(
-            controller: controller,
-            maxLines: 6,
-            minLines: 3,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Write your observation, prayer, or insight...',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(controller.text),
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  } finally {
-    controller.dispose();
-  }
+  return showDialog<String>(
+    context: context,
+    builder: (context) {
+      return _PersonalNoteEditorDialog(initialValue: initialValue);
+    },
+  );
 }
 
 class _BibleActionIcon extends StatelessWidget {
@@ -1079,92 +1368,254 @@ class _BibleActionIcon extends StatelessWidget {
   }
 }
 
+class _PersonalNoteEditorDialog extends StatefulWidget {
+  const _PersonalNoteEditorDialog({required this.initialValue});
+
+  final String initialValue;
+
+  @override
+  State<_PersonalNoteEditorDialog> createState() =>
+      _PersonalNoteEditorDialogState();
+}
+
+class _PersonalNoteEditorDialogState extends State<_PersonalNoteEditorDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Personal verse note'),
+      content: TextField(
+        controller: _controller,
+        maxLines: 6,
+        minLines: 3,
+        autofocus: true,
+        decoration: const InputDecoration(
+          hintText: 'Write your observation, prayer, or insight...',
+          border: OutlineInputBorder(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+}
+
+class _VerseActionTile extends StatelessWidget {
+  const _VerseActionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.destructive = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final bool destructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = destructive ? const Color(0xFFFFB3B3) : _bibleTextPrimary;
+    final subtitleColor = destructive
+        ? const Color(0xFFFFD6D6)
+        : _bibleTextSecondary;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        tileColor: _bibleNoteSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: _bibleChromeBorder),
+        ),
+        leading: Icon(icon, color: color),
+        title: Text(
+          title,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: color,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: subtitleColor),
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
 class _QuickNavigationBar extends StatelessWidget {
   const _QuickNavigationBar({
     required this.bookName,
     required this.chapter,
+    required this.translationLabel,
+    required this.verseCount,
     required this.canGoPrevious,
     required this.canGoNext,
     required this.onPrevious,
     required this.onNext,
     required this.onJumpToVerse,
+    required this.onSelectPassage,
     required this.onOpenWheel,
     required this.onDisplayOptions,
   });
 
   final String? bookName;
   final int chapter;
+  final String translationLabel;
+  final int verseCount;
   final bool canGoPrevious;
   final bool canGoNext;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
   final Future<void> Function()? onJumpToVerse;
+  final Future<void> Function()? onSelectPassage;
   final Future<void> Function()? onOpenWheel;
   final VoidCallback? onDisplayOptions;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Container(
         decoration: BoxDecoration(
-          color: _bibleChrome,
-          borderRadius: BorderRadius.circular(16),
+          color: _bibleSurface,
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(color: _bibleChromeBorder),
         ),
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.chevron_left),
-              color: _bibleTextPrimary,
-              tooltip: 'Previous chapter',
-              onPressed: canGoPrevious ? onPrevious : null,
-            ),
-            Expanded(
-              child: Text(
-                '${bookName ?? 'Bible'} $chapter',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: _bibleTextPrimary,
-                  fontWeight: FontWeight.w700,
-                ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  _ChapterChromeButton(
+                    icon: Icons.chevron_left_rounded,
+                    tooltip: 'Previous chapter',
+                    onPressed: canGoPrevious ? onPrevious : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Text(
+                          '${bookName ?? 'Bible'} $chapter',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: _bibleTextPrimary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '$translationLabel • $verseCount verses',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: _bibleTextSecondary,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  _ChapterChromeButton(
+                    icon: Icons.chevron_right_rounded,
+                    tooltip: 'Next chapter',
+                    onPressed: canGoNext ? onNext : null,
+                  ),
+                ],
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.chevron_right),
-              color: _bibleTextPrimary,
-              tooltip: 'Next chapter',
-              onPressed: canGoNext ? onNext : null,
-            ),
-            const SizedBox(width: 4),
-            FilledButton.tonalIcon(
-              onPressed: onJumpToVerse,
-              icon: const Icon(Icons.pin_drop_outlined),
-              style: FilledButton.styleFrom(
-                foregroundColor: const Color(0xFF0E1A2B),
-                backgroundColor: const Color(0xFFB8C7DB),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                alignment: WrapAlignment.center,
+                children: [
+                  _ReaderActionButton(
+                    icon: Icons.menu_book_rounded,
+                    label: 'Passage',
+                    onPressed: onSelectPassage,
+                    emphasized: true,
+                    compact: true,
+                  ),
+                  _ReaderActionButton(
+                    icon: Icons.pin_drop_outlined,
+                    label: 'Verse',
+                    onPressed: onJumpToVerse,
+                    compact: true,
+                  ),
+                  _ReaderActionButton(
+                    icon: Icons.unfold_more_rounded,
+                    label: 'Wheel',
+                    onPressed: onOpenWheel,
+                    compact: true,
+                  ),
+                  _ReaderActionButton(
+                    icon: Icons.text_fields_rounded,
+                    label: 'Display',
+                    onPressed: onDisplayOptions,
+                    compact: true,
+                  ),
+                ],
               ),
-              label: const Text('Verse'),
-            ),
-            IconButton(
-              icon: const Icon(Icons.unfold_more),
-              color: _bibleTextPrimary,
-              tooltip: 'Wheel navigation',
-              onPressed: onOpenWheel,
-            ),
-            IconButton(
-              icon: const Icon(Icons.text_fields),
-              color: _bibleTextPrimary,
-              tooltip: 'Display options',
-              onPressed: onDisplayOptions,
-            ),
-            const SizedBox(width: 4),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _ChapterChromeButton extends StatelessWidget {
+  const _ChapterChromeButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: _bibleChrome,
+      borderRadius: BorderRadius.circular(16),
+      child: IconButton(
+        icon: Icon(icon, color: _bibleTextPrimary),
+        tooltip: tooltip,
+        onPressed: onPressed,
       ),
     );
   }
@@ -1184,8 +1635,12 @@ class _VerseJumpSheet extends StatelessWidget {
     final bottomInset = standardBottomContentPadding(context);
     final theme = Theme.of(context);
 
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.55,
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.58,
+      decoration: const BoxDecoration(
+        color: _bibleSurfaceStrong,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
       child: Column(
         children: [
           const SizedBox(height: 12),
@@ -1193,7 +1648,7 @@ class _VerseJumpSheet extends StatelessWidget {
             width: 48,
             height: 4,
             decoration: BoxDecoration(
-              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.35),
+              color: _bibleTextSecondary.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(999),
             ),
           ),
@@ -1201,14 +1656,15 @@ class _VerseJumpSheet extends StatelessWidget {
           Text(
             'Jump to verse',
             style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
+              color: _bibleTextPrimary,
+              fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Select a verse to jump directly to it',
+            'Select a verse and we will move the reader straight to it.',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+              color: _bibleTextSecondary,
             ),
           ),
           const SizedBox(height: 16),
@@ -1228,14 +1684,15 @@ class _VerseJumpSheet extends StatelessWidget {
                 return FilledButton.tonal(
                   style: FilledButton.styleFrom(
                     backgroundColor: isSelected
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.surfaceContainerHighest,
+                        ? _bibleAccent
+                        : _bibleNoteSurface,
                     foregroundColor: isSelected
-                        ? theme.colorScheme.onPrimary
-                        : theme.colorScheme.onSurface,
+                        ? const Color(0xFF0F1E33)
+                        : _bibleTextPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
+                    side: const BorderSide(color: _bibleChromeBorder),
                     padding: EdgeInsets.zero,
                   ),
                   onPressed: () => Navigator.of(context).pop(verseNo),
@@ -1243,8 +1700,8 @@ class _VerseJumpSheet extends StatelessWidget {
                     '$verseNo',
                     style: TextStyle(
                       fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
+                          ? FontWeight.w800
+                          : FontWeight.w600,
                       fontSize: 16,
                     ),
                   ),
@@ -1278,14 +1735,37 @@ class _StudyLibrarySheet extends StatelessWidget {
 
     return DefaultTabController(
       length: 3,
-      child: SizedBox(
+      child: Container(
         height: MediaQuery.of(context).size.height * 0.75,
+        decoration: const BoxDecoration(
+          color: _bibleSurfaceStrong,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
         child: Column(
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            Container(
+              width: 48,
+              height: 4,
+              decoration: BoxDecoration(
+                color: _bibleTextSecondary.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            const SizedBox(height: 16),
             Text(
               'Study Library',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: _bibleTextPrimary,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Reopen saved verses, notes, and highlights from your reading journey.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: _bibleTextSecondary,
+              ),
             ),
             const SizedBox(height: 12),
             const TabBar(
@@ -1350,7 +1830,14 @@ class _MarkerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (notes.isEmpty) {
-      return Center(child: Text(emptyLabel));
+      return Center(
+        child: Text(
+          emptyLabel,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: _bibleTextSecondary),
+        ),
+      );
     }
     return ListView.separated(
       padding: EdgeInsets.fromLTRB(12, 12, 12, bottomInset),
@@ -1362,19 +1849,29 @@ class _MarkerList extends StatelessWidget {
             '${note.ref.book} ${note.ref.chapter}:${note.ref.verseStart ?? ''}';
         final preview = _noteBody(note.text);
         return ListTile(
-          tileColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          tileColor: _bibleNoteSurface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            side: const BorderSide(color: _bibleChromeBorder),
+            borderRadius: BorderRadius.circular(18),
           ),
-          title: Text(label),
+          title: Text(
+            label,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: _bibleTextPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           subtitle: Text(
             preview,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: _bibleTextSecondary,
+            ),
           ),
           onTap: () => onOpen(note),
           trailing: IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(Icons.delete_outline, color: _bibleTextSecondary),
             onPressed: () => onDelete(note),
           ),
         );
@@ -1413,75 +1910,130 @@ class _DisplayOptionsSheetState extends State<_DisplayOptionsSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final mediaQuery = MediaQuery.of(context);
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(
-        24,
-        24,
-        24,
-        24 + mediaQuery.viewPadding.bottom,
+    return Container(
+      decoration: const BoxDecoration(
+        color: _bibleSurfaceStrong,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text('Reading preferences', style: theme.textTheme.titleLarge),
-          const SizedBox(height: 24),
-          Text('Font size', style: theme.textTheme.titleMedium),
-          Slider(
-            value: _fontScale,
-            min: 0.8,
-            max: 1.6,
-            divisions: 8,
-            label: '${(_fontScale * 100).round()}%',
-            onChanged: (value) {
-              setState(() => _fontScale = value);
-              widget.onFontScaleChanged(value);
-            },
-          ),
-          const SizedBox(height: 16),
-          Text('Font style', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          SegmentedButton<ReadingFontStyle>(
-            segments: const <ButtonSegment<ReadingFontStyle>>[
-              ButtonSegment(
-                value: ReadingFontStyle.serif,
-                label: Text('Serif'),
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          24,
+          16,
+          24,
+          24 + mediaQuery.viewPadding.bottom,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Align(
+              child: Container(
+                width: 48,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: _bibleTextSecondary.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(999),
+                ),
               ),
-              ButtonSegment(
-                value: ReadingFontStyle.sans,
-                label: Text('Sans-serif'),
+            ),
+            const SizedBox(height: 18),
+            Text(
+              'Reading preferences',
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: _bibleTextPrimary,
+                fontWeight: FontWeight.w800,
               ),
-            ],
-            selected: <ReadingFontStyle>{_fontStyle},
-            onSelectionChanged: (selection) {
-              final value = selection.first;
-              setState(() => _fontStyle = value);
-              widget.onFontStyleChanged(value);
-            },
-          ),
-          const SizedBox(height: 16),
-          Text('Translation', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<Translation>(
-            initialValue: _translation,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
-            items: Translation.values
-                .map(
-                  (translation) => DropdownMenuItem<Translation>(
-                    value: translation,
-                    child: Text(_translationLabel(translation)),
-                  ),
-                )
-                .toList(),
-            onChanged: (value) {
-              if (value == null) {
-                return;
-              }
-              setState(() => _translation = value);
-              widget.onTranslationChanged(value);
-            },
-          ),
-        ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Shape the Bible reader for comfort, clarity, and focus.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: _bibleTextSecondary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Font size',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: _bibleTextPrimary,
+              ),
+            ),
+            Slider(
+              value: _fontScale,
+              min: 0.8,
+              max: 1.6,
+              divisions: 8,
+              label: '${(_fontScale * 100).round()}%',
+              onChanged: (value) {
+                setState(() => _fontScale = value);
+                widget.onFontScaleChanged(value);
+              },
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Font style',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: _bibleTextPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SegmentedButton<ReadingFontStyle>(
+              segments: const <ButtonSegment<ReadingFontStyle>>[
+                ButtonSegment(
+                  value: ReadingFontStyle.serif,
+                  label: Text('Serif'),
+                ),
+                ButtonSegment(
+                  value: ReadingFontStyle.sans,
+                  label: Text('Sans-serif'),
+                ),
+              ],
+              selected: <ReadingFontStyle>{_fontStyle},
+              onSelectionChanged: (selection) {
+                final value = selection.first;
+                setState(() => _fontStyle = value);
+                widget.onFontStyleChanged(value);
+              },
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Translation',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: _bibleTextPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<Translation>(
+              initialValue: _translation,
+              dropdownColor: _bibleSurfaceStrong,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: _bibleTextPrimary,
+              ),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: _bibleNoteSurface,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              items: Translation.values
+                  .map(
+                    (translation) => DropdownMenuItem<Translation>(
+                      value: translation,
+                      child: Text(_translationLabel(translation)),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (value) {
+                if (value == null) {
+                  return;
+                }
+                setState(() => _translation = value);
+                widget.onTranslationChanged(value);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

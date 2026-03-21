@@ -19,6 +19,9 @@ class NotificationService {
   static const String _channelId = 'studymate_reminders';
   static const String _channelName = 'Daily Reminders';
   static const String _androidIcon = '@drawable/ic_stat_notify';
+  static const int _dailyReminderId = 0;
+  static const int _sundayReminderId = 1;
+  static const int _discoveryReminderId = 2;
 
   static const NotificationDetails _details = NotificationDetails(
     android: AndroidNotificationDetails(
@@ -91,7 +94,7 @@ class NotificationService {
     String title = 'AFC StudyMate',
     String body = 'Time for your daily devotion and study! 📖',
   }) async {
-    await _notifications.cancelAll();
+    await _notifications.cancel(id: _dailyReminderId);
 
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(
@@ -107,7 +110,7 @@ class NotificationService {
     }
 
     await _notifications.zonedSchedule(
-      id: 0,
+      id: _dailyReminderId,
       scheduledDate: scheduledDate,
       notificationDetails: _details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -123,6 +126,41 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
+    await _scheduleWeeklyReminder(
+      id: _sundayReminderId,
+      weekday: DateTime.sunday,
+      hour: hour,
+      minute: minute,
+      title: 'Sunday School Today!',
+      body: 'Your weekly lesson is ready. Tap to study! 🎓',
+    );
+    _logger.i('Weekly Sunday reminder scheduled at $hour:$minute');
+  }
+
+  Future<void> scheduleWeeklyDiscoveryReminder({
+    required int hour,
+    required int minute,
+  }) async {
+    await _scheduleWeeklyReminder(
+      id: _discoveryReminderId,
+      weekday: DateTime.wednesday,
+      hour: hour,
+      minute: minute,
+      title: 'Discovery Reminder',
+      body: 'Your mid-week Discovery lesson is ready. Tap to reflect.',
+    );
+    _logger.i('Weekly Discovery reminder scheduled at $hour:$minute');
+  }
+
+  Future<void> _scheduleWeeklyReminder({
+    required int id,
+    required int weekday,
+    required int hour,
+    required int minute,
+    required String title,
+    required String body,
+  }) async {
+    await _notifications.cancel(id: id);
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(
       tz.local,
@@ -132,7 +170,7 @@ class NotificationService {
       hour,
       minute,
     );
-    while (scheduledDate.weekday != DateTime.sunday) {
+    while (scheduledDate.weekday != weekday) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
     if (scheduledDate.isBefore(now)) {
@@ -140,15 +178,14 @@ class NotificationService {
     }
 
     await _notifications.zonedSchedule(
-      id: 1,
+      id: id,
       scheduledDate: scheduledDate,
       notificationDetails: _details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      title: 'Sunday School Today!',
-      body: 'Your weekly lesson is ready. Tap to study! 🎓',
+      title: title,
+      body: body,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
-    _logger.i('Weekly Sunday reminder scheduled at $hour:$minute');
   }
 
   Future<void> cancelAll() async {
@@ -157,12 +194,17 @@ class NotificationService {
   }
 
   Future<void> cancelDaily() async {
-    await _notifications.cancel(id: 0);
+    await _notifications.cancel(id: _dailyReminderId);
     _logger.i('Daily reminder cancelled');
   }
 
   Future<void> cancelWeeklySundayReminder() async {
-    await _notifications.cancel(id: 1);
+    await _notifications.cancel(id: _sundayReminderId);
     _logger.i('Weekly Sunday reminder cancelled');
+  }
+
+  Future<void> cancelWeeklyDiscoveryReminder() async {
+    await _notifications.cancel(id: _discoveryReminderId);
+    _logger.i('Weekly Discovery reminder cancelled');
   }
 }

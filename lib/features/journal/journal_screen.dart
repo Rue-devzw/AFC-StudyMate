@@ -2,6 +2,7 @@ import 'package:afc_studymate/data/drift/app_database.dart';
 import 'package:afc_studymate/data/models/enums.dart';
 import 'package:afc_studymate/data/models/journal_entry.dart';
 import 'package:afc_studymate/data/models/note.dart';
+import 'package:afc_studymate/data/providers/app_refresh_providers.dart';
 import 'package:afc_studymate/data/providers/user_providers.dart';
 import 'package:afc_studymate/data/repositories/lesson_repository.dart';
 import 'package:afc_studymate/data/services/analytics_service.dart';
@@ -19,6 +20,7 @@ final _journalRefreshProvider = StateProvider<int>((ref) => 0);
 final FutureProviderFamily<List<JournalEntry>, Track> _journalEntriesProvider =
     FutureProvider.family<List<JournalEntry>, Track>((ref, track) {
       ref.watch(_journalRefreshProvider);
+      ref.watch(appDataRefreshTickProvider);
       return ref
           .read(appDatabaseProvider)
           .getJournalEntries('local_user', track: track);
@@ -26,6 +28,7 @@ final FutureProviderFamily<List<JournalEntry>, Track> _journalEntriesProvider =
 
 final _bookmarksProvider = FutureProvider<List<Note>>((ref) async {
   ref.watch(_journalRefreshProvider);
+  ref.watch(appDataRefreshTickProvider);
   return ref.read(appDatabaseProvider).getAllNotes('local_user');
 });
 

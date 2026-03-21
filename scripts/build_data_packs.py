@@ -7,6 +7,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import re
 from pathlib import Path
 
 
@@ -14,7 +15,7 @@ TEXT_EXTENSIONS = {".json"}
 BINARY_EXTENSIONS = {".pdf"}
 INCLUDE_ROOTS = [
     Path("assets/data"),
-    Path("assets/pdfs"),
+    Path("collections"),
 ]
 
 
@@ -38,6 +39,7 @@ def discover_assets(repo_root: Path) -> list[str]:
 
 def _compressed_name_for(logical_path: str) -> str:
     safe = logical_path.replace("/", "__")
+    safe = re.sub(r"[^A-Za-z0-9._-]", "_", safe)
     return f"{safe}.gz"
 
 

@@ -1,3 +1,4 @@
+import 'package:afc_studymate/widgets/lesson_display_options.dart';
 import 'package:flutter/material.dart';
 
 class ActivityMatching extends StatefulWidget {
@@ -33,7 +34,10 @@ class _ActivityMatchingState extends State<ActivityMatching> {
         children: <Widget>[
           Text(
             'Match the pairs',
-            style: Theme.of(context).textTheme.titleLarge,
+            style: lessonReadingTextStyle(
+              context,
+              baseStyle: Theme.of(context).textTheme.titleLarge,
+            ),
           ),
           const SizedBox(height: 16),
           ListView.builder(
@@ -44,11 +48,23 @@ class _ActivityMatchingState extends State<ActivityMatching> {
               final key = targets[index];
               return Card(
                 child: ListTile(
-                  title: Text(key),
+                  title: Text(
+                    key,
+                    style: lessonReadingTextStyle(
+                      context,
+                      baseStyle: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
                   subtitle: DropdownButton<String>(
                     isExpanded: true,
                     value: _answers[key],
-                    hint: const Text('Select'),
+                    hint: Text(
+                      'Select',
+                      style: lessonReadingTextStyle(
+                        context,
+                        baseStyle: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
                     onChanged: (value) {
                       setState(() {
                         _answers[key] = value;
@@ -59,7 +75,15 @@ class _ActivityMatchingState extends State<ActivityMatching> {
                         .map(
                           (option) => DropdownMenuItem<String>(
                             value: option,
-                            child: Text(option),
+                            child: Text(
+                              option,
+                              style: lessonReadingTextStyle(
+                                context,
+                                baseStyle: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge,
+                              ),
+                            ),
                           ),
                         )
                         .toList(),
@@ -73,7 +97,10 @@ class _ActivityMatchingState extends State<ActivityMatching> {
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Text(
                 _resultText(),
-                style: Theme.of(context).textTheme.titleMedium,
+                style: lessonReadingTextStyle(
+                  context,
+                  baseStyle: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
             ),
           ElevatedButton(

@@ -1,4 +1,5 @@
 import 'package:afc_studymate/data/models/progress.dart';
+import 'package:afc_studymate/data/providers/app_refresh_providers.dart';
 import 'package:afc_studymate/data/services/progress_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -11,20 +12,24 @@ void triggerProgressRefresh(WidgetRef ref) {
   notifier.state = notifier.state + 1;
 }
 
-final FutureProviderFamily<List<Progress>, String> userProgressProvider = FutureProvider.family<List<Progress>, String>((
-  ref,
-  userId,
-) async {
-  ref.watch(progressRefreshTickProvider);
-  return ref.read(progressServiceProvider).getUserProgress(userId);
-});
+final FutureProviderFamily<List<Progress>, String> userProgressProvider =
+    FutureProvider.family<List<Progress>, String>((
+      ref,
+      userId,
+    ) async {
+      ref.watch(progressRefreshTickProvider);
+      ref.watch(appDataRefreshTickProvider);
+      return ref.read(progressServiceProvider).getUserProgress(userId);
+    });
 
-final FutureProviderFamily<bool, String> isLessonCompletedProvider = FutureProvider.family<bool, String>((
-  ref,
-  lessonId,
-) async {
-  ref.watch(progressRefreshTickProvider);
-  return ref
-      .read(progressServiceProvider)
-      .isLessonCompleted(localUserId, lessonId);
-});
+final FutureProviderFamily<bool, String> isLessonCompletedProvider =
+    FutureProvider.family<bool, String>((
+      ref,
+      lessonId,
+    ) async {
+      ref.watch(progressRefreshTickProvider);
+      ref.watch(appDataRefreshTickProvider);
+      return ref
+          .read(progressServiceProvider)
+          .isLessonCompleted(localUserId, lessonId);
+    });

@@ -1,5 +1,6 @@
 import 'package:afc_studymate/data/models/lesson.dart';
 import 'package:afc_studymate/utils/scripture_reference_parser.dart';
+import 'package:afc_studymate/widgets/lesson_display_options.dart';
 import 'package:flutter/material.dart';
 
 class BeginnersLessonView extends StatefulWidget {
@@ -65,7 +66,11 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
                     children: <Widget>[
                       Text(
                         title,
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: lessonReadingTextStyle(
+                          context,
+                          baseStyle: Theme.of(context).textTheme.titleLarge,
+                          sizeFactor: 1.05,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Card(
@@ -92,10 +97,14 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
                                       ScriptureReferenceParser.buildLinkedTextSpans(
                                         context,
                                         content,
-                                        Theme.of(context).textTheme.bodyLarge,
+                                        lessonReadingTextStyle(
+                                          context,
+                                          baseStyle: Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge,
+                                        ),
                                       ),
                                 ),
-                                textScaler: const TextScaler.linear(1.15),
                               ),
                               if (type == 'question') ...<Widget>[
                                 const SizedBox(height: 16),
@@ -121,9 +130,12 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
                                       Expanded(
                                         child: Text(
                                           'Ask this question to spark a conversation!',
-                                          style: Theme.of(
+                                          style: lessonReadingTextStyle(
                                             context,
-                                          ).textTheme.bodyMedium,
+                                            baseStyle: Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -146,7 +158,11 @@ class _BeginnersLessonViewState extends State<BeginnersLessonView> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
             child: Text(
               'Section ${_index + 1} of ${sections.length}',
-              style: Theme.of(context).textTheme.labelMedium,
+              style: lessonReadingTextStyle(
+                context,
+                baseStyle: Theme.of(context).textTheme.labelMedium,
+                sizeFactor: 0.9,
+              ),
             ),
           ),
         Padding(

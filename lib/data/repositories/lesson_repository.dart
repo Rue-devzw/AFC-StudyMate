@@ -19,19 +19,22 @@ class LessonRepository {
   final ScheduleService scheduleService;
 
   Future<Lesson?> getCurrentSundayLesson(Track track) async {
+    return getSundayLessonForDate(track, scheduleService.today);
+  }
+
+  Future<Lesson?> getSundayLessonForDate(Track track, DateTime date) async {
     final lessons = await database.getLessonsByTrack(track);
     if (lessons.isEmpty) {
       return null;
     }
 
-    final override = _resolveCurrentLessonOverride(track, lessons);
-    if (override != null) {
-      return override;
-    }
-
     final sortedLessons = lessons.toList()
       ..sort((a, b) => (a.weekIndex ?? 0).compareTo(b.weekIndex ?? 0));
-    final targetWeek = scheduleService.weekIndexForTrack(track);
+    final targetWeek = scheduleService.weekIndexForTrackAt(track, date);
+
+    if (track == Track.search || track == Track.answer) {
+      return _currentLessonByDisplayNumber(sortedLessons, targetWeek);
+    }
 
     final matchingLesson = sortedLessons.firstWhereOrNull(
       (lesson) => (lesson.weekIndex ?? -1) == targetWeek,
@@ -47,47 +50,28 @@ class LessonRepository {
         sortedLessons.last;
   }
 
-  Lesson? _resolveCurrentLessonOverride(Track track, List<Lesson> lessons) {
-    switch (track) {
-      case Track.primaryPals:
-        // Dataset currently does not contain 19a; include a stable fallback.
-        return _firstByIdOrDisplayNumber(
-          lessons,
-          ids: const {'19a', 'primary_pals_lesson_19a', '20a'},
-          displayNumbers: const {19, 20},
+  Lesson? _currentLessonByDisplayNumber(List<Lesson> lessons, int targetWeek) {
+    final targetDisplayNumber = targetWeek + 1;
+    final numberedLessons =
+        lessons.where((lesson) => lesson.displayNumber != null).toList()..sort(
+          (a, b) => (a.displayNumber ?? 0).compareTo(b.displayNumber ?? 0),
         );
-      case Track.answer:
-        return _firstByIdOrDisplayNumber(
-          lessons,
-          ids: const {'answer_79'},
-          displayNumbers: const {79},
-        );
-      case Track.search:
-        return _firstByIdOrDisplayNumber(
-          lessons,
-          ids: const {'lesson_79', 'search_lesson_79'},
-          displayNumbers: const {79},
-        );
-      default:
-        return null;
-    }
-  }
 
-  Lesson? _firstByIdOrDisplayNumber(
-    List<Lesson> lessons, {
-    required Set<String> ids,
-    required Set<int> displayNumbers,
-  }) {
-    for (final lesson in lessons) {
-      if (ids.contains(lesson.id.toLowerCase())) {
-        return lesson;
-      }
-      final number = lesson.displayNumber;
-      if (number != null && displayNumbers.contains(number)) {
-        return lesson;
-      }
+    if (numberedLessons.isEmpty) {
+      return lessons.firstOrNull;
     }
-    return null;
+
+    final exact = numberedLessons.firstWhereOrNull(
+      (lesson) => lesson.displayNumber == targetDisplayNumber,
+    );
+    if (exact != null) {
+      return exact;
+    }
+
+    return numberedLessons.firstWhereOrNull(
+          (lesson) => (lesson.displayNumber ?? -1) > targetDisplayNumber,
+        ) ??
+        numberedLessons.last;
   }
 
   Future<Lesson?> getDiscoveryLesson() async {

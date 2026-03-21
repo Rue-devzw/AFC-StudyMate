@@ -130,6 +130,20 @@ class OnboardingController extends StateNotifier<OnboardingState> {
       // Setup persistence should not block app entry.
     }
 
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('reminder_enabled', snapshot.dailyReminder);
+    await prefs.setInt('reminder_hour', 6);
+    await prefs.setInt('reminder_minute', 0);
+    await prefs.setBool('sunday_reminder_enabled', snapshot.sundayReminder);
+    await prefs.setInt('sunday_reminder_hour', 8);
+    await prefs.setInt('sunday_reminder_minute', 0);
+    await prefs.setBool(
+      'discovery_reminder_enabled',
+      snapshot.discoveryReminder,
+    );
+    await prefs.setInt('discovery_reminder_hour', 18);
+    await prefs.setInt('discovery_reminder_minute', 0);
+
     final hasAnyReminder =
         snapshot.dailyReminder ||
         snapshot.sundayReminder ||
@@ -146,7 +160,7 @@ class OnboardingController extends StateNotifier<OnboardingState> {
         return;
       }
 
-      if (snapshot.dailyReminder || snapshot.discoveryReminder) {
+      if (snapshot.dailyReminder) {
         await notificationService.scheduleDaily(hour: 6, minute: 0);
       } else {
         await notificationService.cancelDaily();
@@ -158,6 +172,14 @@ class OnboardingController extends StateNotifier<OnboardingState> {
         );
       } else {
         await notificationService.cancelWeeklySundayReminder();
+      }
+      if (snapshot.discoveryReminder) {
+        await notificationService.scheduleWeeklyDiscoveryReminder(
+          hour: 18,
+          minute: 0,
+        );
+      } else {
+        await notificationService.cancelWeeklyDiscoveryReminder();
       }
     } catch (_) {
       // Notifications are best effort and non-blocking.
